@@ -10,7 +10,8 @@
 		"Other"
 	],
 	"activationEvents": [
-		"onCommand:logrider.openCLog"
+		"onCommand:logrider.openCLog",
+		"onView:logrider.stateView"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
@@ -31,14 +32,22 @@
 					],
 					"configuration": "./clog.language-configuration.json"
 			}
-	],
-	"grammars": [
-			{
-					"language": "CLog",
-					"scopeName": "code.clog",
-					"path": "./src/syntax/clog.tmLanguage.json"
-			}
-	]
+		],
+		"grammars": [
+				{
+						"language": "CLog",
+						"scopeName": "code.clog",
+						"path": "./src/syntax/clog.tmLanguage.json"
+				}
+		],
+		"views": {
+			"explorer": [
+				{
+					"id": "logrider.stateView",
+					"name": "LogRider State View"
+				}
+			]
+		}
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run compile",
