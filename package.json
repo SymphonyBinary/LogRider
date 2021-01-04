@@ -10,16 +10,35 @@
 		"Other"
 	],
 	"activationEvents": [
-		"onCommand:logrider.helloWorld"
+		"onCommand:logrider.openCLog"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
 		"commands": [
 			{
-				"command": "logrider.helloWorld",
-				"title": "Hello World"
+				"command": "logrider.openCLog",
+				"title": "Open CLog"
 			}
-		]
+		],
+		"languages": [
+			{
+					"id": "CLog",
+					"aliases": [
+							"clog"
+					],
+					"extensions": [
+							".clog"
+					],
+					"configuration": "./clog.language-configuration.json"
+			}
+	],
+	"grammars": [
+			{
+					"language": "CLog",
+					"scopeName": "code.clog",
+					"path": "./src/syntax/clog.tmLanguage.json"
+			}
+	]
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run compile",
