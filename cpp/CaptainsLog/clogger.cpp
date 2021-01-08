@@ -1,4 +1,4 @@
-#include "dereklogger.h"
+#include "clogger.h"
 
 static const char* colourArray[] = {
   COLOUR BOLD C_RED,
@@ -89,7 +89,7 @@ BlockLogger::BlockLogger(const void* thisPointer) {
 void BlockLogger::setPrimaryLog(int line, const char* logInfoBuffer, const char* customMessageBuffer) {
   mhasCustomMessage = (customMessageBuffer != nullptr);
 
-  std::memcpy(&mlogInfoBuffer, logInfoBuffer, D_LOG_BUFFER_SIZE);
+  std::memcpy(&mlogInfoBuffer, logInfoBuffer, C_LOG_BUFFER_SIZE);
 
   std::stringstream ss;
   printTab(ss, mThreadId, mDepth);
@@ -99,7 +99,7 @@ void BlockLogger::setPrimaryLog(int line, const char* logInfoBuffer, const char*
   PRINT_TO_LOG("%s", ss.str().c_str());
 
   if(mhasCustomMessage) {
-    std::memcpy(&mcustomMessageBuffer, customMessageBuffer, D_LOG_BUFFER_SIZE);
+    std::memcpy(&mcustomMessageBuffer, customMessageBuffer, C_LOG_BUFFER_SIZE);
     log(line, mcustomMessageBuffer);
   }
 }
@@ -117,6 +117,14 @@ void BlockLogger::error(int line, const char* messageBuffer) {
   printTab(ss, mThreadId, mDepth);
   ss << COLOUR BOLD C_GREEN << ADD_LOG_DELIMITER << ADD_LOG_SECOND_DELIMITER << COLOUR BOLD C_YELLOW << " " << mId << " "
   << COLOUR RESET << "[" << COLOUR BOLD C_GREEN << line << COLOUR RESET << "] " << COLOUR BOLD C_RED << "ERROR: " <<  messageBuffer << COLOUR RESET;
+  PRINT_TO_LOG("%s", ss.str().c_str());
+}
+
+void BlockLogger::set(int line, std::string name, std::string value) {
+  std::stringstream ss;
+  printTab(ss, mThreadId, mDepth);
+  ss << COLOUR BOLD C_GREEN << ADD_LOG_DELIMITER << ADD_LOG_SECOND_DELIMITER << COLOUR BOLD C_YELLOW << " " << mId << " "
+  << COLOUR RESET << "[" << COLOUR BOLD C_GREEN << line << COLOUR RESET << "] " << COLOUR BOLD C_RED << "SET: " <<  name << " = " << value << COLOUR RESET;
   PRINT_TO_LOG("%s", ss.str().c_str());
 }
 

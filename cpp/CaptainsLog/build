@@ -1,1 +1,1 @@
-g++ test.cpp dereklogger.cpp -Wall -Wextra -std=c++11 -lstdc++ -o test.out
+g++ test.cpp clogger.cpp -Wall -Wextra -std=c++11 -lstdc++ -o test.out
