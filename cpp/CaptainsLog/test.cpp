@@ -1,9 +1,9 @@
-#include "captainslog.h"
+#include "dereklogger.h"
 
 class TestOne {
 public:
   void testBlockOutput() {
-    C_LOG_BLOCK();
+    D_LOG_BLOCK();
   }
 };
 

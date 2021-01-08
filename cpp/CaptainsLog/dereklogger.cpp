@@ -1,16 +1,5 @@
 #include "dereklogger.h"
 
-#include <iostream>
-#include <sstream>
-#include <cstdlib>
-
-#include <thread>
-#include <cstring>
-#include <unordered_map>
-#include <mutex>
-
-#include <cstdint>
-
 static const char* colourArray[] = {
   COLOUR BOLD C_RED,
   COLOUR BOLD C_GREEN,

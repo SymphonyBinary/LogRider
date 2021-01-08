@@ -1,6 +1,17 @@
 #pragma once
 
 #include <cstdint>
+#include <cstdlib>
+#include <iostream>
+#include <sstream>
+
+#include <thread>
+#include <cstring>
+#include <unordered_map>
+#include <mutex>
+
+#include <cstdint>
+
 
 //#define COLOURIZE
 //#define FANCY_ASCII
@@ -78,8 +89,7 @@
 
 #define D_LOG_BUFFER_SIZE 200
 
-//change to __PRETTY_FUNCTION__ if you want the whole function signature
-#define D_LOG_WITHOUT_FORMAT(pointer) \
+#define D_LOG_COMMON(pointer) \
 BlockLogger blockScopeLog{pointer}; \
   { \
     char blockScopeLogInfoBuffer[D_LOG_BUFFER_SIZE]; \
@@ -87,23 +97,35 @@ BlockLogger blockScopeLog{pointer}; \
       COLOUR RESET " [" COLOUR BOLD C_GREEN "%d" COLOUR RESET "]::[" \
       COLOUR BOLD C_CYAN "%s" COLOUR RESET "]::[" \
       COLOUR BOLD C_MAGENTA "%s" COLOUR RESET "] ", \
-      __LINE__, __FILENAME__, __FUNCTION__); \
+      __LINE__, __FILENAME__, __FUNCTION__);
+
+//change to __PRETTY_FUNCTION__ if you want the whole function signature
+#define D_LOG_WITHOUT_FORMAT(pointer) \
+    D_LOG_COMMON(pointer) \
     blockScopeLog.setPrimaryLog(__LINE__, blockScopeLogInfoBuffer, nullptr); \
   }
 
+#define D_LOG_WITH_ONE_STRING(pointer, text) \
+    D_LOG_COMMON(pointer) \
+    char blockScopeLogCustomBuffer[D_LOG_BUFFER_SIZE]; \
+    snprintf(blockScopeLogCustomBuffer, D_LOG_BUFFER_SIZE, text); \
+    blockScopeLog.setPrimaryLog(__LINE__, blockScopeLogInfoBuffer, blockScopeLogCustomBuffer); \
+  }
+
 #define D_LOG_WITH_FORMAT(pointer, ...) \
-BlockLogger blockScopeLog{pointer}; \
-  { \
-    char blockScopeLogInfoBuffer[D_LOG_BUFFER_SIZE]; \
-    snprintf(blockScopeLogInfoBuffer, D_LOG_BUFFER_SIZE, \
-      COLOUR RESET " [" COLOUR BOLD C_GREEN "%d" COLOUR RESET "]::[" \
-      COLOUR BOLD C_CYAN "%s" COLOUR RESET "]::[" \
-      COLOUR BOLD C_MAGENTA "%s" COLOUR RESET "] ", \
-      __LINE__, __FILENAME__, __FUNCTION__); \
+    D_LOG_COMMON(pointer) \
     char blockScopeLogCustomBuffer[D_LOG_BUFFER_SIZE]; \
     snprintf(blockScopeLogCustomBuffer, D_LOG_BUFFER_SIZE, __VA_ARGS__); \
     blockScopeLog.setPrimaryLog(__LINE__, blockScopeLogInfoBuffer, blockScopeLogCustomBuffer); \
   }
+
+// #define BAR(...) printf(FIRST(__VA_ARGS__) "\n" REST(__VA_ARGS__))
+
+// ////
+//https://stackoverflow.com/questions/5588855/standard-alternative-to-gccs-va-args-trick/11172679#11172679
+/* expands to the first argument */
+#define FIRST(...) FIRST_HELPER(__VA_ARGS__, throwaway)
+#define FIRST_HELPER(first, ...) first
 
 #define D_TWENTIETH_ARG(a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20, ...) a20
 #define D_LOG_BLOCK(...) D_TWENTIETH_ARG(dummy, ## __VA_ARGS__, \
@@ -111,14 +133,14 @@ BlockLogger blockScopeLog{pointer}; \
   D_LOG_WITH_FORMAT(this, __VA_ARGS__), D_LOG_WITH_FORMAT(this, __VA_ARGS__), D_LOG_WITH_FORMAT(this, __VA_ARGS__), D_LOG_WITH_FORMAT(this, __VA_ARGS__), \
   D_LOG_WITH_FORMAT(this, __VA_ARGS__), D_LOG_WITH_FORMAT(this, __VA_ARGS__), D_LOG_WITH_FORMAT(this, __VA_ARGS__), D_LOG_WITH_FORMAT(this, __VA_ARGS__), \
   D_LOG_WITH_FORMAT(this, __VA_ARGS__), D_LOG_WITH_FORMAT(this, __VA_ARGS__), D_LOG_WITH_FORMAT(this, __VA_ARGS__), D_LOG_WITH_FORMAT(this, __VA_ARGS__), \
-  D_LOG_WITH_FORMAT(this, __VA_ARGS__), D_LOG_WITH_FORMAT(this, __VA_ARGS__), D_LOG_WITHOUT_FORMAT(this) )
+  D_LOG_WITH_ONE_STRING(this, FIRST(__VA_ARGS__)), D_LOG_WITHOUT_FORMAT(this) )
 
 #define D_LOG_BLOCK_NO_THIS(...) D_TWENTIETH_ARG(dummy, ## __VA_ARGS__, \
   D_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), D_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), D_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), D_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), \
   D_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), D_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), D_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), D_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), \
   D_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), D_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), D_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), D_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), \
   D_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), D_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), D_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), D_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), \
-  D_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), D_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), D_LOG_WITHOUT_FORMAT(nullptr) )
+  D_LOG_WITH_ONE_STRING(nullptr, FIRST(__VA_ARGS__)), D_LOG_WITHOUT_FORMAT(nullptr) )
 
 #define D_LOG(...) \
   { \
