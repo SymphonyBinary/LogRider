@@ -21,6 +21,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 		if(clogURI && clogURI[0]) {
 			const virtualDocURI = vscode.Uri.parse('logRider:' + clogURI[0]);
+			provider.refresh(virtualDocURI);
 			const doc = await vscode.workspace.openTextDocument(virtualDocURI); // calls back into the provider
 			await vscode.window.showTextDocument(doc, { preview: false });
 			provider.startUpdateLoop();
@@ -45,6 +46,19 @@ class LogRiderProvider implements vscode.TextDocumentContentProvider {
 	lastStackNode: StackNode | undefined;
 
 	treeViewProvider = new LogRiderStateProvider();
+
+	//HACK: should watch for the window closing to clear data and refresh.
+	loaded = false;
+
+	refresh(uri: vscode.Uri) {
+		if(this.loaded) { //HACK to not do anything the first time this is called before the window is opened.
+			this.worldState = new WorldState();
+			this.lastStackNode = undefined;
+			this.treeViewProvider.onStackNodeChanged(null);
+			this.treeViewProvider.refresh();
+			this.onDidChangeEmitter.fire(uri);
+		}
+	}
 
 	async provideTextDocumentContent(uri: vscode.Uri): Promise<string> {
 		//TODO: this is tricky if we have more than one document open.  We need to keep a map
@@ -157,6 +171,8 @@ class LogRiderProvider implements vscode.TextDocumentContentProvider {
 			this.worldState.pushStackNode(stackNode);
 		}
 
+		this.loaded = true;
+
 		return doc.toString();
 	}
 
@@ -191,7 +207,7 @@ class LogRiderProvider implements vscode.TextDocumentContentProvider {
 		let stackNode = this.worldState.getStackNodeAt(position.line);
 
 		if(stackNode && this.lastStackNode !== stackNode) {
-			console.log("changed node:" + stackNode.line + " depth:" + stackNode.depth + " thisAddress:" + stackNode.loggedObject?.thisAddress);
+			//console.log("changed node:" + stackNode.line + " depth:" + stackNode.depth + " thisAddress:" + stackNode.loggedObject?.thisAddress);
 			this.treeViewProvider.onStackNodeChanged(stackNode);
 			this.lastStackNode = stackNode;
 		}

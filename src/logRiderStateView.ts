@@ -27,7 +27,13 @@ export class LogRiderStateProvider implements vscode.TreeDataProvider<LogNode> {
     }
   }
 
-  onStackNodeChanged(stackNode: StackNode) {
+  onStackNodeChanged(stackNode: StackNode | null) {
+    if(stackNode === null) {
+      this.currentStackNode = undefined;
+      this.root = undefined;
+      return;
+    }
+
     this.currentStackNode = stackNode;
 
     let caller = stackNode.caller; 
