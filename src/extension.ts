@@ -74,7 +74,7 @@ class LogRiderProvider implements vscode.TextDocumentContentProvider {
 		let doc = dec.decode(encodedDoc);
 
 		//var re = /.*:: :  : (.*)/gi;
-		var re = /C_LOG : (.*?) (.*?) (.*)/gi;
+		var re = /.*C_LOG : (.*?) (.*?) (.*)/gi;
 		doc = doc.replace(re, (match, sub1, sub2, sub3) : string => {
 			sub2 = sub2.replace(/:/g, "║");
 			sub2 = sub2.replace("F", "╔");
