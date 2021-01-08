@@ -2,52 +2,8 @@
 // Import the module and reference it with the alias vscode in your code below
 import { TextDecoder } from 'util';
 import * as vscode from 'vscode';
-
-class LoggedObject {
-	thisAddress: string;
-	pushedVariables: string[] = [];
-
-	constructor(thisAddress: string) {
-		this.thisAddress = thisAddress;
-	}
-}
-
-class StackNode {
-	line: number;
-	depth: number;
-	caller: StackNode | undefined;
-	loggedObject: LoggedObject | undefined;
-
-	constructor(line: number, depth: number, caller: StackNode | undefined, loggedObject: LoggedObject | undefined) {
-		this.line = line;
-		this.depth = depth;
-		this.caller = caller;
-		this.loggedObject = loggedObject;
-	}
-}
-
-class WorldState {
-	private _loggedObjects = new Map<string, LoggedObject>();
-	private _lineData: (StackNode | undefined)[] = [];
-
-	getOrCreateLoggedObject(thisAddress: string) : LoggedObject {
-		let loggedObject = this._loggedObjects.get(thisAddress);
-		if(loggedObject === undefined) {
-			loggedObject = new LoggedObject(thisAddress);
-			this._loggedObjects.set(thisAddress, loggedObject);
-		}
-
-		return loggedObject;
-	}
-
-	pushStackNode(node : StackNode | undefined) {
-		this._lineData.push(node);
-	}
-
-	getStackNodeAt(lineNumber: number) {
-		return this._lineData[lineNumber];
-	}
-}
+import { LogRiderStateProvider } from './logRiderStateView';
+import { WorldState, StackNode, LoggedObject } from './worldState';
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -73,6 +29,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 	context.subscriptions.push(disposable);
 	
+	vscode.window.registerTreeDataProvider('logRiderState', provider.treeViewProvider);
 }
 
 class LogRiderProvider implements vscode.TextDocumentContentProvider {
@@ -86,6 +43,8 @@ class LogRiderProvider implements vscode.TextDocumentContentProvider {
 	worldState = new WorldState();
 
 	lastStackNode: StackNode | undefined;
+
+	treeViewProvider = new LogRiderStateProvider();
 
 	async provideTextDocumentContent(uri: vscode.Uri): Promise<string> {
 		//TODO: this is tricky if we have more than one document open.  We need to keep a map
@@ -105,31 +64,97 @@ class LogRiderProvider implements vscode.TextDocumentContentProvider {
 
 		var lines = doc.split('\n');
 		let currentStackNode = new Map<string, StackNode>();
+		let failureStackNode = new StackNode(0,0,"","",undefined, undefined);
 		for(let i = 0; i < lines.length; i++) {
-			const re = /(^[0-9]*) ([║╔╠╚]*).* ([0-9a-z]+)/;
+			const re = /(^[0-9]*) ([║╔╠╚]*) (.*) \[(.*)\]::\[(.*)\]::\[(.*)\] ([0-9a-z]+)/;
 			const match = lines[i].match(re);
-			if(match === null) {
-				//throw new Error("line is failing to match threadID and thisAddress: " + lines[i]).stack;
-				this.worldState.pushStackNode(undefined);
+			if(match !== null) {
+				const threadID = match[1];
+				const depth = match[2].length;
+				const functionId = match[3];
+				const lineNumber = match[4];
+				const filename = match[5];
+				const functionName = match[6];
+				const thisAddress = match[7];
+
+				let loggedObject = this.worldState.getOrCreateLoggedObject(thisAddress);
+
+				//const loggedObject = new LoggedObject(threadID, thisAddress);
+				let caller = currentStackNode.get(threadID);
+				if(caller !== undefined) {
+					if(Math.abs(depth - caller.depth) > 1) {
+						console.error("unexpected jump in depth on line " + (i+1));
+						vscode.window.showErrorMessage("unexpected jump in depth on line " + (i+1));
+					}
+
+					for(; caller && (depth - 1) < caller.depth; caller = caller.caller) {
+						
+					}
+				}
+
+				let stackNode = new StackNode(i, depth, filename, functionName, caller, loggedObject);
+				this.worldState.pushStackNode(stackNode);
+				currentStackNode.set(threadID, stackNode);
+				failureStackNode = stackNode;
+				continue;
+			} 
+			
+			const commandRe = /(^[0-9]*) ([║╠╚╾]*) (.*) \[(.*)\] (.*): (.*)/;
+			const commandMatch = lines[i].match(commandRe);
+			if(commandMatch){
+				const threadID = commandMatch[1];
+				const depth = commandMatch[2].length;
+				const functionId = commandMatch[3];
+				const lineNumber = commandMatch[4];
+				const command = commandMatch[5];
+				const payload = commandMatch[6];
+
+				let caller = currentStackNode.get(threadID);
+
+				if(caller !== undefined) {
+					if(Math.abs(depth - caller.depth) > 1) {
+						console.error("unexpected jump in depth on line " + (i+1));
+						vscode.window.showErrorMessage("unexpected jump in depth on line " + (i+1));
+					}
+
+					for(; caller && (depth - 1) < caller.depth; caller = caller.caller) {
+						
+					}
+				}
+
+				if(caller === undefined) {
+					throw new Error("push found without caller");
+				}
+
+				if(command === "SET") {
+					const setCommandRe = /(.*) = (.*)/;
+					const setCommandMatch = payload.match(setCommandRe);
+					if(setCommandMatch) {
+						const varName = setCommandMatch[1];
+						const varValue = setCommandMatch[2]; 
+						let maybeCurrent = caller.loggedObject?.pushedVariables.get(varName);
+						if(maybeCurrent) {
+							maybeCurrent.set(i, varValue);
+						} else {
+							caller.loggedObject?.pushedVariables.set(varName, new Map([[i, varValue]]));
+						}
+					} else {
+						console.error("unrecognized SET command");
+					}
+				}
+				
+				//fallback if nothing matches
+				let stackNode = new StackNode(i, caller.depth, caller.fileName, caller.functionName, caller.caller, caller.loggedObject);
+				this.worldState.pushStackNode(stackNode);
+				currentStackNode.set(threadID, stackNode);
+				failureStackNode = stackNode;
 				continue;
 			}
-			const threadID = match[1];
-			const depth = match[2].length;
-			const thisAddress = match[3];
 
-			let loggedObject = this.worldState.getOrCreateLoggedObject(thisAddress);
+			console.error("unknown line");
 
-			//const loggedObject = new LoggedObject(threadID, thisAddress);
-			let caller = currentStackNode.get(threadID);
-			if(caller !== undefined) {
-				if(depth <= caller.depth) {
-					caller = caller.caller;
-				}
-			} 
-
-			let stackNode = new StackNode(i, depth, caller, loggedObject);
+			let stackNode = new StackNode(i, failureStackNode.depth, failureStackNode.fileName, failureStackNode.functionName, failureStackNode.caller, failureStackNode.loggedObject);
 			this.worldState.pushStackNode(stackNode);
-			currentStackNode.set(threadID, stackNode);
 		}
 
 		return doc.toString();
@@ -167,6 +192,7 @@ class LogRiderProvider implements vscode.TextDocumentContentProvider {
 
 		if(stackNode && this.lastStackNode !== stackNode) {
 			console.log("changed node:" + stackNode.line + " depth:" + stackNode.depth + " thisAddress:" + stackNode.loggedObject?.thisAddress);
+			this.treeViewProvider.onStackNodeChanged(stackNode);
 			this.lastStackNode = stackNode;
 		}
 	}
