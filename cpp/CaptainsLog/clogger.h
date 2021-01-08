@@ -127,20 +127,20 @@ BlockLogger blockScopeLog{pointer}; \
 #define FIRST(...) FIRST_HELPER(__VA_ARGS__, throwaway)
 #define FIRST_HELPER(first, ...) first
 
-#define D_TWENTIETH_ARG(a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20, ...) a20
-#define C_LOG_BLOCK(...) D_TWENTIETH_ARG(dummy, ## __VA_ARGS__, \
+#define C_TWENTIETH_ARG(a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20, ...) a20
+#define C_LOG_BLOCK(...) C_TWENTIETH_ARG(__VA_ARGS__, \
   C_LOG_WITH_FORMAT(this, __VA_ARGS__), C_LOG_WITH_FORMAT(this, __VA_ARGS__), C_LOG_WITH_FORMAT(this, __VA_ARGS__), C_LOG_WITH_FORMAT(this, __VA_ARGS__), \
   C_LOG_WITH_FORMAT(this, __VA_ARGS__), C_LOG_WITH_FORMAT(this, __VA_ARGS__), C_LOG_WITH_FORMAT(this, __VA_ARGS__), C_LOG_WITH_FORMAT(this, __VA_ARGS__), \
   C_LOG_WITH_FORMAT(this, __VA_ARGS__), C_LOG_WITH_FORMAT(this, __VA_ARGS__), C_LOG_WITH_FORMAT(this, __VA_ARGS__), C_LOG_WITH_FORMAT(this, __VA_ARGS__), \
   C_LOG_WITH_FORMAT(this, __VA_ARGS__), C_LOG_WITH_FORMAT(this, __VA_ARGS__), C_LOG_WITH_FORMAT(this, __VA_ARGS__), C_LOG_WITH_FORMAT(this, __VA_ARGS__), \
-  C_LOG_WITH_ONE_STRING(this, FIRST(__VA_ARGS__)), C_LOG_WITHOUT_FORMAT(this) )
+  C_LOG_WITH_FORMAT(this, __VA_ARGS__), C_LOG_WITH_ONE_STRING(this, FIRST(__VA_ARGS__)), C_LOG_WITHOUT_FORMAT(this) )
 
-#define C_LOG_BLOCK_NO_THIS(...) D_TWENTIETH_ARG(dummy, ## __VA_ARGS__, \
+#define C_LOG_BLOCK_NO_THIS(...) C_TWENTIETH_ARG(__VA_ARGS__, \
   C_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), C_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), C_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), C_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), \
   C_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), C_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), C_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), C_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), \
   C_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), C_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), C_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), C_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), \
   C_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), C_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), C_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), C_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), \
-  C_LOG_WITH_ONE_STRING(nullptr, FIRST(__VA_ARGS__)), C_LOG_WITHOUT_FORMAT(nullptr) )
+  C_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), C_LOG_WITH_ONE_STRING(nullptr, FIRST(__VA_ARGS__)), C_LOG_WITHOUT_FORMAT(nullptr) )
 
 #define C_LOG(...) \
   { \
