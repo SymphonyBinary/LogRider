@@ -2,9 +2,6 @@
 
 #include <cstdint>
 
-#include <cstring>
-#include <stdio.h>
-
 //#define COLOURIZE
 //#define FANCY_ASCII
 //#define SHOW_THREAD_ID
@@ -58,7 +55,7 @@
   #define ADD_LOG_DELIMITER "-"
   #define ADD_LOG_SECOND_DELIMITER ""
   #define PRIMARY_LOG_END_DELIMITER "L"
-  #define MAIN_PREFIX_DELIMITER "C_LOG"
+  #define MAIN_PREFIX_DELIMITER "D_LOG"
   #define TAB_DELIMITER ":"
 #endif
 
@@ -70,7 +67,7 @@
 
 #ifdef ANDROID
   #include <android/log.h>
-  #define  LOG_TAG    "C_LOG::"
+  #define  LOG_TAG    "D_LOG::"
   #define  PRINT_TO_LOG(...)  __android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, __VA_ARGS__)
 #else
   #define PRINT_TO_LOG(...) printf(__VA_ARGS__); printf("\n");
@@ -79,14 +76,14 @@
 //https://stackoverflow.com/questions/8487986/file-macro-shows-full-path
 #define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
 
-#define C_LOG_BUFFER_SIZE 200
+#define D_LOG_BUFFER_SIZE 200
 
 //change to __PRETTY_FUNCTION__ if you want the whole function signature
-#define C_LOG_WITHOUT_FORMAT(pointer) \
+#define D_LOG_WITHOUT_FORMAT(pointer) \
 BlockLogger blockScopeLog{pointer}; \
   { \
-    char blockScopeLogInfoBuffer[C_LOG_BUFFER_SIZE]; \
-    snprintf(blockScopeLogInfoBuffer, C_LOG_BUFFER_SIZE, \
+    char blockScopeLogInfoBuffer[D_LOG_BUFFER_SIZE]; \
+    snprintf(blockScopeLogInfoBuffer, D_LOG_BUFFER_SIZE, \
       COLOUR RESET " [" COLOUR BOLD C_GREEN "%d" COLOUR RESET "]::[" \
       COLOUR BOLD C_CYAN "%s" COLOUR RESET "]::[" \
       COLOUR BOLD C_MAGENTA "%s" COLOUR RESET "] ", \
@@ -94,46 +91,46 @@ BlockLogger blockScopeLog{pointer}; \
     blockScopeLog.setPrimaryLog(__LINE__, blockScopeLogInfoBuffer, nullptr); \
   }
 
-#define C_LOG_WITH_FORMAT(pointer, ...) \
+#define D_LOG_WITH_FORMAT(pointer, ...) \
 BlockLogger blockScopeLog{pointer}; \
   { \
-    char blockScopeLogInfoBuffer[C_LOG_BUFFER_SIZE]; \
-    snprintf(blockScopeLogInfoBuffer, C_LOG_BUFFER_SIZE, \
+    char blockScopeLogInfoBuffer[D_LOG_BUFFER_SIZE]; \
+    snprintf(blockScopeLogInfoBuffer, D_LOG_BUFFER_SIZE, \
       COLOUR RESET " [" COLOUR BOLD C_GREEN "%d" COLOUR RESET "]::[" \
       COLOUR BOLD C_CYAN "%s" COLOUR RESET "]::[" \
       COLOUR BOLD C_MAGENTA "%s" COLOUR RESET "] ", \
       __LINE__, __FILENAME__, __FUNCTION__); \
-    char blockScopeLogCustomBuffer[C_LOG_BUFFER_SIZE]; \
-    snprintf(blockScopeLogCustomBuffer, C_LOG_BUFFER_SIZE, __VA_ARGS__); \
+    char blockScopeLogCustomBuffer[D_LOG_BUFFER_SIZE]; \
+    snprintf(blockScopeLogCustomBuffer, D_LOG_BUFFER_SIZE, __VA_ARGS__); \
     blockScopeLog.setPrimaryLog(__LINE__, blockScopeLogInfoBuffer, blockScopeLogCustomBuffer); \
   }
 
-#define C_TWENTIETH_ARG(a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20, ...) a20
-#define C_LOG_BLOCK(...) C_TWENTIETH_ARG(dummy, ## __VA_ARGS__, \
-  C_LOG_WITH_FORMAT(this, __VA_ARGS__), C_LOG_WITH_FORMAT(this, __VA_ARGS__), C_LOG_WITH_FORMAT(this, __VA_ARGS__), C_LOG_WITH_FORMAT(this, __VA_ARGS__), \
-  C_LOG_WITH_FORMAT(this, __VA_ARGS__), C_LOG_WITH_FORMAT(this, __VA_ARGS__), C_LOG_WITH_FORMAT(this, __VA_ARGS__), C_LOG_WITH_FORMAT(this, __VA_ARGS__), \
-  C_LOG_WITH_FORMAT(this, __VA_ARGS__), C_LOG_WITH_FORMAT(this, __VA_ARGS__), C_LOG_WITH_FORMAT(this, __VA_ARGS__), C_LOG_WITH_FORMAT(this, __VA_ARGS__), \
-  C_LOG_WITH_FORMAT(this, __VA_ARGS__), C_LOG_WITH_FORMAT(this, __VA_ARGS__), C_LOG_WITH_FORMAT(this, __VA_ARGS__), C_LOG_WITH_FORMAT(this, __VA_ARGS__), \
-  C_LOG_WITH_FORMAT(this, __VA_ARGS__), C_LOG_WITH_FORMAT(this, __VA_ARGS__), C_LOG_WITHOUT_FORMAT(this) )
+#define D_TWENTIETH_ARG(a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20, ...) a20
+#define D_LOG_BLOCK(...) D_TWENTIETH_ARG(dummy, ## __VA_ARGS__, \
+  D_LOG_WITH_FORMAT(this, __VA_ARGS__), D_LOG_WITH_FORMAT(this, __VA_ARGS__), D_LOG_WITH_FORMAT(this, __VA_ARGS__), D_LOG_WITH_FORMAT(this, __VA_ARGS__), \
+  D_LOG_WITH_FORMAT(this, __VA_ARGS__), D_LOG_WITH_FORMAT(this, __VA_ARGS__), D_LOG_WITH_FORMAT(this, __VA_ARGS__), D_LOG_WITH_FORMAT(this, __VA_ARGS__), \
+  D_LOG_WITH_FORMAT(this, __VA_ARGS__), D_LOG_WITH_FORMAT(this, __VA_ARGS__), D_LOG_WITH_FORMAT(this, __VA_ARGS__), D_LOG_WITH_FORMAT(this, __VA_ARGS__), \
+  D_LOG_WITH_FORMAT(this, __VA_ARGS__), D_LOG_WITH_FORMAT(this, __VA_ARGS__), D_LOG_WITH_FORMAT(this, __VA_ARGS__), D_LOG_WITH_FORMAT(this, __VA_ARGS__), \
+  D_LOG_WITH_FORMAT(this, __VA_ARGS__), D_LOG_WITH_FORMAT(this, __VA_ARGS__), D_LOG_WITHOUT_FORMAT(this) )
 
-#define C_LOG_BLOCK_NO_THIS(...) C_TWENTIETH_ARG(dummy, ## __VA_ARGS__, \
-  C_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), C_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), C_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), C_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), \
-  C_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), C_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), C_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), C_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), \
-  C_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), C_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), C_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), C_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), \
-  C_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), C_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), C_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), C_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), \
-  C_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), C_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), C_LOG_WITHOUT_FORMAT(nullptr) )
+#define D_LOG_BLOCK_NO_THIS(...) D_TWENTIETH_ARG(dummy, ## __VA_ARGS__, \
+  D_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), D_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), D_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), D_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), \
+  D_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), D_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), D_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), D_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), \
+  D_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), D_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), D_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), D_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), \
+  D_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), D_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), D_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), D_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), \
+  D_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), D_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), D_LOG_WITHOUT_FORMAT(nullptr) )
 
 #define D_LOG(...) \
   { \
-    char blockScopeLogCustomBuffer[C_LOG_BUFFER_SIZE]; \
-    snprintf(blockScopeLogCustomBuffer, C_LOG_BUFFER_SIZE, __VA_ARGS__); \
+    char blockScopeLogCustomBuffer[D_LOG_BUFFER_SIZE]; \
+    snprintf(blockScopeLogCustomBuffer, D_LOG_BUFFER_SIZE, __VA_ARGS__); \
     blockScopeLog.log(__LINE__, blockScopeLogCustomBuffer); \
   }
 
 #define D_ERROR(...) \
   { \
-    char blockScopeLogCustomBuffer[C_LOG_BUFFER_SIZE]; \
-    snprintf(blockScopeLogCustomBuffer, C_LOG_BUFFER_SIZE, __VA_ARGS__); \
+    char blockScopeLogCustomBuffer[D_LOG_BUFFER_SIZE]; \
+    snprintf(blockScopeLogCustomBuffer, D_LOG_BUFFER_SIZE, __VA_ARGS__); \
     blockScopeLog.error(__LINE__, blockScopeLogCustomBuffer); \
   }
 
@@ -149,9 +146,9 @@ public:
   void error(int line, const char* messageBuffer);
 
 private:
-  char mlogInfoBuffer[C_LOG_BUFFER_SIZE];
+  char mlogInfoBuffer[D_LOG_BUFFER_SIZE];
   bool mhasCustomMessage = false;
-  char mcustomMessageBuffer[C_LOG_BUFFER_SIZE];
+  char mcustomMessageBuffer[D_LOG_BUFFER_SIZE];
   unsigned int mId;
   unsigned int mDepth;
   unsigned int mThreadId;

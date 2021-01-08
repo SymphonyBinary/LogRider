@@ -1,12 +1,15 @@
-#include "captainslog.h"
+#include "dereklogger.h"
 
 #include <iostream>
 #include <sstream>
 #include <cstdlib>
 
 #include <thread>
+#include <cstring>
 #include <unordered_map>
 #include <mutex>
+
+#include <cstdint>
 
 static const char* colourArray[] = {
   COLOUR BOLD C_RED,
@@ -97,7 +100,7 @@ BlockLogger::BlockLogger(const void* thisPointer) {
 void BlockLogger::setPrimaryLog(int line, const char* logInfoBuffer, const char* customMessageBuffer) {
   mhasCustomMessage = (customMessageBuffer != nullptr);
 
-  std::memcpy(&mlogInfoBuffer, logInfoBuffer, C_LOG_BUFFER_SIZE);
+  std::memcpy(&mlogInfoBuffer, logInfoBuffer, D_LOG_BUFFER_SIZE);
 
   std::stringstream ss;
   printTab(ss, mThreadId, mDepth);
@@ -107,7 +110,7 @@ void BlockLogger::setPrimaryLog(int line, const char* logInfoBuffer, const char*
   PRINT_TO_LOG("%s", ss.str().c_str());
 
   if(mhasCustomMessage) {
-    std::memcpy(&mcustomMessageBuffer, customMessageBuffer, C_LOG_BUFFER_SIZE);
+    std::memcpy(&mcustomMessageBuffer, customMessageBuffer, D_LOG_BUFFER_SIZE);
     log(line, mcustomMessageBuffer);
   }
 }
