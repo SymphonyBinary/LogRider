@@ -2,6 +2,9 @@
 
 #include <cstdint>
 
+#include <cstring>
+#include <stdio.h>
+
 //#define COLOURIZE
 //#define FANCY_ASCII
 //#define SHOW_THREAD_ID
@@ -105,22 +108,22 @@ BlockLogger blockScopeLog{pointer}; \
     blockScopeLog.setPrimaryLog(__LINE__, blockScopeLogInfoBuffer, blockScopeLogCustomBuffer); \
   }
 
-#define D_TWENTIETH_ARG(a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20, ...) a20
-#define C_LOG_BLOCK(...) D_TWENTIETH_ARG(dummy, ## __VA_ARGS__, \
+#define C_TWENTIETH_ARG(a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20, ...) a20
+#define C_LOG_BLOCK(...) C_TWENTIETH_ARG(dummy, ## __VA_ARGS__, \
   C_LOG_WITH_FORMAT(this, __VA_ARGS__), C_LOG_WITH_FORMAT(this, __VA_ARGS__), C_LOG_WITH_FORMAT(this, __VA_ARGS__), C_LOG_WITH_FORMAT(this, __VA_ARGS__), \
   C_LOG_WITH_FORMAT(this, __VA_ARGS__), C_LOG_WITH_FORMAT(this, __VA_ARGS__), C_LOG_WITH_FORMAT(this, __VA_ARGS__), C_LOG_WITH_FORMAT(this, __VA_ARGS__), \
   C_LOG_WITH_FORMAT(this, __VA_ARGS__), C_LOG_WITH_FORMAT(this, __VA_ARGS__), C_LOG_WITH_FORMAT(this, __VA_ARGS__), C_LOG_WITH_FORMAT(this, __VA_ARGS__), \
   C_LOG_WITH_FORMAT(this, __VA_ARGS__), C_LOG_WITH_FORMAT(this, __VA_ARGS__), C_LOG_WITH_FORMAT(this, __VA_ARGS__), C_LOG_WITH_FORMAT(this, __VA_ARGS__), \
   C_LOG_WITH_FORMAT(this, __VA_ARGS__), C_LOG_WITH_FORMAT(this, __VA_ARGS__), C_LOG_WITHOUT_FORMAT(this) )
 
-#define C_LOG_BLOCK_NO_THIS(...) D_TWENTIETH_ARG(dummy, ## __VA_ARGS__, \
+#define C_LOG_BLOCK_NO_THIS(...) C_TWENTIETH_ARG(dummy, ## __VA_ARGS__, \
   C_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), C_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), C_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), C_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), \
   C_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), C_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), C_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), C_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), \
   C_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), C_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), C_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), C_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), \
   C_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), C_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), C_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), C_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), \
   C_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), C_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), C_LOG_WITHOUT_FORMAT(nullptr) )
 
-#define C_LOG(...) \
+#define D_LOG(...) \
   { \
     char blockScopeLogCustomBuffer[C_LOG_BUFFER_SIZE]; \
     snprintf(blockScopeLogCustomBuffer, C_LOG_BUFFER_SIZE, __VA_ARGS__); \
