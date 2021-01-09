@@ -1,0 +1,36 @@
+C_LOG : 0 F 0 [32]::[test.cpp]::[int main()] 0
+C_LOG : 0 :F 1 [35]::[test.cpp]::[int main()] 0
+C_LOG : 0 ::F 2 [9]::[test.cpp]::[something::TestOne::TestOne(std::string)] 0x7fff8a4b355f
+C_LOG : 0 ::-> 2 [10] SET: Current Name = first
+C_LOG : 0 ::L 2 [9]::[test.cpp]::[something::TestOne::TestOne(std::string)] 0x7fff8a4b355f
+C_LOG : 0 ::F 3 [13]::[test.cpp]::[void something::TestOne::testBlockOutput()] 0x7fff8a4b355f
+C_LOG : 0 ::L 3 [13]::[test.cpp]::[void something::TestOne::testBlockOutput()] 0x7fff8a4b355f
+C_LOG : 0 :L 1 [35]::[test.cpp]::[int main()] 0
+C_LOG : 0 :F 4 [22]::[test.cpp]::[something::TestTwo::TestTwo()] 0x7fff8a4b3560
+C_LOG : 0 ::F 5 [9]::[test.cpp]::[something::TestOne::TestOne(std::string)] 0x55596b690280
+C_LOG : 0 ::-> 5 [10] SET: Current Name = In Two 0
+C_LOG : 0 ::L 5 [9]::[test.cpp]::[something::TestOne::TestOne(std::string)] 0x55596b690280
+C_LOG : 0 ::F 6 [13]::[test.cpp]::[void something::TestOne::testBlockOutput()] 0x55596b690280
+C_LOG : 0 ::L 6 [13]::[test.cpp]::[void something::TestOne::testBlockOutput()] 0x55596b690280
+C_LOG : 0 ::F 7 [9]::[test.cpp]::[something::TestOne::TestOne(std::string)] 0x55596b6902a1
+C_LOG : 0 ::-> 7 [10] SET: Current Name = In Two 1
+C_LOG : 0 ::L 7 [9]::[test.cpp]::[something::TestOne::TestOne(std::string)] 0x55596b6902a1
+C_LOG : 0 ::F 8 [13]::[test.cpp]::[void something::TestOne::testBlockOutput()] 0x55596b6902a1
+C_LOG : 0 ::L 8 [13]::[test.cpp]::[void something::TestOne::testBlockOutput()] 0x55596b6902a1
+C_LOG : 0 ::F 9 [9]::[test.cpp]::[something::TestOne::TestOne(std::string)] 0x55596b690282
+C_LOG : 0 ::-> 9 [10] SET: Current Name = In Two 2
+C_LOG : 0 ::L 9 [9]::[test.cpp]::[something::TestOne::TestOne(std::string)] 0x55596b690282
+C_LOG : 0 ::F 10 [13]::[test.cpp]::[void something::TestOne::testBlockOutput()] 0x55596b690282
+C_LOG : 0 ::L 10 [13]::[test.cpp]::[void something::TestOne::testBlockOutput()] 0x55596b690282
+C_LOG : 0 ::F 11 [9]::[test.cpp]::[something::TestOne::TestOne(std::string)] 0x55596b690283
+C_LOG : 0 ::-> 11 [10] SET: Current Name = In Two 3
+C_LOG : 0 ::L 11 [9]::[test.cpp]::[something::TestOne::TestOne(std::string)] 0x55596b690283
+C_LOG : 0 ::F 12 [13]::[test.cpp]::[void something::TestOne::testBlockOutput()] 0x55596b690283
+C_LOG : 0 ::L 12 [13]::[test.cpp]::[void something::TestOne::testBlockOutput()] 0x55596b690283
+C_LOG : 0 ::F 13 [9]::[test.cpp]::[something::TestOne::TestOne(std::string)] 0x55596b6902a4
+C_LOG : 0 ::-> 13 [10] SET: Current Name = In Two 4
+C_LOG : 0 ::L 13 [9]::[test.cpp]::[something::TestOne::TestOne(std::string)] 0x55596b6902a4
+C_LOG : 0 ::F 14 [13]::[test.cpp]::[void something::TestOne::testBlockOutput()] 0x55596b6902a4
+C_LOG : 0 ::L 14 [13]::[test.cpp]::[void something::TestOne::testBlockOutput()] 0x55596b6902a4
+C_LOG : 0 :L 4 [22]::[test.cpp]::[something::TestTwo::TestTwo()] 0x7fff8a4b3560
+C_LOG : 0 L 0 [32]::[test.cpp]::[int main()] 0
