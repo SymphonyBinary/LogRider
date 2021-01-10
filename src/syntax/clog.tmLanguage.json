@@ -1,4 +1,6 @@
-{  
+{
+    "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+	"name": "clog",
     "scopeName": "code.clog",
     "fileTypes": ["clog"],
     "foldingStartMarker": ".*╔",
@@ -27,5 +29,24 @@
                 "6": {"name": "comment.line" }
             }
         }
-    ]
+    ],
+    "repository": {
+		"keywords": {
+			"patterns": [{
+				"name": "keyword.control.clog",
+				"match": "\\b(if|while|for|return)\\b"
+			}]
+		},
+		"strings": {
+			"name": "string.quoted.double.clog",
+			"begin": "\"",
+			"end": "\"",
+			"patterns": [
+				{
+					"name": "constant.character.escape.clog",
+					"match": "\\\\."
+				}
+			]
+		}
+	}
 }
