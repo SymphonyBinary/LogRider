@@ -7,7 +7,8 @@ class TestOne {
 public:
   TestOne(std::string name) {
     C_LOG_BLOCK();
-    C_SET("Current Name", name);
+    (void)name;
+    C_SET("Current Name", "%s", name.c_str());
   }
   void testBlockOutput() {
     C_LOG_BLOCK();
@@ -35,9 +36,13 @@ int main() {
     C_LOG_BLOCK_NO_THIS();
     something::TestOne t("first");
     t.testBlockOutput();
+    C_LOG("this is a log");
   }
 
+  C_ERROR("this is an error");
   something::TestTwo two;
+
+  C_LOG("this is a log with formatting %s ", "FORMAT");
 
   something::TestOne t1("t1");
   something::TestOne t2("t2");

@@ -89,27 +89,6 @@
 
 #define C_LOG_BUFFER_SIZE 200
 
-/*
-The " " here
-snprintf(blockScopeLogCustomBuffer, C_LOG_BUFFER_SIZE, FIRST(__VA_ARGS__) " " REST(__VA_ARGS__)); \
-is because you will get warnings if you try to pass a zero sized string to sprintf.
-Ideally, you want to branch if __VA_ARGS__ is empty and call setPrimaryLog without passing it 
-a buffer at all
-*/
-#define C_LOG_INTERNAL(pointer, ...) \
-BlockLogger blockScopeLog{pointer}; \
-  { \
-    char blockScopeLogInfoBuffer[C_LOG_BUFFER_SIZE]; \
-    snprintf(blockScopeLogInfoBuffer, C_LOG_BUFFER_SIZE, \
-      COLOUR RESET " [" COLOUR BOLD C_GREEN "%d" COLOUR RESET "]::[" \
-      COLOUR BOLD C_CYAN "%s" COLOUR RESET "]::[" \
-      COLOUR BOLD C_MAGENTA "%s" COLOUR RESET "] ", \
-      __LINE__, __FILENAME__, __PRETTY_FUNCTION__); \
-    char blockScopeLogCustomBuffer[C_LOG_BUFFER_SIZE]; \
-    snprintf(blockScopeLogCustomBuffer, C_LOG_BUFFER_SIZE, FIRST(__VA_ARGS__) " " REST(__VA_ARGS__)); \
-    blockScopeLog.setPrimaryLog(__LINE__, blockScopeLogInfoBuffer, blockScopeLogCustomBuffer); \
-  }
-
 ///////
 //https://stackoverflow.com/questions/5588855/standard-alternative-to-gccs-va-args-trick/11172679#11172679
 /* expands to the first argument */
@@ -135,26 +114,49 @@ BlockLogger blockScopeLog{pointer}; \
 #define SELECT_20TH(a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20, ...) a20
 ///////
 
+/*
+The " " here
+snprintf(blockScopeLogCustomBuffer, C_LOG_BUFFER_SIZE, FIRST(__VA_ARGS__) " " REST(__VA_ARGS__)); \
+is because you will get warnings if you try to pass a zero sized string to sprintf.
+Ideally, you want to branch if __VA_ARGS__ is empty and call setPrimaryLog without passing it 
+a buffer at all
+*/
+#define C_LOG_INTERNAL(pointer, ...) \
+BlockLogger blockScopeLog{pointer}; \
+  { \
+    char blockScopeLogInfoBuffer[C_LOG_BUFFER_SIZE]; \
+    snprintf(blockScopeLogInfoBuffer, C_LOG_BUFFER_SIZE, \
+      COLOUR RESET " [" COLOUR BOLD C_GREEN "%d" COLOUR RESET "]::[" \
+      COLOUR BOLD C_CYAN "%s" COLOUR RESET "]::[" \
+      COLOUR BOLD C_MAGENTA "%s" COLOUR RESET "] ", \
+      __LINE__, __FILENAME__, __PRETTY_FUNCTION__); \
+    char blockScopeLogCustomBuffer[C_LOG_BUFFER_SIZE]; \
+    snprintf(blockScopeLogCustomBuffer, C_LOG_BUFFER_SIZE, FIRST(__VA_ARGS__) " " REST(__VA_ARGS__)); \
+    blockScopeLog.setPrimaryLog(__LINE__, blockScopeLogInfoBuffer, blockScopeLogCustomBuffer); \
+  }
+
 #define C_LOG_BLOCK(...) C_LOG_INTERNAL(this, __VA_ARGS__)
 #define C_LOG_BLOCK_NO_THIS(...) C_LOG_INTERNAL(nullptr, __VA_ARGS__) 
 
 #define C_LOG(...) \
   { \
     char blockScopeLogCustomBuffer[C_LOG_BUFFER_SIZE]; \
-    snprintf(blockScopeLogCustomBuffer, C_LOG_BUFFER_SIZE, __VA_ARGS__); \
+    snprintf(blockScopeLogCustomBuffer, C_LOG_BUFFER_SIZE, FIRST(__VA_ARGS__) " " REST(__VA_ARGS__)); \
     blockScopeLog.log(__LINE__, blockScopeLogCustomBuffer); \
   }
 
 #define C_ERROR(...) \
   { \
     char blockScopeLogCustomBuffer[C_LOG_BUFFER_SIZE]; \
-    snprintf(blockScopeLogCustomBuffer, C_LOG_BUFFER_SIZE, __VA_ARGS__); \
+    snprintf(blockScopeLogCustomBuffer, C_LOG_BUFFER_SIZE, FIRST(__VA_ARGS__) " " REST(__VA_ARGS__)); \
     blockScopeLog.error(__LINE__, blockScopeLogCustomBuffer); \
   }
 
-#define C_SET(name, value) \
+#define C_SET(name, ...) \
   { \
-    blockScopeLog.set(__LINE__, name, value); \
+    char blockScopeLogCustomBuffer[C_LOG_BUFFER_SIZE]; \
+    snprintf(blockScopeLogCustomBuffer, C_LOG_BUFFER_SIZE, FIRST(__VA_ARGS__) " " REST(__VA_ARGS__)); \
+    blockScopeLog.set(__LINE__, name, blockScopeLogCustomBuffer); \
   }
 
 class BlockLogger {

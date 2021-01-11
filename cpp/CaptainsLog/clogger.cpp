@@ -100,6 +100,10 @@ void BlockLogger::setPrimaryLog(int line, std::string logInfoBuffer, std::string
 }
 
 void BlockLogger::log(int line, std::string messageBuffer) {
+  // The maco which calls this hardcodes a " " to get around some macro limitations regarding zero/1/multi argument __VA_ARGS__
+  if(messageBuffer.size() == 1) {
+    return;
+  }
   std::stringstream ss;
   printTab(ss, mThreadId, mDepth);
   ss << COLOUR BOLD C_GREEN << ADD_LOG_DELIMITER << ADD_LOG_SECOND_DELIMITER << COLOUR BOLD C_YELLOW << " " << mId << " "
@@ -108,6 +112,10 @@ void BlockLogger::log(int line, std::string messageBuffer) {
 }
 
 void BlockLogger::error(int line, std::string messageBuffer) {
+  // The maco which calls this hardcodes a " " to get around some macro limitations regarding zero/1/multi argument __VA_ARGS__
+  if(messageBuffer.size() == 1) {
+    return;
+  }
   std::stringstream ss;
   printTab(ss, mThreadId, mDepth);
   ss << COLOUR BOLD C_GREEN << ADD_LOG_DELIMITER << ADD_LOG_SECOND_DELIMITER << COLOUR BOLD C_YELLOW << " " << mId << " "
@@ -116,6 +124,9 @@ void BlockLogger::error(int line, std::string messageBuffer) {
 }
 
 void BlockLogger::set(int line, std::string name, std::string value) {
+  if(value.size() == 1) {
+    return;
+  }
   std::stringstream ss;
   printTab(ss, mThreadId, mDepth);
   ss << COLOUR BOLD C_GREEN << ADD_LOG_DELIMITER << ADD_LOG_SECOND_DELIMITER << COLOUR BOLD C_YELLOW << " " << mId << " "
