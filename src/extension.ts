@@ -85,7 +85,7 @@ class LogRiderProvider implements vscode.TextDocumentContentProvider {
 			if(sub4 !== "0") {
 				const reLineInfo = /(.* \[.*\]::\[.*\]::\[)(.*)(\])/i;
 				sub3 = sub3.replace(reLineInfo, (matchSub3: string, sub31: string, sub32: string, sub33: string) : string => {
-					sub32 = sub32.replace(/.*[ :]+([a-zA-Z0-9_]*::[a-zA-Z0-9_]*).*/g, "$1()");
+					sub32 = sub32.replace(/.*[ :]+([a-zA-Z0-9_]*::[a-zA-Z0-9_]*)\(.*/g, "$1()");
 					return sub31 + sub32 + sub33;
 				});
 			}
