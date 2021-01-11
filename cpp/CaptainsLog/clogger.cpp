@@ -86,10 +86,8 @@ BlockLogger::BlockLogger(const void* thisPointer) {
   mThisPointer = thisPointer;
 }
 
-void BlockLogger::setPrimaryLog(int line, const char* logInfoBuffer, const char* customMessageBuffer) {
-  mhasCustomMessage = (customMessageBuffer != nullptr);
-
-  std::memcpy(&mlogInfoBuffer, logInfoBuffer, C_LOG_BUFFER_SIZE);
+void BlockLogger::setPrimaryLog(int line, std::string logInfoBuffer, std::string customMessageBuffer) {
+  mlogInfoBuffer = std::move(logInfoBuffer);
 
   std::stringstream ss;
   printTab(ss, mThreadId, mDepth);
@@ -98,13 +96,10 @@ void BlockLogger::setPrimaryLog(int line, const char* logInfoBuffer, const char*
   << colourArray[reinterpret_cast<std::uintptr_t>(mThisPointer) % colourArraySize] << mThisPointer << COLOUR RESET;
   PRINT_TO_LOG("%s", ss.str().c_str());
 
-  if(mhasCustomMessage) {
-    std::memcpy(&mcustomMessageBuffer, customMessageBuffer, C_LOG_BUFFER_SIZE);
-    log(line, mcustomMessageBuffer);
-  }
+  log(line, std::move(customMessageBuffer));
 }
 
-void BlockLogger::log(int line, const char* messageBuffer) {
+void BlockLogger::log(int line, std::string messageBuffer) {
   std::stringstream ss;
   printTab(ss, mThreadId, mDepth);
   ss << COLOUR BOLD C_GREEN << ADD_LOG_DELIMITER << ADD_LOG_SECOND_DELIMITER << COLOUR BOLD C_YELLOW << " " << mId << " "
@@ -112,7 +107,7 @@ void BlockLogger::log(int line, const char* messageBuffer) {
   PRINT_TO_LOG("%s", ss.str().c_str());
 }
 
-void BlockLogger::error(int line, const char* messageBuffer) {
+void BlockLogger::error(int line, std::string messageBuffer) {
   std::stringstream ss;
   printTab(ss, mThreadId, mDepth);
   ss << COLOUR BOLD C_GREEN << ADD_LOG_DELIMITER << ADD_LOG_SECOND_DELIMITER << COLOUR BOLD C_YELLOW << " " << mId << " "

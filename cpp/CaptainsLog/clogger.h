@@ -89,8 +89,14 @@
 
 #define C_LOG_BUFFER_SIZE 200
 
-//change to __PRETTY_FUNCTION__ if you want the whole function signature
-#define C_LOG_COMMON(pointer) \
+/*
+The " " here
+snprintf(blockScopeLogCustomBuffer, C_LOG_BUFFER_SIZE, FIRST(__VA_ARGS__) " " REST(__VA_ARGS__)); \
+is because you will get warnings if you try to pass a zero sized string to sprintf.
+Ideally, you want to branch if __VA_ARGS__ is empty and call setPrimaryLog without passing it 
+a buffer at all
+*/
+#define C_LOG_INTERNAL(pointer, ...) \
 BlockLogger blockScopeLog{pointer}; \
   { \
     char blockScopeLogInfoBuffer[C_LOG_BUFFER_SIZE]; \
@@ -98,49 +104,39 @@ BlockLogger blockScopeLog{pointer}; \
       COLOUR RESET " [" COLOUR BOLD C_GREEN "%d" COLOUR RESET "]::[" \
       COLOUR BOLD C_CYAN "%s" COLOUR RESET "]::[" \
       COLOUR BOLD C_MAGENTA "%s" COLOUR RESET "] ", \
-      __LINE__, __FILENAME__, __PRETTY_FUNCTION__);
-
-#define C_LOG_WITHOUT_FORMAT(pointer) \
-    C_LOG_COMMON(pointer) \
-    blockScopeLog.setPrimaryLog(__LINE__, blockScopeLogInfoBuffer, nullptr); \
-  }
-
-#define C_LOG_WITH_ONE_STRING(pointer, text) \
-    C_LOG_COMMON(pointer) \
+      __LINE__, __FILENAME__, __PRETTY_FUNCTION__); \
     char blockScopeLogCustomBuffer[C_LOG_BUFFER_SIZE]; \
-    snprintf(blockScopeLogCustomBuffer, C_LOG_BUFFER_SIZE, text); \
+    snprintf(blockScopeLogCustomBuffer, C_LOG_BUFFER_SIZE, FIRST(__VA_ARGS__) " " REST(__VA_ARGS__)); \
     blockScopeLog.setPrimaryLog(__LINE__, blockScopeLogInfoBuffer, blockScopeLogCustomBuffer); \
   }
 
-#define C_LOG_WITH_FORMAT(pointer, ...) \
-    C_LOG_COMMON(pointer) \
-    char blockScopeLogCustomBuffer[C_LOG_BUFFER_SIZE]; \
-    snprintf(blockScopeLogCustomBuffer, C_LOG_BUFFER_SIZE, __VA_ARGS__); \
-    blockScopeLog.setPrimaryLog(__LINE__, blockScopeLogInfoBuffer, blockScopeLogCustomBuffer); \
-  }
-
-// #define BAR(...) printf(FIRST(__VA_ARGS__) "\n" REST(__VA_ARGS__))
-
-// ////
+///////
 //https://stackoverflow.com/questions/5588855/standard-alternative-to-gccs-va-args-trick/11172679#11172679
 /* expands to the first argument */
 #define FIRST(...) FIRST_HELPER(__VA_ARGS__, throwaway)
 #define FIRST_HELPER(first, ...) first
 
-#define C_TWENTIETH_ARG(a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20, ...) a20
-#define C_LOG_BLOCK(...) C_TWENTIETH_ARG(__VA_ARGS__, \
-  C_LOG_WITH_FORMAT(this, __VA_ARGS__), C_LOG_WITH_FORMAT(this, __VA_ARGS__), C_LOG_WITH_FORMAT(this, __VA_ARGS__), C_LOG_WITH_FORMAT(this, __VA_ARGS__), \
-  C_LOG_WITH_FORMAT(this, __VA_ARGS__), C_LOG_WITH_FORMAT(this, __VA_ARGS__), C_LOG_WITH_FORMAT(this, __VA_ARGS__), C_LOG_WITH_FORMAT(this, __VA_ARGS__), \
-  C_LOG_WITH_FORMAT(this, __VA_ARGS__), C_LOG_WITH_FORMAT(this, __VA_ARGS__), C_LOG_WITH_FORMAT(this, __VA_ARGS__), C_LOG_WITH_FORMAT(this, __VA_ARGS__), \
-  C_LOG_WITH_FORMAT(this, __VA_ARGS__), C_LOG_WITH_FORMAT(this, __VA_ARGS__), C_LOG_WITH_FORMAT(this, __VA_ARGS__), C_LOG_WITH_FORMAT(this, __VA_ARGS__), \
-  C_LOG_WITH_FORMAT(this, __VA_ARGS__), C_LOG_WITH_ONE_STRING(this, FIRST(__VA_ARGS__)), C_LOG_WITHOUT_FORMAT(this) )
+/*
+ * if there's only one argument, expands to nothing.  if there is more
+ * than one argument, expands to a comma followed by everything but
+ * the first argument.  only supports up to 9 arguments but can be
+ * trivially expanded.
+ */
+#define REST(...) REST_HELPER(NUM(__VA_ARGS__), __VA_ARGS__)
+#define REST_HELPER(qty, ...) REST_HELPER2(qty, __VA_ARGS__)
+#define REST_HELPER2(qty, ...) REST_HELPER_##qty(__VA_ARGS__)
+#define REST_HELPER_ONE(first)
+#define REST_HELPER_TWOORMORE(first, ...) , __VA_ARGS__
+#define NUM(...) \
+    SELECT_20TH(__VA_ARGS__, TWOORMORE, TWOORMORE, TWOORMORE, TWOORMORE,\
+                TWOORMORE, TWOORMORE, TWOORMORE, TWOORMORE, TWOORMORE,\
+                TWOORMORE, TWOORMORE, TWOORMORE, TWOORMORE, TWOORMORE,\
+                TWOORMORE, TWOORMORE, TWOORMORE, TWOORMORE, ONE, throwaway)
+#define SELECT_20TH(a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20, ...) a20
+///////
 
-#define C_LOG_BLOCK_NO_THIS(...) C_TWENTIETH_ARG(__VA_ARGS__, \
-  C_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), C_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), C_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), C_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), \
-  C_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), C_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), C_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), C_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), \
-  C_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), C_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), C_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), C_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), \
-  C_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), C_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), C_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), C_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), \
-  C_LOG_WITH_FORMAT(nullptr, __VA_ARGS__), C_LOG_WITH_ONE_STRING(nullptr, FIRST(__VA_ARGS__)), C_LOG_WITHOUT_FORMAT(nullptr) )
+#define C_LOG_BLOCK(...) C_LOG_INTERNAL(this, __VA_ARGS__)
+#define C_LOG_BLOCK_NO_THIS(...) C_LOG_INTERNAL(nullptr, __VA_ARGS__) 
 
 #define C_LOG(...) \
   { \
@@ -166,18 +162,17 @@ public:
   BlockLogger(const void* thisPointer);
   ~BlockLogger();
 
-  void setPrimaryLog(int line, const char* logInfoBuffer, const char* customMessageBuffer);
+  void setPrimaryLog(int line, std::string logInfoBuffer, std::string customMessageBuffer);
 
-  void log(int line, const char* messageBuffer);
+  void log(int line, std::string messageBuffer);
 
-  void error(int line, const char* messageBuffer);
+  void error(int line, std::string messageBuffer);
 
   void set(int line, std::string name, std::string value);
 
 private:
-  char mlogInfoBuffer[C_LOG_BUFFER_SIZE];
-  bool mhasCustomMessage = false;
-  char mcustomMessageBuffer[C_LOG_BUFFER_SIZE];
+  std::string mlogInfoBuffer;
+  std::string mcustomMessageBuffer;
   unsigned int mId;
   unsigned int mDepth;
   unsigned int mThreadId;
