@@ -74,14 +74,24 @@ class LogRiderProvider implements vscode.TextDocumentContentProvider {
 		let doc = dec.decode(encodedDoc);
 
 		//var re = /.*:: :  : (.*)/gi;
-		var re = /.*C_LOG : (.*?) (.*?) (.*)/gi;
-		doc = doc.replace(re, (match, sub1, sub2, sub3) : string => {
+	//	var re = /.*C_LOG : (.*?) (.*?) (.* \[.*\]::\[.*\]::\[)(.*)(\] [0-9a-z]+)/gi;
+		const re = /.*C_LOG : (.*?) (.*?) (.*) ([0-9a-z]+)/gi;
+		doc = doc.replace(re, (match: string, sub1: string, sub2: string, sub3: string, sub4: string) : string => {
 			sub2 = sub2.replace(/:/g, "║");
 			sub2 = sub2.replace("F", "╔");
 			sub2 = sub2.replace("L", "╚");
 			sub2 = sub2.replace("-", "╠");
 			sub2 = sub2.replace(">", "╾");
-			return sub1 + " " + sub2 + " " + sub3;
+			if(sub4 !== "0") {
+				const reLineInfo = /(.* \[.*\]::\[.*\]::\[)(.*)(\])/i;
+				sub3 = sub3.replace(reLineInfo, (matchSub3: string, sub31: string, sub32: string, sub33: string) : string => {
+					sub32 = sub32.replace(/.*[ :]+([a-zA-Z0-9_]*::[a-zA-Z0-9_]*).*/g, "$1()");
+					return sub31 + sub32 + sub33;
+				});
+			}
+			//(.*::.+\(.*)
+			//var 
+			return sub1 + " " + sub2 + " " + sub3 + " " + sub4;
 		});
 
 		var lines = doc.split('\n');
