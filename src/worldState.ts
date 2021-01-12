@@ -35,7 +35,11 @@ export class WorldState {
 	private _loggedObjects = new Map<string, LoggedObject>();
 	private _lineData: (StackNode | undefined)[] = [];
 
-	getOrCreateLoggedObject(thisAddress: string) : LoggedObject {
+	getOrCreateLoggedObject(thisAddress: string) : LoggedObject | undefined {
+		if(thisAddress === ""){
+			return undefined;
+		}
+
 		let loggedObject = this._loggedObjects.get(thisAddress);
 		if(loggedObject === undefined) {
 			loggedObject = new LoggedObject(thisAddress);

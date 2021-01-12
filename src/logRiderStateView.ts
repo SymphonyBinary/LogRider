@@ -62,7 +62,7 @@ class LogNode extends vscode.TreeItem {
   children: LogNode[] = [];
 
   static fromStackNode(stackNode: StackNode) {
-    const label = (stackNode.line + 1)+ " " + stackNode.loggedObject?.thisAddress + " " + stackNode.fileName + "::" + stackNode.functionName;
+    const label = (stackNode.line + 1)+ " " + " " + stackNode.fileName + " :: " + stackNode.functionName + (stackNode.loggedObject ? " " + stackNode.loggedObject.thisAddress : "");
     let retNode = new LogNode(label, vscode.TreeItemCollapsibleState.Expanded);
 
     stackNode.loggedObject?.pushedVariables.forEach((value: Map<number, string>, key: string) => {

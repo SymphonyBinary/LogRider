@@ -73,118 +73,97 @@ class LogRiderProvider implements vscode.TextDocumentContentProvider {
 		let dec = new TextDecoder("utf-8");
 		let doc = dec.decode(encodedDoc);
 
-		// FIRST, do all the string replacements and massage the log.
-		const re = /.*C_LOG : (.*?) (.+?) (.*) ([0-9a-z]+)/gi;
-		doc = doc.replace(re, (match: string, sub1: string, sub2: string, sub3: string, sub4: string) : string => {
-			sub2 = sub2.replace(/:/g, "║");
-			sub2 = sub2.replace("F", "╔");
-			sub2 = sub2.replace("L", "╚");
-			sub2 = sub2.replace("-", "╠");
-			sub2 = sub2.replace(">", "╾");
-			if(sub4 !== "0") {
-				const reLineInfo = /(.* \[.*\]::\[.*\]::\[)(.*)(\])/i;
-				sub3 = sub3.replace(reLineInfo, (matchSub3: string, sub31: string, sub32: string, sub33: string) : string => {
-					sub32 = sub32.replace(/.*[ :]+([a-zA-Z0-9_]*::[a-zA-Z0-9_]*)\(.*/g, "$1()");
-					return sub31 + sub32 + sub33;
-				});
-			}
-			return sub1 + " " + sub2 + " " + sub3 + " " + sub4;
-		});
-
 		// construct the stack nodes
 		var lines = doc.split('\n');
-		let newDoc = new Array<string>();
+		let newDoc = "";
+		let logLineNumber = 0;
 		let currentStackNode = new Map<string, StackNode>();
-		for(let currentLine = lines.shift(); currentLine; currentLine = lines.shift()) {
-			// Try matching the block log lines
-			// TODO: messy, reimplement as a statemachine parser?
-			const re = /(^[0-9]*) ([║╔╚]+) (.*) \[(.*)\]::\[(.*)\]::\[(.*)\] ([0-9a-z]+)/;
-			const match = currentLine.match(re);
-			if(match !== null) {
-				const threadID = match[1];
-				const depth = match[2].length;
-				const functionId = match[3];
-				const lineNumber = match[4];
-				const filename = match[5];
-				const functionName = match[6];
-				const thisAddress = match[7];
-
-				let loggedObject = this.worldState.getOrCreateLoggedObject(thisAddress);
-
-				//determine who is the "caller" (ie. the previous logged line with less depth than this one)
-				let caller = currentStackNode.get(threadID);
-				if(caller !== undefined) {
-					if(Math.abs(depth - caller.depth) > 1) {
-						console.error("unexpected jump in depth on line " + (newDoc.length+1));
-						vscode.window.showErrorMessage("unexpected jump in depth on line " + (newDoc.length +1));
-					}
-
-					for(; caller && (depth - 1) < caller.depth; caller = caller.caller) {}
-				}
-
-				let stackNode = new StackNode(newDoc.length, depth, filename, functionName, caller, loggedObject);
-				this.worldState.pushStackNode(stackNode);
-				currentStackNode.set(threadID, stackNode);
-				newDoc.push(currentLine + "\n");
-				continue;
-			} 
-			
-			// Try matching the non-block log lines (log, error, set, etc)
-			const commandRe = /(^[0-9]*) ([║╾╠]+) (.*) \[(.*)\] (.*): (.*)/;
-			const commandMatch = currentLine.match(commandRe);
-			if(commandMatch){
-				const threadID = commandMatch[1];
-				const depth = commandMatch[2].length;
-				const functionId = commandMatch[3];
-				const lineNumber = commandMatch[4];
-				const command = commandMatch[5];
-				const payload = commandMatch[6];
-
-				//determine who is the "caller" (ie. the previous logged line with less depth than this one)
-				let caller = currentStackNode.get(threadID);
-				if(caller !== undefined) {
-					if(Math.abs(depth - caller.depth) > 1) {
-						console.error("unexpected jump in depth on line " + (newDoc.length+1));
-						vscode.window.showErrorMessage("unexpected jump in depth on line " + (newDoc.length+1));
-					}
-
-					for(; caller && (depth - 1) < caller.depth; caller = caller.caller) {}
-				}
-
-				if(caller === undefined) {
-					throw new Error("push found without caller");
-				}
-
-				if(command === "SET") {
-					const setCommandRe = /(.*) = (.*)/;
-					const setCommandMatch = payload.match(setCommandRe);
-					if(setCommandMatch) {
-						const varName = setCommandMatch[1];
-						const varValue = setCommandMatch[2]; 
-						let maybeCurrent = caller.loggedObject?.pushedVariables.get(varName);
-						if(maybeCurrent) {
-							maybeCurrent.set(newDoc.length, varValue);
-						} else {
-							caller.loggedObject?.pushedVariables.set(varName, new Map([[newDoc.length, varValue]]));
-						}
-					} else {
-						console.error("unrecognized SET command");
-					}
-				}
+		for(let i = 0; i < lines.length; i++) {
+			const clogMatch = lines[i].match(/.*C_LOG : (.*?) (.+?) (.*?) (\[.*?\])(.*)/);
+			if(clogMatch !== null) {
+				const threadId = clogMatch[1];
+				let indentation = clogMatch[2];
+				const depth = indentation.length;
+				const functionId = clogMatch[3];
+				const lineNumber = clogMatch[4];
+				let infoString = clogMatch[5];
 				
-				let stackNode = new StackNode(newDoc.length, caller.depth, caller.fileName, caller.functionName, caller.caller, caller.loggedObject);
-				this.worldState.pushStackNode(stackNode);
-				currentStackNode.set(threadID, stackNode);
-				newDoc.push(currentLine + "\n");
-				continue;
-			}
+				indentation = indentation.replace(/:/g, "║");
+				indentation = indentation.replace("F", "╔");
+				indentation = indentation.replace("L", "╚");
+				indentation = indentation.replace("-", "╠");
+				indentation = indentation.replace(">", "╾");
 
-			//unknown line, ignoring.
+				//determine who is the "caller" (ie. the previous logged line with less depth than this one)
+				let caller = currentStackNode.get(threadId);
+				if(caller !== undefined) {
+					if(Math.abs(depth - caller.depth) > 1) {
+						console.error("unexpected jump in depth on line " + (i+1));
+						vscode.window.showErrorMessage("unexpected jump in depth on line " + (i+1));
+					}
+
+					for(; caller && (depth - 1) < caller.depth; caller = caller.caller) {}
+				}
+
+				const infoStringBlockMatch = infoString.match(/::\[(.*)\]::\[(.*)\] ([0-9a-z]+)/);
+				if(infoStringBlockMatch !== null) {
+					const filename = infoStringBlockMatch[1];
+					let functionName = infoStringBlockMatch[2];
+					let thisAddress = infoStringBlockMatch[3];
+
+					functionName = functionName.replace(/.*[ :]+([a-zA-Z0-9_]*::[a-zA-Z0-9_]*)\(.*/g, "$1()");
+					if(thisAddress === "0") {
+						thisAddress = "";
+					}
+
+					let loggedObject = this.worldState.getOrCreateLoggedObject(thisAddress);
+					let stackNode = new StackNode(logLineNumber, depth, filename, functionName, caller, loggedObject);
+
+					this.worldState.pushStackNode(stackNode);
+					currentStackNode.set(threadId, stackNode);
+					newDoc += threadId + " " + indentation + " " + functionId + " " + lineNumber + "::[" + filename + "]::["
+						+ functionName + "] " + thisAddress + "\n";
+					++logLineNumber;
+					continue;
+				} 
+
+				const infoStringCommandMatch = infoString.match(/ (.*?): (.*)/);
+				if(infoStringCommandMatch !== null) {
+					if(caller === undefined) {
+						throw new Error("push found without caller");
+					}
+
+					const command = infoStringCommandMatch[1];
+					const payload = infoStringCommandMatch[2];
+					
+					if(command === "SET") {
+						const setCommandMatch = payload.match( /(.*) = (.*)/);
+						if(setCommandMatch) {
+							const varName = setCommandMatch[1];
+							const varValue = setCommandMatch[2]; 
+							let maybeCurrent = caller.loggedObject?.pushedVariables.get(varName);
+							if(maybeCurrent) {
+								maybeCurrent.set(logLineNumber, varValue);
+							} else {
+								caller.loggedObject?.pushedVariables.set(varName, new Map([[logLineNumber, varValue]]));
+							}
+						} else {
+							console.error("unrecognized SET command");
+						}
+					}
+					
+					let stackNode = new StackNode(logLineNumber, caller.depth, caller.fileName, caller.functionName, caller.caller, caller.loggedObject);
+					this.worldState.pushStackNode(stackNode);
+					currentStackNode.set(threadId, stackNode);
+					newDoc += threadId + " " + indentation + " " + functionId + " " + lineNumber + " " + command + ": " + payload + "\n";
+					++logLineNumber;
+					continue;
+				}
+			}
 		}
 
 		this.loaded = true;
-
-		return newDoc.join("");
+		return newDoc;
 	}
 
 	startUpdateLoop() {
