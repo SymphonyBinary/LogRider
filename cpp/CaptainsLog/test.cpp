@@ -48,6 +48,8 @@ int main() {
   something::TestOne t2("t2");
   something::TestOne t3("t3");
 
+  C_LOG();
+
   t3.testBlockOutput();
   t2.testBlockOutput();
   t1.testBlockOutput();

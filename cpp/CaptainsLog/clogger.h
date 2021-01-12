@@ -124,17 +124,16 @@ a buffer at all
 #define C_LOG_INTERNAL(pointer, ...) \
 BlockLogger blockScopeLog{pointer}; \
   { \
-    char blockScopeLogInfoBuffer[C_LOG_BUFFER_SIZE]; \
-    snprintf(blockScopeLogInfoBuffer, C_LOG_BUFFER_SIZE, \
-      COLOUR RESET " [" COLOUR BOLD C_GREEN "%d" COLOUR RESET "]::[" \
-      COLOUR BOLD C_CYAN "%s" COLOUR RESET "]::[" \
-      COLOUR BOLD C_MAGENTA "%s" COLOUR RESET "] ", \
-      __LINE__, __FILENAME__, __PRETTY_FUNCTION__); \
+    std::stringstream ss; \
+    ss << COLOUR RESET " [" COLOUR BOLD C_GREEN << __LINE__ <<  COLOUR RESET "]::[" \
+      COLOUR BOLD C_CYAN << __FILENAME__ << COLOUR RESET "]::[" \
+      COLOUR BOLD C_MAGENTA << __PRETTY_FUNCTION__ << COLOUR RESET "] "; \
     char blockScopeLogCustomBuffer[C_LOG_BUFFER_SIZE]; \
     snprintf(blockScopeLogCustomBuffer, C_LOG_BUFFER_SIZE, FIRST(__VA_ARGS__) " " REST(__VA_ARGS__)); \
-    blockScopeLog.setPrimaryLog(__LINE__, blockScopeLogInfoBuffer, blockScopeLogCustomBuffer); \
+    blockScopeLog.setPrimaryLog(__LINE__, ss.str(), blockScopeLogCustomBuffer); \
   }
 
+/// you may optionall provide an argument in the form of "(format, ...)"
 #define C_LOG_BLOCK(...) C_LOG_INTERNAL(this, __VA_ARGS__)
 #define C_LOG_BLOCK_NO_THIS(...) C_LOG_INTERNAL(nullptr, __VA_ARGS__) 
 
