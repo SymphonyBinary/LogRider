@@ -73,9 +73,8 @@ class LogRiderProvider implements vscode.TextDocumentContentProvider {
 		let dec = new TextDecoder("utf-8");
 		let doc = dec.decode(encodedDoc);
 
-		//var re = /.*:: :  : (.*)/gi;
-	//	var re = /.*C_LOG : (.*?) (.*?) (.* \[.*\]::\[.*\]::\[)(.*)(\] [0-9a-z]+)/gi;
-		const re = /.*C_LOG : (.*?) (.*?) (.*) ([0-9a-z]+)/gi;
+		// FIRST, do all the string replacements and massage the log.
+		const re = /.*C_LOG : (.*?) (.+?) (.*) ([0-9a-z]+)/gi;
 		doc = doc.replace(re, (match: string, sub1: string, sub2: string, sub3: string, sub4: string) : string => {
 			sub2 = sub2.replace(/:/g, "║");
 			sub2 = sub2.replace("F", "╔");
@@ -89,17 +88,18 @@ class LogRiderProvider implements vscode.TextDocumentContentProvider {
 					return sub31 + sub32 + sub33;
 				});
 			}
-			//(.*::.+\(.*)
-			//var 
 			return sub1 + " " + sub2 + " " + sub3 + " " + sub4;
 		});
 
+		// construct the stack nodes
 		var lines = doc.split('\n');
+		let newDoc = new Array<string>();
 		let currentStackNode = new Map<string, StackNode>();
-		let failureStackNode = new StackNode(0,0,"","",undefined, undefined);
-		for(let i = 0; i < lines.length; i++) {
-			const re = /(^[0-9]*) ([║╔╠╚]*) (.*) \[(.*)\]::\[(.*)\]::\[(.*)\] ([0-9a-z]+)/;
-			const match = lines[i].match(re);
+		for(let currentLine = lines.shift(); currentLine; currentLine = lines.shift()) {
+			// Try matching the block log lines
+			// TODO: messy, reimplement as a statemachine parser?
+			const re = /(^[0-9]*) ([║╔╚]+) (.*) \[(.*)\]::\[(.*)\]::\[(.*)\] ([0-9a-z]+)/;
+			const match = currentLine.match(re);
 			if(match !== null) {
 				const threadID = match[1];
 				const depth = match[2].length;
@@ -111,28 +111,27 @@ class LogRiderProvider implements vscode.TextDocumentContentProvider {
 
 				let loggedObject = this.worldState.getOrCreateLoggedObject(thisAddress);
 
-				//const loggedObject = new LoggedObject(threadID, thisAddress);
+				//determine who is the "caller" (ie. the previous logged line with less depth than this one)
 				let caller = currentStackNode.get(threadID);
 				if(caller !== undefined) {
 					if(Math.abs(depth - caller.depth) > 1) {
-						console.error("unexpected jump in depth on line " + (i+1));
-						vscode.window.showErrorMessage("unexpected jump in depth on line " + (i+1));
+						console.error("unexpected jump in depth on line " + (newDoc.length+1));
+						vscode.window.showErrorMessage("unexpected jump in depth on line " + (newDoc.length +1));
 					}
 
-					for(; caller && (depth - 1) < caller.depth; caller = caller.caller) {
-						
-					}
+					for(; caller && (depth - 1) < caller.depth; caller = caller.caller) {}
 				}
 
-				let stackNode = new StackNode(i, depth, filename, functionName, caller, loggedObject);
+				let stackNode = new StackNode(newDoc.length, depth, filename, functionName, caller, loggedObject);
 				this.worldState.pushStackNode(stackNode);
 				currentStackNode.set(threadID, stackNode);
-				failureStackNode = stackNode;
+				newDoc.push(currentLine + "\n");
 				continue;
 			} 
 			
-			const commandRe = /(^[0-9]*) ([║╠╚╾]*) (.*) \[(.*)\] (.*): (.*)/;
-			const commandMatch = lines[i].match(commandRe);
+			// Try matching the non-block log lines (log, error, set, etc)
+			const commandRe = /(^[0-9]*) ([║╾╠]+) (.*) \[(.*)\] (.*): (.*)/;
+			const commandMatch = currentLine.match(commandRe);
 			if(commandMatch){
 				const threadID = commandMatch[1];
 				const depth = commandMatch[2].length;
@@ -141,17 +140,15 @@ class LogRiderProvider implements vscode.TextDocumentContentProvider {
 				const command = commandMatch[5];
 				const payload = commandMatch[6];
 
+				//determine who is the "caller" (ie. the previous logged line with less depth than this one)
 				let caller = currentStackNode.get(threadID);
-
 				if(caller !== undefined) {
 					if(Math.abs(depth - caller.depth) > 1) {
-						console.error("unexpected jump in depth on line " + (i+1));
-						vscode.window.showErrorMessage("unexpected jump in depth on line " + (i+1));
+						console.error("unexpected jump in depth on line " + (newDoc.length+1));
+						vscode.window.showErrorMessage("unexpected jump in depth on line " + (newDoc.length+1));
 					}
 
-					for(; caller && (depth - 1) < caller.depth; caller = caller.caller) {
-						
-					}
+					for(; caller && (depth - 1) < caller.depth; caller = caller.caller) {}
 				}
 
 				if(caller === undefined) {
@@ -166,32 +163,28 @@ class LogRiderProvider implements vscode.TextDocumentContentProvider {
 						const varValue = setCommandMatch[2]; 
 						let maybeCurrent = caller.loggedObject?.pushedVariables.get(varName);
 						if(maybeCurrent) {
-							maybeCurrent.set(i, varValue);
+							maybeCurrent.set(newDoc.length, varValue);
 						} else {
-							caller.loggedObject?.pushedVariables.set(varName, new Map([[i, varValue]]));
+							caller.loggedObject?.pushedVariables.set(varName, new Map([[newDoc.length, varValue]]));
 						}
 					} else {
 						console.error("unrecognized SET command");
 					}
 				}
 				
-				//fallback if nothing matches
-				let stackNode = new StackNode(i, caller.depth, caller.fileName, caller.functionName, caller.caller, caller.loggedObject);
+				let stackNode = new StackNode(newDoc.length, caller.depth, caller.fileName, caller.functionName, caller.caller, caller.loggedObject);
 				this.worldState.pushStackNode(stackNode);
 				currentStackNode.set(threadID, stackNode);
-				failureStackNode = stackNode;
+				newDoc.push(currentLine + "\n");
 				continue;
 			}
 
-			console.error("unknown line");
-
-			let stackNode = new StackNode(i, failureStackNode.depth, failureStackNode.fileName, failureStackNode.functionName, failureStackNode.caller, failureStackNode.loggedObject);
-			this.worldState.pushStackNode(stackNode);
+			//unknown line, ignoring.
 		}
 
 		this.loaded = true;
 
-		return doc.toString();
+		return newDoc.join("");
 	}
 
 	startUpdateLoop() {
