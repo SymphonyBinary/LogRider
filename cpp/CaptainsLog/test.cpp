@@ -29,8 +29,26 @@ public:
 };
 }
 
+class NestTest1 {
+public:
+  void doIt() {
+    C_LOG_BLOCK();
+    C_SET("123","asdfasdf");
+  }
+
+  void doSomething(){
+    C_LOG_BLOCK();
+    doIt();
+  }
+};
+
+
+
 int main() {
   C_LOG_BLOCK_NO_THIS("main");
+
+  NestTest1 nestTest1;
+  nestTest1.doSomething();
 
   {
     C_LOG_BLOCK_NO_THIS();
