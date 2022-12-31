@@ -12,66 +12,10 @@
 
 #include <cstdint>
 
-
-//#define COLOURIZE
-//#define FANCY_ASCII
-//#define SHOW_THREAD_ID
-//#define ANDROID //defined outside of this, just here for the comment
-
-//uses ANSI colours https://www.lihaoyi.com/post/BuildyourownCommandLinewithANSIescapecodes.html
-#ifdef COLOURIZE
-  //https://stackoverflow.com/questions/45526532/c-xcode-how-to-output-color
-  #define COLOUR "\033["
-  //#define COLOUR= "\u001b[";
-  #define BOLD "1;"
-  #define RESET "0m"
-  #define C_BLACK "30m"
-  #define C_RED "31m"
-  #define C_GREEN "32m"
-  #define C_YELLOW  "33m"
-  #define C_BLUE    "34m"
-  #define C_MAGENTA "35m"
-  #define C_CYAN    "36m"
-  #define C_WHITE   "37m"
-#else
-  #define COLOUR ""
-  #define BOLD ""
-  #define RESET ""
-  #define C_BLACK ""
-  #define C_RED ""
-  #define C_GREEN ""
-  #define C_YELLOW  ""
-  #define C_BLUE    ""
-  #define C_MAGENTA ""
-  #define C_CYAN    ""
-  #define C_WHITE   ""
-#endif
-
-#ifdef FANCY_ASCII
-  // ╔ Unicode: U+2554, UTF-8: E2 95 94
-  #define PRIMARY_LOG_BEGIN_DELIMITER "\u2554"
-  // ╠ Unicode: U+2560, UTF-8: E2 95 A0
-  #define ADD_LOG_DELIMITER "\u2560"
-  // ╾ Unicode: U+257E, UTF-8: E2 95 BE
-  #define ADD_LOG_SECOND_DELIMITER "\u257E"
-  // ╚ Unicode: U+255A, UTF-8: E2 95 9A
-  #define PRIMARY_LOG_END_DELIMITER "\u255A"
-  // … Unicode: U+2026, UTF-8: E2 80 A6
-  //#define MAIN_PREFIX_DELIMITER "\u2026"
-  #define MAIN_PREFIX_DELIMITER ""
-  // ║ Unicode: U+2551, UTF-8: E2 95 91
-  #define TAB_DELIMITER "\u2551"
-#else
-  #define PRIMARY_LOG_BEGIN_DELIMITER "F"
-  #define ADD_LOG_DELIMITER "-"
-  #define ADD_LOG_SECOND_DELIMITER ">"
-  #define PRIMARY_LOG_END_DELIMITER "L"
-  #define MAIN_PREFIX_DELIMITER "C_LOG"
-  #define TAB_DELIMITER ":"
-#endif
+#include "colors.hpp"
 
 #ifdef SHOW_THREAD_ID
-  #define INSERT_THREAD_ID COLOUR C_BLUE << std::this_thread::get_id() << COLOUR RESET
+  #define INSERT_THREAD_ID COLOUR CAP_BLUE << std::this_thread::get_id() << COLOUR RESET
 #else
   #define INSERT_THREAD_ID ""
 #endif
@@ -87,7 +31,7 @@
 //https://stackoverflow.com/questions/8487986/file-macro-shows-full-path
 #define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
 
-#define C_LOG_BUFFER_SIZE 200
+#define CAP_LOG_BUFFER_SIZE 200
 
 ///////
 //https://stackoverflow.com/questions/5588855/standard-alternative-to-gccs-va-args-trick/11172679#11172679
@@ -116,45 +60,45 @@
 
 /*
 The " " here
-snprintf(blockScopeLogCustomBuffer, C_LOG_BUFFER_SIZE, FIRST(__VA_ARGS__) " " REST(__VA_ARGS__)); \
+snprintf(blockScopeLogCustomBuffer, CAP_LOG_BUFFER_SIZE, FIRST(__VA_ARGS__) " " REST(__VA_ARGS__)); \
 is because you will get warnings if you try to pass a zero sized string to sprintf.
 Ideally, you want to branch if __VA_ARGS__ is empty and call setPrimaryLog without passing it 
 a buffer at all
 */
-#define C_LOG_INTERNAL(pointer, ...) \
+#define CAP_LOG_INTERNAL(pointer, ...) \
 BlockLogger blockScopeLog{pointer}; \
   { \
     std::stringstream ss; \
-    ss << COLOUR RESET " [" COLOUR BOLD C_GREEN << __LINE__ <<  COLOUR RESET "]::[" \
-      COLOUR BOLD C_CYAN << __FILENAME__ << COLOUR RESET "]::[" \
-      COLOUR BOLD C_MAGENTA << __PRETTY_FUNCTION__ << COLOUR RESET "] "; \
-    char blockScopeLogCustomBuffer[C_LOG_BUFFER_SIZE]; \
-    snprintf(blockScopeLogCustomBuffer, C_LOG_BUFFER_SIZE, FIRST(__VA_ARGS__) " " REST(__VA_ARGS__)); \
+    ss << COLOUR RESET " [" COLOUR BOLD CAP_GREEN << __LINE__ <<  COLOUR RESET "]::[" \
+      COLOUR BOLD CAP_CYAN << __FILENAME__ << COLOUR RESET "]::[" \
+      COLOUR BOLD CAP_MAGENTA << __PRETTY_FUNCTION__ << COLOUR RESET "] "; \
+    char blockScopeLogCustomBuffer[CAP_LOG_BUFFER_SIZE]; \
+    snprintf(blockScopeLogCustomBuffer, CAP_LOG_BUFFER_SIZE, FIRST(__VA_ARGS__) " " REST(__VA_ARGS__)); \
     blockScopeLog.setPrimaryLog(__LINE__, ss.str(), blockScopeLogCustomBuffer); \
   }
 
 /// you may optionall provide an argument in the form of "(format, ...)"
-#define C_LOG_BLOCK(...) C_LOG_INTERNAL(this, __VA_ARGS__)
-#define C_LOG_BLOCK_NO_THIS(...) C_LOG_INTERNAL(nullptr, __VA_ARGS__) 
+#define CAP_LOG_BLOCK(...) CAP_LOG_INTERNAL(this, __VA_ARGS__)
+#define CAP_LOG_BLOCK_NO_THIS(...) CAP_LOG_INTERNAL(nullptr, __VA_ARGS__) 
 
-#define C_LOG(...) \
+#define CAP_LOG(...) \
   { \
-    char blockScopeLogCustomBuffer[C_LOG_BUFFER_SIZE]; \
-    snprintf(blockScopeLogCustomBuffer, C_LOG_BUFFER_SIZE, FIRST(__VA_ARGS__) " " REST(__VA_ARGS__)); \
+    char blockScopeLogCustomBuffer[CAP_LOG_BUFFER_SIZE]; \
+    snprintf(blockScopeLogCustomBuffer, CAP_LOG_BUFFER_SIZE, FIRST(__VA_ARGS__) " " REST(__VA_ARGS__)); \
     blockScopeLog.log(__LINE__, blockScopeLogCustomBuffer); \
   }
 
-#define C_ERROR(...) \
+#define CAP_ERROR(...) \
   { \
-    char blockScopeLogCustomBuffer[C_LOG_BUFFER_SIZE]; \
-    snprintf(blockScopeLogCustomBuffer, C_LOG_BUFFER_SIZE, FIRST(__VA_ARGS__) " " REST(__VA_ARGS__)); \
+    char blockScopeLogCustomBuffer[CAP_LOG_BUFFER_SIZE]; \
+    snprintf(blockScopeLogCustomBuffer, CAP_LOG_BUFFER_SIZE, FIRST(__VA_ARGS__) " " REST(__VA_ARGS__)); \
     blockScopeLog.error(__LINE__, blockScopeLogCustomBuffer); \
   }
 
-#define C_SET(name, ...) \
+#define CAP_SET(name, ...) \
   { \
-    char blockScopeLogCustomBuffer[C_LOG_BUFFER_SIZE]; \
-    snprintf(blockScopeLogCustomBuffer, C_LOG_BUFFER_SIZE, FIRST(__VA_ARGS__) " " REST(__VA_ARGS__)); \
+    char blockScopeLogCustomBuffer[CAP_LOG_BUFFER_SIZE]; \
+    snprintf(blockScopeLogCustomBuffer, CAP_LOG_BUFFER_SIZE, FIRST(__VA_ARGS__) " " REST(__VA_ARGS__)); \
     blockScopeLog.set(__LINE__, name, blockScopeLogCustomBuffer); \
   }
 

@@ -1,1 +1,1 @@
-clang++ -Wall -std=c++11 test.cpp clogger.cpp -o test.out
+clang++ -Wall -std=c++11 test.cpp caplogger.cpp -o test.out

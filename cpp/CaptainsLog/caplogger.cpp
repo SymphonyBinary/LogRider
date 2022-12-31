@@ -1,13 +1,13 @@
-#include "clogger.h"
+#include "caplogger.hpp"
 
 static const char* colourArray[] = {
-  COLOUR BOLD C_RED,
-  COLOUR BOLD C_GREEN,
-  COLOUR BOLD C_YELLOW,
-  COLOUR BOLD C_BLUE,
-  COLOUR BOLD C_MAGENTA,
-  COLOUR BOLD C_CYAN,
-  COLOUR BOLD C_WHITE,
+  COLOUR BOLD CAP_RED,
+  COLOUR BOLD CAP_GREEN,
+  COLOUR BOLD CAP_YELLOW,
+  COLOUR BOLD CAP_BLUE,
+  COLOUR BOLD CAP_MAGENTA,
+  COLOUR BOLD CAP_CYAN,
+  COLOUR BOLD CAP_WHITE,
 };
 static const int colourArraySize = sizeof(colourArray)/sizeof(colourArray[0]);
 
@@ -16,8 +16,8 @@ static const int colourArraySize = sizeof(colourArray)/sizeof(colourArray[0]);
 
 namespace {
   void printTab(std::stringstream& ss, unsigned int threadId, unsigned int depth) {
-    ss << COLOUR BOLD C_YELLOW << MAIN_PREFIX_DELIMITER << INSERT_THREAD_ID << " : " <<
-      colourArray[threadId % colourArraySize] << threadId << COLOUR BOLD C_GREEN << " ";
+    ss << COLOUR BOLD CAP_YELLOW << MAIN_PREFIX_DELIMITER << INSERT_THREAD_ID << " : " <<
+      colourArray[threadId % colourArraySize] << threadId << COLOUR BOLD CAP_GREEN << " ";
 
     for(unsigned int i = 0 ; i < depth; ++i ){
       ss << TAB_DELIMITER;
@@ -92,7 +92,7 @@ void BlockLogger::setPrimaryLog(int line, std::string logInfoBuffer, std::string
   std::stringstream ss;
   printTab(ss, mThreadId, mDepth);
 
-  ss << COLOUR BOLD C_GREEN << PRIMARY_LOG_BEGIN_DELIMITER << COLOUR BOLD C_YELLOW << " " << mId << mlogInfoBuffer
+  ss << COLOUR BOLD CAP_GREEN << PRIMARY_LOG_BEGIN_DELIMITER << COLOUR BOLD CAP_YELLOW << " " << mId << mlogInfoBuffer
   << colourArray[reinterpret_cast<std::uintptr_t>(mThisPointer) % colourArraySize] << mThisPointer << COLOUR RESET;
   PRINT_TO_LOG("%s", ss.str().c_str());
 
@@ -107,8 +107,8 @@ void BlockLogger::log(int line, std::string messageBuffer) {
   // The maco which calls this hardcodes a " " to get around some macro limitations regarding zero/1/multi argument __VA_ARGS__
   std::stringstream ss;
   printTab(ss, mThreadId, mDepth);
-  ss << COLOUR BOLD C_GREEN << ADD_LOG_DELIMITER << ADD_LOG_SECOND_DELIMITER << COLOUR BOLD C_YELLOW << " " << mId << " "
-  << COLOUR RESET << "[" << COLOUR BOLD C_GREEN << line << COLOUR RESET << "] LOG: " << messageBuffer << COLOUR RESET;
+  ss << COLOUR BOLD CAP_GREEN << ADD_LOG_DELIMITER << ADD_LOG_SECOND_DELIMITER << COLOUR BOLD CAP_YELLOW << " " << mId << " "
+  << COLOUR RESET << "[" << COLOUR BOLD CAP_GREEN << line << COLOUR RESET << "] LOG: " << messageBuffer << COLOUR RESET;
   PRINT_TO_LOG("%s", ss.str().c_str());
 }
 
@@ -116,16 +116,16 @@ void BlockLogger::error(int line, std::string messageBuffer) {
   // The maco which calls this hardcodes a " " to get around some macro limitations regarding zero/1/multi argument __VA_ARGS__
   std::stringstream ss;
   printTab(ss, mThreadId, mDepth);
-  ss << COLOUR BOLD C_GREEN << ADD_LOG_DELIMITER << ADD_LOG_SECOND_DELIMITER << COLOUR BOLD C_YELLOW << " " << mId << " "
-  << COLOUR RESET << "[" << COLOUR BOLD C_GREEN << line << COLOUR RESET << "] " << COLOUR BOLD C_RED << "ERROR: " <<  messageBuffer << COLOUR RESET;
+  ss << COLOUR BOLD CAP_GREEN << ADD_LOG_DELIMITER << ADD_LOG_SECOND_DELIMITER << COLOUR BOLD CAP_YELLOW << " " << mId << " "
+  << COLOUR RESET << "[" << COLOUR BOLD CAP_GREEN << line << COLOUR RESET << "] " << COLOUR BOLD CAP_RED << "ERROR: " <<  messageBuffer << COLOUR RESET;
   PRINT_TO_LOG("%s", ss.str().c_str());
 }
 
 void BlockLogger::set(int line, std::string name, std::string value) {
   std::stringstream ss;
   printTab(ss, mThreadId, mDepth);
-  ss << COLOUR BOLD C_GREEN << ADD_LOG_DELIMITER << ADD_LOG_SECOND_DELIMITER << COLOUR BOLD C_YELLOW << " " << mId << " "
-  << COLOUR RESET << "[" << COLOUR BOLD C_GREEN << line << COLOUR RESET << "] " << COLOUR BOLD C_RED << "SET: " <<  name << " = " << value << COLOUR RESET;
+  ss << COLOUR BOLD CAP_GREEN << ADD_LOG_DELIMITER << ADD_LOG_SECOND_DELIMITER << COLOUR BOLD CAP_YELLOW << " " << mId << " "
+  << COLOUR RESET << "[" << COLOUR BOLD CAP_GREEN << line << COLOUR RESET << "] " << COLOUR BOLD CAP_RED << "SET: " <<  name << " = " << value << COLOUR RESET;
   PRINT_TO_LOG("%s", ss.str().c_str());
 }
 
@@ -134,7 +134,7 @@ BlockLogger::~BlockLogger() {
 
   std::stringstream ss;
   printTab(ss, mThreadId, mDepth);
-  ss << COLOUR BOLD C_GREEN << PRIMARY_LOG_END_DELIMITER << COLOUR BOLD C_YELLOW << " " << mId << mlogInfoBuffer
+  ss << COLOUR BOLD CAP_GREEN << PRIMARY_LOG_END_DELIMITER << COLOUR BOLD CAP_YELLOW << " " << mId << mlogInfoBuffer
   << colourArray[reinterpret_cast<std::uintptr_t>(mThisPointer) % colourArraySize] << mThisPointer << COLOUR RESET;
   PRINT_TO_LOG("%s", ss.str().c_str());
 }

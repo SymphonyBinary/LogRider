@@ -1,4 +1,4 @@
-#include "clogger.h"
+#include "caplogger.hpp"
 #include <vector>
 
 namespace something{
@@ -6,12 +6,12 @@ namespace something{
 class TestOne {
 public:
   TestOne(std::string name) {
-    C_LOG_BLOCK();
+    CAP_LOG_BLOCK();
     (void)name;
-    C_SET("Current Name", "%s", name.c_str());
+    CAP_SET("Current Name", "%s", name.c_str());
   }
   void testBlockOutput() {
-    C_LOG_BLOCK();
+    CAP_LOG_BLOCK();
   }
 };
 
@@ -20,7 +20,7 @@ public:
   std::vector<TestOne> tests;
 
   TestTwo() {
-    C_LOG_BLOCK("Testing format = %s", "hello");
+    CAP_LOG_BLOCK("Testing format = %s", "hello");
     for(int i = 0; i < 5; ++i ){
       tests.emplace_back("In Two " + std::to_string(i));
       tests.back().testBlockOutput();
@@ -32,12 +32,12 @@ public:
 class NestTest1 {
 public:
   void doIt() {
-    C_LOG_BLOCK();
-    C_SET("123","asdfasdf");
+    CAP_LOG_BLOCK();
+    CAP_SET("123","asdfasdf");
   }
 
   void doSomething(){
-    C_LOG_BLOCK();
+    CAP_LOG_BLOCK();
     doIt();
   }
 };
@@ -45,28 +45,28 @@ public:
 
 
 int main() {
-  C_LOG_BLOCK_NO_THIS("main");
+  CAP_LOG_BLOCK_NO_THIS("main");
 
   NestTest1 nestTest1;
   nestTest1.doSomething();
 
   {
-    C_LOG_BLOCK_NO_THIS();
+    CAP_LOG_BLOCK_NO_THIS();
     something::TestOne t("first");
     t.testBlockOutput();
-    C_LOG("this is a log");
+    CAP_LOG("this is a log");
   }
 
-  C_ERROR("this is an error");
+  CAP_ERROR("this is an error");
   something::TestTwo two;
 
-  C_LOG("this is a log with formatting %s ", "FORMAT");
+  CAP_LOG("this is a log with formatting %s ", "FORMAT");
 
   something::TestOne t1("t1");
   something::TestOne t2("t2");
   something::TestOne t3("t3");
 
-  C_LOG();
+  CAP_LOG();
 
   t3.testBlockOutput();
   t2.testBlockOutput();

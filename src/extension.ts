@@ -79,7 +79,7 @@ class LogRiderProvider implements vscode.TextDocumentContentProvider {
 		let logLineNumber = 0;
 		let currentStackNode = new Map<string, StackNode>();
 		for(let i = 0; i < lines.length; i++) {
-			const clogMatch = lines[i].match(/.*C_LOG : (.*?) (.+?) (.*?) (\[.*?\])(.*)/);
+			const clogMatch = lines[i].match(/.*CAP_LOG : (.*?) (.+?) (.*?) (\[.*?\])(.*)/);
 			if(clogMatch !== null) {
 				const threadId = clogMatch[1];
 				let indentation = clogMatch[2];

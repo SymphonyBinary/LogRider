@@ -1,0 +1,62 @@
+CAP_LOG : 0 F 0 [48]::[test.cpp]::[int main()] 0
+CAP_LOG : 0 -> 0 [48] LOG: main 
+CAP_LOG : 0 :F 1 [40]::[test.cpp]::[void NestTest1::doSomething()] 0x7ffe8d38c73b
+CAP_LOG : 0 ::F 2 [35]::[test.cpp]::[void NestTest1::doIt()] 0x7ffe8d38c73b
+CAP_LOG : 0 ::-> 2 [36] SET: 123 = asdfasdf 
+CAP_LOG : 0 ::L 2 [35]::[test.cpp]::[void NestTest1::doIt()] 0x7ffe8d38c73b
+CAP_LOG : 0 :L 1 [40]::[test.cpp]::[void NestTest1::doSomething()] 0x7ffe8d38c73b
+CAP_LOG : 0 :F 3 [54]::[test.cpp]::[int main()] 0
+CAP_LOG : 0 ::F 4 [9]::[test.cpp]::[something::TestOne::TestOne(std::string)] 0x7ffe8d38c73f
+CAP_LOG : 0 ::-> 4 [11] SET: Current Name = first 
+CAP_LOG : 0 ::L 4 [9]::[test.cpp]::[something::TestOne::TestOne(std::string)] 0x7ffe8d38c73f
+CAP_LOG : 0 ::F 5 [14]::[test.cpp]::[void something::TestOne::testBlockOutput()] 0x7ffe8d38c73f
+CAP_LOG : 0 ::L 5 [14]::[test.cpp]::[void something::TestOne::testBlockOutput()] 0x7ffe8d38c73f
+CAP_LOG : 0 :-> 3 [57] LOG: this is a log 
+CAP_LOG : 0 :L 3 [54]::[test.cpp]::[int main()] 0
+CAP_LOG : 0 -> 0 [60] ERROR: this is an error 
+CAP_LOG : 0 :F 6 [23]::[test.cpp]::[something::TestTwo::TestTwo()] 0x7ffe8d38c740
+CAP_LOG : 0 :-> 6 [23] LOG: Testing format = hello 
+CAP_LOG : 0 ::F 7 [9]::[test.cpp]::[something::TestOne::TestOne(std::string)] 0x564c0d0067d0
+CAP_LOG : 0 ::-> 7 [11] SET: Current Name = In Two 0 
+CAP_LOG : 0 ::L 7 [9]::[test.cpp]::[something::TestOne::TestOne(std::string)] 0x564c0d0067d0
+CAP_LOG : 0 ::F 8 [14]::[test.cpp]::[void something::TestOne::testBlockOutput()] 0x564c0d0067d0
+CAP_LOG : 0 ::L 8 [14]::[test.cpp]::[void something::TestOne::testBlockOutput()] 0x564c0d0067d0
+CAP_LOG : 0 ::F 9 [9]::[test.cpp]::[something::TestOne::TestOne(std::string)] 0x564c0d0067f1
+CAP_LOG : 0 ::-> 9 [11] SET: Current Name = In Two 1 
+CAP_LOG : 0 ::L 9 [9]::[test.cpp]::[something::TestOne::TestOne(std::string)] 0x564c0d0067f1
+CAP_LOG : 0 ::F 10 [14]::[test.cpp]::[void something::TestOne::testBlockOutput()] 0x564c0d0067f1
+CAP_LOG : 0 ::L 10 [14]::[test.cpp]::[void something::TestOne::testBlockOutput()] 0x564c0d0067f1
+CAP_LOG : 0 ::F 11 [9]::[test.cpp]::[something::TestOne::TestOne(std::string)] 0x564c0d0067d2
+CAP_LOG : 0 ::-> 11 [11] SET: Current Name = In Two 2 
+CAP_LOG : 0 ::L 11 [9]::[test.cpp]::[something::TestOne::TestOne(std::string)] 0x564c0d0067d2
+CAP_LOG : 0 ::F 12 [14]::[test.cpp]::[void something::TestOne::testBlockOutput()] 0x564c0d0067d2
+CAP_LOG : 0 ::L 12 [14]::[test.cpp]::[void something::TestOne::testBlockOutput()] 0x564c0d0067d2
+CAP_LOG : 0 ::F 13 [9]::[test.cpp]::[something::TestOne::TestOne(std::string)] 0x564c0d0067d3
+CAP_LOG : 0 ::-> 13 [11] SET: Current Name = In Two 3 
+CAP_LOG : 0 ::L 13 [9]::[test.cpp]::[something::TestOne::TestOne(std::string)] 0x564c0d0067d3
+CAP_LOG : 0 ::F 14 [14]::[test.cpp]::[void something::TestOne::testBlockOutput()] 0x564c0d0067d3
+CAP_LOG : 0 ::L 14 [14]::[test.cpp]::[void something::TestOne::testBlockOutput()] 0x564c0d0067d3
+CAP_LOG : 0 ::F 15 [9]::[test.cpp]::[something::TestOne::TestOne(std::string)] 0x564c0d0067f4
+CAP_LOG : 0 ::-> 15 [11] SET: Current Name = In Two 4 
+CAP_LOG : 0 ::L 15 [9]::[test.cpp]::[something::TestOne::TestOne(std::string)] 0x564c0d0067f4
+CAP_LOG : 0 ::F 16 [14]::[test.cpp]::[void something::TestOne::testBlockOutput()] 0x564c0d0067f4
+CAP_LOG : 0 ::L 16 [14]::[test.cpp]::[void something::TestOne::testBlockOutput()] 0x564c0d0067f4
+CAP_LOG : 0 :L 6 [23]::[test.cpp]::[something::TestTwo::TestTwo()] 0x7ffe8d38c740
+CAP_LOG : 0 -> 0 [63] LOG: this is a log with formatting FORMAT  
+CAP_LOG : 0 :F 17 [9]::[test.cpp]::[something::TestOne::TestOne(std::string)] 0x7ffe8d38c73c
+CAP_LOG : 0 :-> 17 [11] SET: Current Name = t1 
+CAP_LOG : 0 :L 17 [9]::[test.cpp]::[something::TestOne::TestOne(std::string)] 0x7ffe8d38c73c
+CAP_LOG : 0 :F 18 [9]::[test.cpp]::[something::TestOne::TestOne(std::string)] 0x7ffe8d38c73d
+CAP_LOG : 0 :-> 18 [11] SET: Current Name = t2 
+CAP_LOG : 0 :L 18 [9]::[test.cpp]::[something::TestOne::TestOne(std::string)] 0x7ffe8d38c73d
+CAP_LOG : 0 :F 19 [9]::[test.cpp]::[something::TestOne::TestOne(std::string)] 0x7ffe8d38c73e
+CAP_LOG : 0 :-> 19 [11] SET: Current Name = t3 
+CAP_LOG : 0 :L 19 [9]::[test.cpp]::[something::TestOne::TestOne(std::string)] 0x7ffe8d38c73e
+CAP_LOG : 0 -> 0 [69] LOG:  
+CAP_LOG : 0 :F 20 [14]::[test.cpp]::[void something::TestOne::testBlockOutput()] 0x7ffe8d38c73e
+CAP_LOG : 0 :L 20 [14]::[test.cpp]::[void something::TestOne::testBlockOutput()] 0x7ffe8d38c73e
+CAP_LOG : 0 :F 21 [14]::[test.cpp]::[void something::TestOne::testBlockOutput()] 0x7ffe8d38c73d
+CAP_LOG : 0 :L 21 [14]::[test.cpp]::[void something::TestOne::testBlockOutput()] 0x7ffe8d38c73d
+CAP_LOG : 0 :F 22 [14]::[test.cpp]::[void something::TestOne::testBlockOutput()] 0x7ffe8d38c73c
+CAP_LOG : 0 :L 22 [14]::[test.cpp]::[void something::TestOne::testBlockOutput()] 0x7ffe8d38c73c
+CAP_LOG : 0 L 0 [48]::[test.cpp]::[int main()] 0
