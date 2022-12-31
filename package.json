@@ -19,7 +19,7 @@
 		"commands": [
 			{
 				"command": "logrider.openCLog",
-				"title": "Open CLog"
+				"title": "Open CLog file"
 			}
 		],
 		"languages": [{
