@@ -86,7 +86,7 @@ BlockLogger::BlockLogger(const void* thisPointer) {
   mThisPointer = thisPointer;
 }
 
-void BlockLogger::setPrimaryLog(int line, std::string logInfoBuffer, std::string customMessageBuffer) {
+void BlockLogger::setPrimaryLog(int line, std::string_view logInfoBuffer, std::string_view customMessageBuffer) {
   mlogInfoBuffer = std::move(logInfoBuffer);
 
   std::stringstream ss;
@@ -103,8 +103,8 @@ void BlockLogger::setPrimaryLog(int line, std::string logInfoBuffer, std::string
   log(line, std::move(customMessageBuffer));
 }
 
-void BlockLogger::log(int line, std::string messageBuffer) {
-  // The maco which calls this hardcodes a " " to get around some macro limitations regarding zero/1/multi argument __VA_ARGS__
+void BlockLogger::log(int line, std::string_view messageBuffer) {
+  // The macro which calls this hardcodes a " " to get around some macro limitations regarding zero/1/multi argument __VA_ARGS__
   std::stringstream ss;
   printTab(ss, mThreadId, mDepth);
   ss << COLOUR BOLD CAP_GREEN << ADD_LOG_DELIMITER << ADD_LOG_SECOND_DELIMITER << COLOUR BOLD CAP_YELLOW << " " << mId << " "
@@ -112,8 +112,8 @@ void BlockLogger::log(int line, std::string messageBuffer) {
   PRINT_TO_LOG("%s", ss.str().c_str());
 }
 
-void BlockLogger::error(int line, std::string messageBuffer) {
-  // The maco which calls this hardcodes a " " to get around some macro limitations regarding zero/1/multi argument __VA_ARGS__
+void BlockLogger::error(int line, std::string_view messageBuffer) {
+  // The macro which calls this hardcodes a " " to get around some macro limitations regarding zero/1/multi argument __VA_ARGS__
   std::stringstream ss;
   printTab(ss, mThreadId, mDepth);
   ss << COLOUR BOLD CAP_GREEN << ADD_LOG_DELIMITER << ADD_LOG_SECOND_DELIMITER << COLOUR BOLD CAP_YELLOW << " " << mId << " "
@@ -121,7 +121,7 @@ void BlockLogger::error(int line, std::string messageBuffer) {
   PRINT_TO_LOG("%s", ss.str().c_str());
 }
 
-void BlockLogger::set(int line, std::string name, std::string value) {
+void BlockLogger::set(int line, std::string_view name, std::string_view value) {
   std::stringstream ss;
   printTab(ss, mThreadId, mDepth);
   ss << COLOUR BOLD CAP_GREEN << ADD_LOG_DELIMITER << ADD_LOG_SECOND_DELIMITER << COLOUR BOLD CAP_YELLOW << " " << mId << " "

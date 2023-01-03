@@ -1,1 +1,1 @@
-g++ test.cpp caplogger.cpp -Wall -Wextra -std=c++11 -lstdc++ -o test.out
+g++ test.cpp caplogger.cpp -Wall -Wextra -std=c++17 -lstdc++ -o test.out

@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <sstream>
+#include <string_view>
 
 #include <thread>
 #include <cstring>
@@ -107,13 +108,13 @@ public:
   BlockLogger(const void* thisPointer);
   ~BlockLogger();
 
-  void setPrimaryLog(int line, std::string logInfoBuffer, std::string customMessageBuffer);
+  void setPrimaryLog(int line, std::string_view logInfoBuffer, std::string_view customMessageBuffer);
 
-  void log(int line, std::string messageBuffer);
+  void log(int line, std::string_view messageBuffer);
 
-  void error(int line, std::string messageBuffer);
+  void error(int line, std::string_view messageBuffer);
 
-  void set(int line, std::string name, std::string value);
+  void set(int line, std::string_view name, std::string_view value);
 
 private:
   std::string mlogInfoBuffer;
