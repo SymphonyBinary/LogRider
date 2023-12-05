@@ -34,6 +34,8 @@
 
 #define CAP_LOG_BUFFER_SIZE 200
 
+#ifdef ENABLE_CAP_LOGGER
+
 ///////
 //https://stackoverflow.com/questions/5588855/standard-alternative-to-gccs-va-args-trick/11172679#11172679
 /* expands to the first argument */
@@ -103,6 +105,16 @@ BlockLogger blockScopeLog{pointer}; \
     blockScopeLog.set(__LINE__, name, blockScopeLogCustomBuffer); \
   }
 
+#else
+
+#define CAP_LOG_BLOCK(...)
+#define CAP_LOG_BLOCK_NO_THIS(...)
+#define CAP_LOG(...)
+#define CAP_ERROR(...)
+#define CAP_SET(...)
+
+#endif
+
 class BlockLogger {
 public:
   BlockLogger(const void* thisPointer);
@@ -125,3 +137,4 @@ private:
   unsigned int mProcessId;
   const void* mThisPointer;
 };
+

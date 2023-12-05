@@ -1,3 +1,5 @@
+#define ENABLE_CAP_LOGGER
+
 #include "caplogger.hpp"
 #include <vector>
 
