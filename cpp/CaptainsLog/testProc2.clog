@@ -1,124 +1,62 @@
-CAP_LOG : P=998913090 T=0 F 0 [48]::[test.cpp]::[int main()] 0
 CAP_LOG : P=998913092 T=0 F 0 [48]::[test.cpp]::[int main()] 0
-CAP_LOG : P=998913090 T=0 -> 0 [48] LOG: main 
 CAP_LOG : P=998913092 T=0 -> 0 [48] LOG: main 
-CAP_LOG : P=998913090 T=0 :F 1 [40]::[test.cpp]::[void NestTest1::doSomething()] 0x7ffef034ecdc
 CAP_LOG : P=998913092 T=0 :F 1 [40]::[test.cpp]::[void NestTest1::doSomething()] 0x7ffc30a47a5c
-CAP_LOG : P=998913090 T=0 ::F 2 [35]::[test.cpp]::[void NestTest1::doIt()] 0x7ffef034ecdc
 CAP_LOG : P=998913092 T=0 ::F 2 [35]::[test.cpp]::[void NestTest1::doIt()] 0x7ffc30a47a5c
-CAP_LOG : P=998913090 T=0 ::-> 2 [36] SET: 123 = asdfasdf 
 CAP_LOG : P=998913092 T=0 ::-> 2 [36] SET: 123 = asdfasdf 
-CAP_LOG : P=998913090 T=0 ::L 2 [35]::[test.cpp]::[void NestTest1::doIt()] 0x7ffef034ecdc
 CAP_LOG : P=998913092 T=0 ::L 2 [35]::[test.cpp]::[void NestTest1::doIt()] 0x7ffc30a47a5c
-CAP_LOG : P=998913090 T=0 :L 1 [40]::[test.cpp]::[void NestTest1::doSomething()] 0x7ffef034ecdc
 CAP_LOG : P=998913092 T=0 :L 1 [40]::[test.cpp]::[void NestTest1::doSomething()] 0x7ffc30a47a5c
-CAP_LOG : P=998913090 T=0 :F 3 [54]::[test.cpp]::[int main()] 0
 CAP_LOG : P=998913092 T=0 :F 3 [54]::[test.cpp]::[int main()] 0
-CAP_LOG : P=998913090 T=0 ::F 4 [9]::[test.cpp]::[something::TestOne::TestOne(std::string)] 0x7ffef034ece0
 CAP_LOG : P=998913092 T=0 ::F 4 [9]::[test.cpp]::[something::TestOne::TestOne(std::string)] 0x7ffc30a47a60
-CAP_LOG : P=998913090 T=0 ::-> 4 [11] SET: Current Name = first 
 CAP_LOG : P=998913092 T=0 ::-> 4 [11] SET: Current Name = first 
-CAP_LOG : P=998913090 T=0 ::L 4 [9]::[test.cpp]::[something::TestOne::TestOne(std::string)] 0x7ffef034ece0
 CAP_LOG : P=998913092 T=0 ::L 4 [9]::[test.cpp]::[something::TestOne::TestOne(std::string)] 0x7ffc30a47a60
-CAP_LOG : P=998913090 T=0 ::F 5 [14]::[test.cpp]::[void something::TestOne::testBlockOutput()] 0x7ffef034ece0
 CAP_LOG : P=998913092 T=0 ::F 5 [14]::[test.cpp]::[void something::TestOne::testBlockOutput()] 0x7ffc30a47a60
-CAP_LOG : P=998913090 T=0 ::L 5 [14]::[test.cpp]::[void something::TestOne::testBlockOutput()] 0x7ffef034ece0
 CAP_LOG : P=998913092 T=0 ::L 5 [14]::[test.cpp]::[void something::TestOne::testBlockOutput()] 0x7ffc30a47a60
-CAP_LOG : P=998913090 T=0 :-> 3 [57] LOG: this is a log 
 CAP_LOG : P=998913092 T=0 :-> 3 [57] LOG: this is a log 
-CAP_LOG : P=998913090 T=0 :L 3 [54]::[test.cpp]::[int main()] 0
 CAP_LOG : P=998913092 T=0 :L 3 [54]::[test.cpp]::[int main()] 0
-CAP_LOG : P=998913090 T=0 -> 0 [60] ERROR: this is an error 
 CAP_LOG : P=998913092 T=0 -> 0 [60] ERROR: this is an error 
-CAP_LOG : P=998913090 T=0 :F 6 [23]::[test.cpp]::[something::TestTwo::TestTwo()] 0x7ffef034ecf0
 CAP_LOG : P=998913092 T=0 :F 6 [23]::[test.cpp]::[something::TestTwo::TestTwo()] 0x7ffc30a47a70
-CAP_LOG : P=998913090 T=0 :-> 6 [23] LOG: Testing format = hello 
 CAP_LOG : P=998913092 T=0 :-> 6 [23] LOG: Testing format = hello 
-CAP_LOG : P=998913090 T=0 ::F 7 [9]::[test.cpp]::[something::TestOne::TestOne(std::string)] 0x5561fef15870
 CAP_LOG : P=998913092 T=0 ::F 7 [9]::[test.cpp]::[something::TestOne::TestOne(std::string)] 0x55751343e870
-CAP_LOG : P=998913090 T=0 ::-> 7 [11] SET: Current Name = In Two 0 
 CAP_LOG : P=998913092 T=0 ::-> 7 [11] SET: Current Name = In Two 0 
-CAP_LOG : P=998913090 T=0 ::L 7 [9]::[test.cpp]::[something::TestOne::TestOne(std::string)] 0x5561fef15870
 CAP_LOG : P=998913092 T=0 ::L 7 [9]::[test.cpp]::[something::TestOne::TestOne(std::string)] 0x55751343e870
-CAP_LOG : P=998913090 T=0 ::F 8 [14]::[test.cpp]::[void something::TestOne::testBlockOutput()] 0x5561fef15870
 CAP_LOG : P=998913092 T=0 ::F 8 [14]::[test.cpp]::[void something::TestOne::testBlockOutput()] 0x55751343e870
-CAP_LOG : P=998913090 T=0 ::L 8 [14]::[test.cpp]::[void something::TestOne::testBlockOutput()] 0x5561fef15870
 CAP_LOG : P=998913092 T=0 ::L 8 [14]::[test.cpp]::[void something::TestOne::testBlockOutput()] 0x55751343e870
-CAP_LOG : P=998913090 T=0 ::F 9 [9]::[test.cpp]::[something::TestOne::TestOne(std::string)] 0x5561fef15891
 CAP_LOG : P=998913092 T=0 ::F 9 [9]::[test.cpp]::[something::TestOne::TestOne(std::string)] 0x55751343e891
-CAP_LOG : P=998913090 T=0 ::-> 9 [11] SET: Current Name = In Two 1 
 CAP_LOG : P=998913092 T=0 ::-> 9 [11] SET: Current Name = In Two 1 
-CAP_LOG : P=998913090 T=0 ::L 9 [9]::[test.cpp]::[something::TestOne::TestOne(std::string)] 0x5561fef15891
 CAP_LOG : P=998913092 T=0 ::L 9 [9]::[test.cpp]::[something::TestOne::TestOne(std::string)] 0x55751343e891
-CAP_LOG : P=998913090 T=0 ::F 10 [14]::[test.cpp]::[void something::TestOne::testBlockOutput()] 0x5561fef15891
 CAP_LOG : P=998913092 T=0 ::F 10 [14]::[test.cpp]::[void something::TestOne::testBlockOutput()] 0x55751343e891
-CAP_LOG : P=998913090 T=0 ::L 10 [14]::[test.cpp]::[void something::TestOne::testBlockOutput()] 0x5561fef15891
 CAP_LOG : P=998913092 T=0 ::L 10 [14]::[test.cpp]::[void something::TestOne::testBlockOutput()] 0x55751343e891
-CAP_LOG : P=998913090 T=0 ::F 11 [9]::[test.cpp]::[something::TestOne::TestOne(std::string)] 0x5561fef15872
 CAP_LOG : P=998913092 T=0 ::F 11 [9]::[test.cpp]::[something::TestOne::TestOne(std::string)] 0x55751343e872
-CAP_LOG : P=998913090 T=0 ::-> 11 [11] SET: Current Name = In Two 2 
 CAP_LOG : P=998913092 T=0 ::-> 11 [11] SET: Current Name = In Two 2 
-CAP_LOG : P=998913090 T=0 ::L 11 [9]::[test.cpp]::[something::TestOne::TestOne(std::string)] 0x5561fef15872
 CAP_LOG : P=998913092 T=0 ::L 11 [9]::[test.cpp]::[something::TestOne::TestOne(std::string)] 0x55751343e872
-CAP_LOG : P=998913090 T=0 ::F 12 [14]::[test.cpp]::[void something::TestOne::testBlockOutput()] 0x5561fef15872
 CAP_LOG : P=998913092 T=0 ::F 12 [14]::[test.cpp]::[void something::TestOne::testBlockOutput()] 0x55751343e872
-CAP_LOG : P=998913090 T=0 ::L 12 [14]::[test.cpp]::[void something::TestOne::testBlockOutput()] 0x5561fef15872
 CAP_LOG : P=998913092 T=0 ::L 12 [14]::[test.cpp]::[void something::TestOne::testBlockOutput()] 0x55751343e872
-CAP_LOG : P=998913090 T=0 ::F 13 [9]::[test.cpp]::[something::TestOne::TestOne(std::string)] 0x5561fef15873
 CAP_LOG : P=998913092 T=0 ::F 13 [9]::[test.cpp]::[something::TestOne::TestOne(std::string)] 0x55751343e873
-CAP_LOG : P=998913090 T=0 ::-> 13 [11] SET: Current Name = In Two 3 
 CAP_LOG : P=998913092 T=0 ::-> 13 [11] SET: Current Name = In Two 3 
-CAP_LOG : P=998913090 T=0 ::L 13 [9]::[test.cpp]::[something::TestOne::TestOne(std::string)] 0x5561fef15873
 CAP_LOG : P=998913092 T=0 ::L 13 [9]::[test.cpp]::[something::TestOne::TestOne(std::string)] 0x55751343e873
-CAP_LOG : P=998913090 T=0 ::F 14 [14]::[test.cpp]::[void something::TestOne::testBlockOutput()] 0x5561fef15873
 CAP_LOG : P=998913092 T=0 ::F 14 [14]::[test.cpp]::[void something::TestOne::testBlockOutput()] 0x55751343e873
-CAP_LOG : P=998913090 T=0 ::L 14 [14]::[test.cpp]::[void something::TestOne::testBlockOutput()] 0x5561fef15873
 CAP_LOG : P=998913092 T=0 ::L 14 [14]::[test.cpp]::[void something::TestOne::testBlockOutput()] 0x55751343e873
-CAP_LOG : P=998913090 T=0 ::F 15 [9]::[test.cpp]::[something::TestOne::TestOne(std::string)] 0x5561fef15894
 CAP_LOG : P=998913092 T=0 ::F 15 [9]::[test.cpp]::[something::TestOne::TestOne(std::string)] 0x55751343e894
-CAP_LOG : P=998913090 T=0 ::-> 15 [11] SET: Current Name = In Two 4 
 CAP_LOG : P=998913092 T=0 ::-> 15 [11] SET: Current Name = In Two 4 
-CAP_LOG : P=998913090 T=0 ::L 15 [9]::[test.cpp]::[something::TestOne::TestOne(std::string)] 0x5561fef15894
 CAP_LOG : P=998913092 T=0 ::L 15 [9]::[test.cpp]::[something::TestOne::TestOne(std::string)] 0x55751343e894
-CAP_LOG : P=998913090 T=0 ::F 16 [14]::[test.cpp]::[void something::TestOne::testBlockOutput()] 0x5561fef15894
 CAP_LOG : P=998913092 T=0 ::F 16 [14]::[test.cpp]::[void something::TestOne::testBlockOutput()] 0x55751343e894
-CAP_LOG : P=998913090 T=0 ::L 16 [14]::[test.cpp]::[void something::TestOne::testBlockOutput()] 0x5561fef15894
 CAP_LOG : P=998913092 T=0 ::L 16 [14]::[test.cpp]::[void something::TestOne::testBlockOutput()] 0x55751343e894
-CAP_LOG : P=998913090 T=0 :L 6 [23]::[test.cpp]::[something::TestTwo::TestTwo()] 0x7ffef034ecf0
 CAP_LOG : P=998913092 T=0 :L 6 [23]::[test.cpp]::[something::TestTwo::TestTwo()] 0x7ffc30a47a70
-CAP_LOG : P=998913090 T=0 -> 0 [63] LOG: this is a log with formatting FORMAT  
 CAP_LOG : P=998913092 T=0 -> 0 [63] LOG: this is a log with formatting FORMAT  
-CAP_LOG : P=998913090 T=0 :F 17 [9]::[test.cpp]::[something::TestOne::TestOne(std::string)] 0x7ffef034ecdd
 CAP_LOG : P=998913092 T=0 :F 17 [9]::[test.cpp]::[something::TestOne::TestOne(std::string)] 0x7ffc30a47a5d
-CAP_LOG : P=998913090 T=0 :-> 17 [11] SET: Current Name = t1 
 CAP_LOG : P=998913092 T=0 :-> 17 [11] SET: Current Name = t1 
-CAP_LOG : P=998913090 T=0 :L 17 [9]::[test.cpp]::[something::TestOne::TestOne(std::string)] 0x7ffef034ecdd
 CAP_LOG : P=998913092 T=0 :L 17 [9]::[test.cpp]::[something::TestOne::TestOne(std::string)] 0x7ffc30a47a5d
-CAP_LOG : P=998913090 T=0 :F 18 [9]::[test.cpp]::[something::TestOne::TestOne(std::string)] 0x7ffef034ecde
 CAP_LOG : P=998913092 T=0 :F 18 [9]::[test.cpp]::[something::TestOne::TestOne(std::string)] 0x7ffc30a47a5e
-CAP_LOG : P=998913090 T=0 :-> 18 [11] SET: Current Name = t2 
 CAP_LOG : P=998913092 T=0 :-> 18 [11] SET: Current Name = t2 
-CAP_LOG : P=998913090 T=0 :L 18 [9]::[test.cpp]::[something::TestOne::TestOne(std::string)] 0x7ffef034ecde
 CAP_LOG : P=998913092 T=0 :L 18 [9]::[test.cpp]::[something::TestOne::TestOne(std::string)] 0x7ffc30a47a5e
-CAP_LOG : P=998913090 T=0 :F 19 [9]::[test.cpp]::[something::TestOne::TestOne(std::string)] 0x7ffef034ecdf
 CAP_LOG : P=998913092 T=0 :F 19 [9]::[test.cpp]::[something::TestOne::TestOne(std::string)] 0x7ffc30a47a5f
-CAP_LOG : P=998913090 T=0 :-> 19 [11] SET: Current Name = t3 
 CAP_LOG : P=998913092 T=0 :-> 19 [11] SET: Current Name = t3 
-CAP_LOG : P=998913090 T=0 :L 19 [9]::[test.cpp]::[something::TestOne::TestOne(std::string)] 0x7ffef034ecdf
 CAP_LOG : P=998913092 T=0 :L 19 [9]::[test.cpp]::[something::TestOne::TestOne(std::string)] 0x7ffc30a47a5f
-CAP_LOG : P=998913090 T=0 -> 0 [69] LOG:  
 CAP_LOG : P=998913092 T=0 -> 0 [69] LOG:  
-CAP_LOG : P=998913090 T=0 :F 20 [14]::[test.cpp]::[void something::TestOne::testBlockOutput()] 0x7ffef034ecdf
 CAP_LOG : P=998913092 T=0 :F 20 [14]::[test.cpp]::[void something::TestOne::testBlockOutput()] 0x7ffc30a47a5f
-CAP_LOG : P=998913090 T=0 :L 20 [14]::[test.cpp]::[void something::TestOne::testBlockOutput()] 0x7ffef034ecdf
 CAP_LOG : P=998913092 T=0 :L 20 [14]::[test.cpp]::[void something::TestOne::testBlockOutput()] 0x7ffc30a47a5f
-CAP_LOG : P=998913090 T=0 :F 21 [14]::[test.cpp]::[void something::TestOne::testBlockOutput()] 0x7ffef034ecde
 CAP_LOG : P=998913092 T=0 :F 21 [14]::[test.cpp]::[void something::TestOne::testBlockOutput()] 0x7ffc30a47a5e
-CAP_LOG : P=998913090 T=0 :L 21 [14]::[test.cpp]::[void something::TestOne::testBlockOutput()] 0x7ffef034ecde
 CAP_LOG : P=998913092 T=0 :L 21 [14]::[test.cpp]::[void something::TestOne::testBlockOutput()] 0x7ffc30a47a5e
-CAP_LOG : P=998913090 T=0 :F 22 [14]::[test.cpp]::[void something::TestOne::testBlockOutput()] 0x7ffef034ecdd
 CAP_LOG : P=998913092 T=0 :F 22 [14]::[test.cpp]::[void something::TestOne::testBlockOutput()] 0x7ffc30a47a5d
-CAP_LOG : P=998913090 T=0 :L 22 [14]::[test.cpp]::[void something::TestOne::testBlockOutput()] 0x7ffef034ecdd
 CAP_LOG : P=998913092 T=0 :L 22 [14]::[test.cpp]::[void something::TestOne::testBlockOutput()] 0x7ffc30a47a5d
-CAP_LOG : P=998913090 T=0 L 0 [48]::[test.cpp]::[int main()] 0
 CAP_LOG : P=998913092 T=0 L 0 [48]::[test.cpp]::[int main()] 0

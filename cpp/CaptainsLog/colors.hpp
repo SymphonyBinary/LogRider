@@ -53,5 +53,7 @@
   #define ADD_LOG_SECOND_DELIMITER ">"
   #define PRIMARY_LOG_END_DELIMITER "L"
   #define MAIN_PREFIX_DELIMITER "CAP_LOG"
+  #define PROCESS_ID_DELIMITER "P="
+  #define THREAD_ID_DELIMITER "T="
   #define TAB_DELIMITER ":"
 #endif

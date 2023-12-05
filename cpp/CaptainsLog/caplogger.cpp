@@ -1,4 +1,6 @@
 #include "caplogger.hpp"
+#include <chrono>
+
 
 static const char* colourArray[] = {
   COLOUR BOLD CAP_RED,
@@ -15,9 +17,9 @@ static const int colourArraySize = sizeof(colourArray)/sizeof(colourArray[0]);
 //somehow on Android, thread_local didn't really do the expected things.  Also the process is
 
 namespace {
-  void printTab(std::stringstream& ss, unsigned int threadId, unsigned int depth) {
-    ss << COLOUR BOLD CAP_YELLOW << MAIN_PREFIX_DELIMITER << INSERT_THREAD_ID << " : " <<
-      colourArray[threadId % colourArraySize] << threadId << COLOUR BOLD CAP_GREEN << " ";
+  void printTab(std::stringstream& ss, unsigned int processId, unsigned int threadId, unsigned int depth) {
+    ss << COLOUR BOLD CAP_YELLOW << MAIN_PREFIX_DELIMITER << INSERT_THREAD_ID << " : " << PROCESS_ID_DELIMITER 
+      << processId << " " << THREAD_ID_DELIMITER << colourArray[threadId % colourArraySize] << threadId << COLOUR BOLD CAP_GREEN << " ";
 
     for(unsigned int i = 0 ; i < depth; ++i ){
       ss << TAB_DELIMITER;
@@ -29,6 +31,7 @@ struct LoggerData {
   unsigned int logDepth = 0;
   unsigned int perThreadUniqueFunctionIdx = 0;
   unsigned int relativeThreadIdx = 0;
+  unsigned int processTimestamp = 0;
 };
 
 struct BlockLoggerDataStore {
@@ -37,7 +40,7 @@ struct BlockLoggerDataStore {
     //PRINT_TO_LOG("Singleton instance: %p", (void*)&instance);
     return instance;
   }
-
+  
   LoggerData newBlockLoggerInstance() {
     const std::lock_guard<std::mutex> guard(mMut);
 
@@ -51,6 +54,7 @@ struct BlockLoggerDataStore {
       ++counters.logDepth;
       ++counters.perThreadUniqueFunctionIdx;
     } else {
+      counters.processTimestamp = mProcessTimestamp;
       counters.relativeThreadIdx = mUniqueThreadsSeen++;
     }
 
@@ -69,11 +73,18 @@ struct BlockLoggerDataStore {
   void operator=(const BlockLoggerDataStore&) = delete;
 
 private:
-  BlockLoggerDataStore(){}
+  BlockLoggerDataStore() 
+  : mProcessTimestamp(static_cast<unsigned int>(
+    std::chrono::duration_cast<std::chrono::milliseconds>(
+      std::chrono::system_clock::now().time_since_epoch()).count())) {
+  }
+
 
   std::mutex mMut;
   std::unordered_map<std::thread::id, LoggerData> mData;
   unsigned int mUniqueThreadsSeen = 0;
+  //special timestamp used as a key to identify this process from others.
+  const unsigned int mProcessTimestamp = 0;
 };
 
 BlockLogger::BlockLogger(const void* thisPointer) {
@@ -83,6 +94,7 @@ BlockLogger::BlockLogger(const void* thisPointer) {
   mDepth = logData.logDepth;
   mId = logData.perThreadUniqueFunctionIdx;
   mThreadId = logData.relativeThreadIdx;
+  mProcessId = logData.processTimestamp;
   mThisPointer = thisPointer;
 }
 
@@ -90,7 +102,7 @@ void BlockLogger::setPrimaryLog(int line, std::string_view logInfoBuffer, std::s
   mlogInfoBuffer = std::move(logInfoBuffer);
 
   std::stringstream ss;
-  printTab(ss, mThreadId, mDepth);
+  printTab(ss, mProcessId, mThreadId, mDepth);
 
   ss << COLOUR BOLD CAP_GREEN << PRIMARY_LOG_BEGIN_DELIMITER << COLOUR BOLD CAP_YELLOW << " " << mId << mlogInfoBuffer
   << colourArray[reinterpret_cast<std::uintptr_t>(mThisPointer) % colourArraySize] << mThisPointer << COLOUR RESET;
@@ -106,7 +118,7 @@ void BlockLogger::setPrimaryLog(int line, std::string_view logInfoBuffer, std::s
 void BlockLogger::log(int line, std::string_view messageBuffer) {
   // The macro which calls this hardcodes a " " to get around some macro limitations regarding zero/1/multi argument __VA_ARGS__
   std::stringstream ss;
-  printTab(ss, mThreadId, mDepth);
+  printTab(ss, mProcessId, mThreadId, mDepth);
   ss << COLOUR BOLD CAP_GREEN << ADD_LOG_DELIMITER << ADD_LOG_SECOND_DELIMITER << COLOUR BOLD CAP_YELLOW << " " << mId << " "
   << COLOUR RESET << "[" << COLOUR BOLD CAP_GREEN << line << COLOUR RESET << "] LOG: " << messageBuffer << COLOUR RESET;
   PRINT_TO_LOG("%s", ss.str().c_str());
@@ -115,7 +127,7 @@ void BlockLogger::log(int line, std::string_view messageBuffer) {
 void BlockLogger::error(int line, std::string_view messageBuffer) {
   // The macro which calls this hardcodes a " " to get around some macro limitations regarding zero/1/multi argument __VA_ARGS__
   std::stringstream ss;
-  printTab(ss, mThreadId, mDepth);
+  printTab(ss, mProcessId, mThreadId, mDepth);
   ss << COLOUR BOLD CAP_GREEN << ADD_LOG_DELIMITER << ADD_LOG_SECOND_DELIMITER << COLOUR BOLD CAP_YELLOW << " " << mId << " "
   << COLOUR RESET << "[" << COLOUR BOLD CAP_GREEN << line << COLOUR RESET << "] " << COLOUR BOLD CAP_RED << "ERROR: " <<  messageBuffer << COLOUR RESET;
   PRINT_TO_LOG("%s", ss.str().c_str());
@@ -123,7 +135,7 @@ void BlockLogger::error(int line, std::string_view messageBuffer) {
 
 void BlockLogger::set(int line, std::string_view name, std::string_view value) {
   std::stringstream ss;
-  printTab(ss, mThreadId, mDepth);
+  printTab(ss, mProcessId, mThreadId, mDepth);
   ss << COLOUR BOLD CAP_GREEN << ADD_LOG_DELIMITER << ADD_LOG_SECOND_DELIMITER << COLOUR BOLD CAP_YELLOW << " " << mId << " "
   << COLOUR RESET << "[" << COLOUR BOLD CAP_GREEN << line << COLOUR RESET << "] " << COLOUR BOLD CAP_RED << "SET: " <<  name << " = " << value << COLOUR RESET;
   PRINT_TO_LOG("%s", ss.str().c_str());
@@ -133,7 +145,7 @@ BlockLogger::~BlockLogger() {
   BlockLoggerDataStore::getInstance().removeBlockLoggerInstance();
 
   std::stringstream ss;
-  printTab(ss, mThreadId, mDepth);
+  printTab(ss, mProcessId, mThreadId, mDepth);
   ss << COLOUR BOLD CAP_GREEN << PRIMARY_LOG_END_DELIMITER << COLOUR BOLD CAP_YELLOW << " " << mId << mlogInfoBuffer
   << colourArray[reinterpret_cast<std::uintptr_t>(mThisPointer) % colourArraySize] << mThisPointer << COLOUR RESET;
   PRINT_TO_LOG("%s", ss.str().c_str());

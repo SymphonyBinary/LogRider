@@ -77,16 +77,19 @@ class LogRiderProvider implements vscode.TextDocumentContentProvider {
 		var lines = doc.split('\n');
 		let newDoc = "";
 		let logLineNumber = 0;
-		let currentStackNode = new Map<string, StackNode>();
+		let currentProcessToStackNodeMap = new Map<string, Map<string, StackNode>>();
+		let uniqueProcessIDCounter = 0;
+		let uniqueProcessIDMap = new Map<string, number>();
 		for(let i = 0; i < lines.length; i++) {
-			const clogMatch = lines[i].match(/.*CAP_LOG : (.*?) (.+?) (.*?) (\[.*?\])(.*)/);
+			const clogMatch = lines[i].match(/.*CAP_LOG : P=(.+?) T=(.*?) (.+?) (.*?) (\[.*?\])(.*)/);
 			if(clogMatch !== null) {
-				const threadId = clogMatch[1];
-				let indentation = clogMatch[2];
+				const processId = clogMatch[1];
+				const threadId = clogMatch[2];
+				let indentation = clogMatch[3];
 				const depth = indentation.length;
-				const functionId = clogMatch[3];
-				const lineNumber = clogMatch[4];
-				let infoString = clogMatch[5];
+				const functionId = clogMatch[4];
+				const lineNumber = clogMatch[5];
+				let infoString = clogMatch[6];
 				
 				indentation = indentation.replace(/:/g, "║");
 				indentation = indentation.replace("F", "╔");
@@ -94,8 +97,21 @@ class LogRiderProvider implements vscode.TextDocumentContentProvider {
 				indentation = indentation.replace("-", "╠");
 				indentation = indentation.replace(">", "╾");
 
+				let uniqueProcessId = uniqueProcessIDMap.get(processId);
+				if(uniqueProcessId === undefined) {
+					uniqueProcessId = uniqueProcessIDCounter;
+					uniqueProcessIDMap.set(processId, uniqueProcessId);
+					++uniqueProcessIDCounter;
+				}
+
+				let processMap = currentProcessToStackNodeMap.get(processId);
+				if(processMap === undefined) {
+					processMap = new Map<string, StackNode>();
+					currentProcessToStackNodeMap.set(processId, processMap);
+				}
+
 				//determine who is the "caller" (ie. the previous logged line with less depth than this one)
-				let caller = currentStackNode.get(threadId);
+				let caller = processMap.get(threadId);
 				if(caller !== undefined) {
 					if(Math.abs(depth - caller.depth) > 1) {
 						console.error("unexpected jump in depth on line " + (i+1));
@@ -120,8 +136,8 @@ class LogRiderProvider implements vscode.TextDocumentContentProvider {
 					let stackNode = new StackNode(logLineNumber, depth, filename, functionName, caller, loggedObject);
 
 					this.worldState.pushStackNode(stackNode);
-					currentStackNode.set(threadId, stackNode);
-					newDoc += threadId + " " + indentation + " " + functionId + " " + lineNumber + "::[" + filename + "]::["
+					processMap.set(threadId, stackNode);
+					newDoc += uniqueProcessId + " " + threadId + " " + indentation + " " + functionId + " " + lineNumber + "::[" + filename + "]::["
 						+ functionName + "] " + thisAddress + "\n";
 					++logLineNumber;
 					continue;
@@ -154,8 +170,8 @@ class LogRiderProvider implements vscode.TextDocumentContentProvider {
 					
 					let stackNode = new StackNode(logLineNumber, caller.depth, caller.fileName, caller.functionName, caller.caller, caller.loggedObject);
 					this.worldState.pushStackNode(stackNode);
-					currentStackNode.set(threadId, stackNode);
-					newDoc += threadId + " " + indentation + " " + functionId + " " + lineNumber + " " + command + ": " + payload + "\n";
+					processMap.set(threadId, stackNode);
+					newDoc += uniqueProcessId + " " + threadId + " " + indentation + " " + functionId + " " + lineNumber + " " + command + ": " + payload + "\n";
 					++logLineNumber;
 					continue;
 				}

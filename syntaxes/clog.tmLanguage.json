@@ -3,26 +3,28 @@
 	"name": "ClogLang",
 	"patterns": [
 		{
-				"match": "(^[0-9]*) (.*?) ([0-9]*) \\[(.*?)\\]::\\[(.*?)\\]::\\[(.*?)\\](.*)",
+				"match": "(^[0-9]*) ([0-9]*) (.*?) ([0-9]*) \\[(.*?)\\]::\\[(.*?)\\]::\\[(.*?)\\](.*)",
 				"captures": {
-					"1": {"name": "constant.numeric"},
-					"2": {"name": "variable.argument"},
-					"3": {"name": "entity.name.type" },
-					"4": {"name": "invalid.character" },
-					"5": {"name": "markup.bold" },
-					"6": {"name": "string.other" },
-					"7": {"name": "storage.class"}
+					"1": {"name": "markup.bold"},
+					"2": {"name": "markup.raw"},
+					"3": {"name": "variable.argument"},
+					"4": {"name": "entity.name.type" },
+					"5": {"name": "invalid.character" },
+					"6": {"name": "markup.bold" },
+					"7": {"name": "string.other" },
+					"8": {"name": "storage.class"}
 				}
 		},
 		{
-				"match": "(^[0-9]*) (.*?╾) ([0-9]*) \\[(.*?)\\](.*?:)(.*)",
+				"match": "(^[0-9]*) ([0-9]*) (.*?╾) ([0-9]*) \\[(.*?)\\](.*?:)(.*)",
 				"captures": {
-					"1": {"name": "constant.numeric"},
-					"2": {"name": "variable.argument"},
-					"3": {"name": "entity.name.type" },
-					"4": {"name": "invalid.character" },
-					"5": {"name": "string.comment" },
-					"6": {"name": "comment.line" }
+					"1": {"name": "markup.bold"},
+					"2": {"name": "markup.raw"},
+					"3": {"name": "variable.argument"},
+					"4": {"name": "entity.name.type" },
+					"5": {"name": "invalid.character" },
+					"6": {"name": "string.comment" },
+					"7": {"name": "comment.line" }
 				}
 		}
 ],

@@ -1,0 +1,5 @@
+./buildGCC
+./test.out > testProc1.clog
+./test.out > testProc2.clog
+paste -d '\n' testProc1.clog testProc2.clog > test.clog
+

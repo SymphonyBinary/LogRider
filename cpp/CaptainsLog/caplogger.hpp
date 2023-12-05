@@ -122,5 +122,6 @@ private:
   unsigned int mId;
   unsigned int mDepth;
   unsigned int mThreadId;
+  unsigned int mProcessId;
   const void* mThisPointer;
 };

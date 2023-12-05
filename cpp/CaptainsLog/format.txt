@@ -1,0 +1,18 @@
+1         2           3   4 5 6     7           8            9
+CAP_LOG : P=998913090 T=0 F 0 [48]::[test.cpp]::[int main()] 0
+
+1 - main delimiter
+2 - process timestampe (used to uniquely identify this log to the process).  Remaps to a smaller number in vsix.
+3 - relative thread id
+4 - PRIMARY_LOG_BEGIN_DELIMITER (start of block)
+    F = start of block
+    -> = log within block
+    L = end of block
+    : = function depth of logged functions
+5 - per thread unique function idx (monotonic counter)
+6 - line in code
+7 - filename
+8 - function name
+9 - *this* pointer
+
+
