@@ -15,6 +15,8 @@
 
 #include "colors.hpp"
 
+#define LOG_LINE_CHARACTER_LIMIT 150
+
 #ifdef SHOW_THREAD_ID
   #define INSERT_THREAD_ID COLOUR CAP_BLUE << std::this_thread::get_id() << COLOUR RESET
 #else
@@ -31,8 +33,6 @@
 
 //https://stackoverflow.com/questions/8487986/file-macro-shows-full-path
 #define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
-
-#define CAP_LOG_BUFFER_SIZE 200
 
 #ifdef ENABLE_CAP_LOGGER
 
@@ -75,9 +75,10 @@ BlockLogger blockScopeLog{pointer}; \
     ss << COLOUR RESET " [" COLOUR BOLD CAP_GREEN << __LINE__ <<  COLOUR RESET "]::[" \
       COLOUR BOLD CAP_CYAN << __FILENAME__ << COLOUR RESET "]::[" \
       COLOUR BOLD CAP_MAGENTA << __PRETTY_FUNCTION__ << COLOUR RESET "] "; \
-    char blockScopeLogCustomBuffer[CAP_LOG_BUFFER_SIZE]; \
-    snprintf(blockScopeLogCustomBuffer, CAP_LOG_BUFFER_SIZE, FIRST(__VA_ARGS__) " " REST(__VA_ARGS__)); \
-    blockScopeLog.setPrimaryLog(__LINE__, ss.str(), blockScopeLogCustomBuffer); \
+    size_t needed = snprintf(NULL, 0, FIRST(__VA_ARGS__) " " REST(__VA_ARGS__)) + 1; \
+    char* buffer = new char[needed]; \
+    snprintf(buffer, needed, FIRST(__VA_ARGS__) " " REST(__VA_ARGS__)); \
+    blockScopeLog.setPrimaryLog(__LINE__, ss.str(), buffer); \
   }
 
 /// you may optionall provide an argument in the form of "(format, ...)"
@@ -86,23 +87,26 @@ BlockLogger blockScopeLog{pointer}; \
 
 #define CAP_LOG(...) \
   { \
-    char blockScopeLogCustomBuffer[CAP_LOG_BUFFER_SIZE]; \
-    snprintf(blockScopeLogCustomBuffer, CAP_LOG_BUFFER_SIZE, FIRST(__VA_ARGS__) " " REST(__VA_ARGS__)); \
-    blockScopeLog.log(__LINE__, blockScopeLogCustomBuffer); \
+    size_t needed = snprintf(NULL, 0, FIRST(__VA_ARGS__) " " REST(__VA_ARGS__)) + 1; \
+    char* buffer = new char[needed]; \
+    snprintf(buffer, needed, FIRST(__VA_ARGS__) " " REST(__VA_ARGS__)); \
+    blockScopeLog.log(__LINE__, buffer); \
   }
 
 #define CAP_ERROR(...) \
   { \
-    char blockScopeLogCustomBuffer[CAP_LOG_BUFFER_SIZE]; \
-    snprintf(blockScopeLogCustomBuffer, CAP_LOG_BUFFER_SIZE, FIRST(__VA_ARGS__) " " REST(__VA_ARGS__)); \
-    blockScopeLog.error(__LINE__, blockScopeLogCustomBuffer); \
+    size_t needed = snprintf(NULL, 0, FIRST(__VA_ARGS__) " " REST(__VA_ARGS__)) + 1; \
+    char* buffer = new char[needed]; \
+    snprintf(buffer, needed, FIRST(__VA_ARGS__) " " REST(__VA_ARGS__)); \
+    blockScopeLog.error(__LINE__, buffer); \
   }
 
 #define CAP_SET(name, ...) \
   { \
-    char blockScopeLogCustomBuffer[CAP_LOG_BUFFER_SIZE]; \
-    snprintf(blockScopeLogCustomBuffer, CAP_LOG_BUFFER_SIZE, FIRST(__VA_ARGS__) " " REST(__VA_ARGS__)); \
-    blockScopeLog.set(__LINE__, name, blockScopeLogCustomBuffer); \
+    size_t needed = snprintf(NULL, 0, FIRST(__VA_ARGS__) " " REST(__VA_ARGS__)) + 1; \
+    char* buffer = new char[needed]; \
+    snprintf(buffer, needed, FIRST(__VA_ARGS__) " " REST(__VA_ARGS__)); \
+    blockScopeLog.set(__LINE__, name, buffer); \
   }
 
 #else

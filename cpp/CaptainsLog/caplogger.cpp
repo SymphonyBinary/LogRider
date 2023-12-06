@@ -116,21 +116,31 @@ void BlockLogger::setPrimaryLog(int line, std::string_view logInfoBuffer, std::s
 }
 
 void BlockLogger::log(int line, std::string_view messageBuffer) {
-  // The macro which calls this hardcodes a " " to get around some macro limitations regarding zero/1/multi argument __VA_ARGS__
-  std::stringstream ss;
-  printTab(ss, mProcessId, mThreadId, mDepth);
-  ss << COLOUR BOLD CAP_GREEN << ADD_LOG_DELIMITER << ADD_LOG_SECOND_DELIMITER << COLOUR BOLD CAP_YELLOW << " " << mId << " "
-  << COLOUR RESET << "[" << COLOUR BOLD CAP_GREEN << line << COLOUR RESET << "] LOG: " << messageBuffer << COLOUR RESET;
-  PRINT_TO_LOG("%s", ss.str().c_str());
+  size_t index = 0;
+  while(index < messageBuffer.size()) {
+    // The macro which calls this hardcodes a " " to get around some macro limitations regarding zero/1/multi argument __VA_ARGS__
+    std::stringstream ss;
+    printTab(ss, mProcessId, mThreadId, mDepth);
+    ss << COLOUR BOLD CAP_GREEN << ADD_LOG_DELIMITER << ADD_LOG_SECOND_DELIMITER << COLOUR BOLD CAP_YELLOW << " " << mId << " "
+    << COLOUR RESET << "[" << COLOUR BOLD CAP_GREEN << line << COLOUR RESET << "] LOG: " 
+    << messageBuffer.substr(index, LOG_LINE_CHARACTER_LIMIT) << COLOUR RESET;
+    PRINT_TO_LOG("%s", ss.str().c_str());
+    index += LOG_LINE_CHARACTER_LIMIT;
+  }
 }
 
 void BlockLogger::error(int line, std::string_view messageBuffer) {
-  // The macro which calls this hardcodes a " " to get around some macro limitations regarding zero/1/multi argument __VA_ARGS__
-  std::stringstream ss;
-  printTab(ss, mProcessId, mThreadId, mDepth);
-  ss << COLOUR BOLD CAP_GREEN << ADD_LOG_DELIMITER << ADD_LOG_SECOND_DELIMITER << COLOUR BOLD CAP_YELLOW << " " << mId << " "
-  << COLOUR RESET << "[" << COLOUR BOLD CAP_GREEN << line << COLOUR RESET << "] " << COLOUR BOLD CAP_RED << "ERROR: " <<  messageBuffer << COLOUR RESET;
-  PRINT_TO_LOG("%s", ss.str().c_str());
+  size_t index = 0;
+  while(index < messageBuffer.size()) {
+    // The macro which calls this hardcodes a " " to get around some macro limitations regarding zero/1/multi argument __VA_ARGS__
+    std::stringstream ss;
+    printTab(ss, mProcessId, mThreadId, mDepth);
+    ss << COLOUR BOLD CAP_GREEN << ADD_LOG_DELIMITER << ADD_LOG_SECOND_DELIMITER << COLOUR BOLD CAP_YELLOW << " " << mId << " "
+    << COLOUR RESET << "[" << COLOUR BOLD CAP_GREEN << line << COLOUR RESET << "] " << COLOUR BOLD CAP_RED << "ERROR: " 
+    << messageBuffer.substr(index, LOG_LINE_CHARACTER_LIMIT) << COLOUR RESET;
+    PRINT_TO_LOG("%s", ss.str().c_str());
+    index += LOG_LINE_CHARACTER_LIMIT;
+  }
 }
 
 void BlockLogger::set(int line, std::string_view name, std::string_view value) {

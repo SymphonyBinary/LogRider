@@ -66,6 +66,16 @@ int main() {
 
   something::TestOne t1("t1");
   something::TestOne t2("t2");
+
+  std::string giantString = "super";
+  for(size_t i = 0; i < 100; ++i) {
+    giantString += "long long long";
+  }
+  giantString += "string";
+
+  CAP_LOG("%s", giantString.c_str());
+
+
   something::TestOne t3("t3");
 
   CAP_LOG();
