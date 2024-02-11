@@ -99,7 +99,11 @@ BlockLogger::BlockLogger(const void* thisPointer) {
 }
 
 void BlockLogger::setPrimaryLog(int line, std::string_view logInfoBuffer, std::string_view customMessageBuffer) {
-  mlogInfoBuffer = std::move(logInfoBuffer);
+  mlogInfoBuffer = std::move(logInfoBuffer.substr(0, LOG_INFO_BUFFER_LIMIT));
+  if (mlogInfoBuffer.length() != logInfoBuffer.length()) {
+    mlogInfoBuffer.append("...]");
+  }
+  mlogInfoBuffer.append(" ");
 
   std::stringstream ss;
   printTab(ss, mProcessId, mThreadId, mDepth);

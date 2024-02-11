@@ -16,6 +16,7 @@
 #include "colors.hpp"
 
 #define LOG_LINE_CHARACTER_LIMIT 150
+#define LOG_INFO_BUFFER_LIMIT 100
 
 #ifdef SHOW_THREAD_ID
   #define INSERT_THREAD_ID COLOUR CAP_BLUE << std::this_thread::get_id() << COLOUR RESET
@@ -25,8 +26,8 @@
 
 #ifdef ANDROID
   #include <android/log.h>
-  #define  LOG_TAG    "D_LOG::"
-  #define  PRINT_TO_LOG(...)  __android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, __VA_ARGS__)
+  #define  CAPLOG_TAG    "D_LOG::"
+  #define  PRINT_TO_LOG(...)  __android_log_print(ANDROID_LOG_DEBUG, "CAPLOG_TAG", __VA_ARGS__)
 #else
   #define PRINT_TO_LOG(...) printf(__VA_ARGS__); printf("\n");
 #endif
@@ -74,7 +75,7 @@ BlockLogger blockScopeLog{pointer}; \
     std::stringstream ss; \
     ss << COLOUR RESET " [" COLOUR BOLD CAP_GREEN << __LINE__ <<  COLOUR RESET "]::[" \
       COLOUR BOLD CAP_CYAN << __FILENAME__ << COLOUR RESET "]::[" \
-      COLOUR BOLD CAP_MAGENTA << __PRETTY_FUNCTION__ << COLOUR RESET "] "; \
+      COLOUR BOLD CAP_MAGENTA << __PRETTY_FUNCTION__ << COLOUR RESET "]"; \
     size_t needed = snprintf(NULL, 0, FIRST(__VA_ARGS__) " " REST(__VA_ARGS__)) + 1; \
     char* buffer = new char[needed]; \
     snprintf(buffer, needed, FIRST(__VA_ARGS__) " " REST(__VA_ARGS__)); \
