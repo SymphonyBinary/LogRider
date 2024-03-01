@@ -1,5 +1,9 @@
 #include "caplogger.hpp"
 #include <chrono>
+#include <vector>
+#include <array>
+
+namespace CAP {
 
 
 static const char* colourArray[] = {
@@ -25,6 +29,37 @@ namespace {
       ss << TAB_DELIMITER;
     }
   }
+}
+
+/*static*/ BlockChannelTree& BlockChannelTree::getInstance() {
+  static BlockChannelTree instance;
+  return instance;
+}
+
+bool BlockChannelTree::isChannelEnabled(CAP::CHANNEL channel) {
+  return mEnabledChannelsById[(size_t)channel];
+}
+
+BlockChannelTree::BlockChannelTree() {
+  std::vector<char> enabledStack = {true};
+  int index = 0;
+  bool currentEnabled = true;
+
+#define CAPTAINS_LOG_CHANNEL(name, verboseLevel, enabled) \
+currentEnabled = enabled && enabledStack.back(); \
+mEnabledChannelsById[index++] = currentEnabled;
+
+#define CAPTAINS_LOG_CHANNEL_BEGIN_CHILDREN(...) \
+enabledStack.emplace_back(currentEnabled);
+
+#define CAPTAINS_LOG_CHANNEL_END_CHILDREN(...) \
+enabledStack.pop_back();
+
+#include "channeldefs.hpp"
+
+#undef CAPTAINS_LOG_CHANNEL
+#undef CAPTAINS_LOG_CHANNEL_BEGIN_CHILDREN
+#undef CAPTAINS_LOG_CHANNEL_END_CHILDREN
 }
 
 struct LoggerData {
@@ -87,7 +122,12 @@ private:
   const unsigned int mProcessTimestamp = 0;
 };
 
-BlockLogger::BlockLogger(const void* thisPointer) {
+BlockLogger::BlockLogger(const void* thisPointer, CAP::CHANNEL channel)
+  : mEnabled(BlockChannelTree::getInstance().isChannelEnabled(channel)) {
+  if(!mEnabled) {
+    return;
+  }
+
   auto& loggerDataStore = BlockLoggerDataStore::getInstance();
   auto logData = loggerDataStore.newBlockLoggerInstance();
 
@@ -99,6 +139,10 @@ BlockLogger::BlockLogger(const void* thisPointer) {
 }
 
 void BlockLogger::setPrimaryLog(int line, std::string_view logInfoBuffer, std::string_view customMessageBuffer) {
+  if(!mEnabled) {
+    return;
+  }
+
   mlogInfoBuffer = std::move(logInfoBuffer.substr(0, LOG_INFO_BUFFER_LIMIT));
   if (mlogInfoBuffer.length() != logInfoBuffer.length()) {
     mlogInfoBuffer.append("...]");
@@ -120,6 +164,10 @@ void BlockLogger::setPrimaryLog(int line, std::string_view logInfoBuffer, std::s
 }
 
 void BlockLogger::log(int line, std::string_view messageBuffer) {
+  if(!mEnabled) {
+    return;
+  }
+
   size_t index = 0;
   while(index < messageBuffer.size()) {
     // The macro which calls this hardcodes a " " to get around some macro limitations regarding zero/1/multi argument __VA_ARGS__
@@ -134,6 +182,10 @@ void BlockLogger::log(int line, std::string_view messageBuffer) {
 }
 
 void BlockLogger::error(int line, std::string_view messageBuffer) {
+  if(!mEnabled) {
+    return;
+  }
+
   size_t index = 0;
   while(index < messageBuffer.size()) {
     // The macro which calls this hardcodes a " " to get around some macro limitations regarding zero/1/multi argument __VA_ARGS__
@@ -156,6 +208,10 @@ void BlockLogger::set(int line, std::string_view name, std::string_view value) {
 }
 
 BlockLogger::~BlockLogger() {
+  if(!mEnabled) {
+    return;
+  }
+
   BlockLoggerDataStore::getInstance().removeBlockLoggerInstance();
 
   std::stringstream ss;
@@ -164,3 +220,9 @@ BlockLogger::~BlockLogger() {
   << colourArray[reinterpret_cast<std::uintptr_t>(mThisPointer) % colourArraySize] << mThisPointer << COLOUR RESET;
   PRINT_TO_LOG("%s", ss.str().c_str());
 }
+
+bool BlockLogger::isEnabled() {
+  return mEnabled;
+}
+
+} // namespace CAP
