@@ -190,6 +190,7 @@ private:
   unsigned int mDepth;
   unsigned int mThreadId;
   unsigned int mProcessId;
+  CAP::CHANNEL mChannel;
   const void* mThisPointer;
 };
 

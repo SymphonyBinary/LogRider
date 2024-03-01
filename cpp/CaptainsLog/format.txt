@@ -1,31 +1,37 @@
 ------------------------------------------------------------------------------
 CHANNEL MESSAGE (always the first caplog message to get displayed per process)
 ------------------------------------------------------------------------------
+1         2            3   4                5             6               7     8     
+CAP_LOG : P=4165984483 T=0 CHANNEL-ID=002 : ENABLED=YES : VERBOSITY : 0 : >  >  RENDER_SUB_CHANNEL_A
 
-
-
-
-
+1 - main delimiter
+2 - process timestampe (used to uniquely identify this log to the process).  Remaps to a smaller number in vsix.
+3 - relative thread id
+4 - channel ID (up to 3 digits)
+5 - If the channel is enabled or not
+6 - verbosity level
+7 - tabs to show channel hierarchical relationship
+8 - channel name
 
 ------------------------------------------------------------------------------
 LOG LINES:
 ------------------------------------------------------------------------------
 
-1         2           3   4 5 6     7    8           9            10
-CAP_LOG : P=998913090 T=0 F 0 [48]::[0]::[test.cpp]::[void something::TestRender::testBlockOutput()] 0x0x7ffc7a7f0b25
+1         2           3   4     5 6 7           8     9                                               10
+CAP_LOG : P=998913090 T=0 C=000 F 0 [test.cpp]::[48]::[void something::TestRender::testBlockOutput()] 0x0x7ffc7a7f0b25
 
 1 - main delimiter
 2 - process timestampe (used to uniquely identify this log to the process).  Remaps to a smaller number in vsix.
 3 - relative thread id
-4 - PRIMARY_LOG_BEGIN_DELIMITER (start of block)
+4 - channel ID (up to 3 digits)
+5 - PRIMARY_LOG_BEGIN_DELIMITER (start of block)
     F = start of block
     -> = log within block
     L = end of block
     : = function depth of logged functions (appends as prefix.  Eg. :F, :L, ::F, etc)
-5 - per thread unique function idx (monotonic counter)
-6 - line in code
-7 - channel ID
-8 - filename
+6 - per thread unique function idx (monotonic counter)
+7 - filename
+8 - line in the source file
 9 - function name
 10 - *this* pointer
 

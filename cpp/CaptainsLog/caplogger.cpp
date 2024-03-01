@@ -25,7 +25,7 @@ namespace {
   void printChannel(std::stringstream& ss, unsigned int processId, unsigned int threadId, unsigned int depth, unsigned int channelID, std::string_view channelName, bool enabled, int verbosityLevel) {
     ss << COLOUR BOLD CAP_YELLOW << MAIN_PREFIX_DELIMITER << INSERT_THREAD_ID << " : " << PROCESS_ID_DELIMITER 
       << processId << " " << THREAD_ID_DELIMITER << colourArray[threadId % colourArraySize] << threadId << COLOUR BOLD CAP_GREEN 
-      << " CHANNEL-ID=" << std::setw(3) << std::setfill('0') << channelID << " : ENABLED=" << (enabled ? "YES :" : "NO  :") << " Verbosity : " << verbosityLevel << " : ";
+      << " CHANNEL-ID=" << std::setw(3) << std::setfill('0') << channelID << " : ENABLED=" << (enabled ? "YES :" : "NO  :") << " VERBOSITY : " << verbosityLevel << " : ";
 
     for(unsigned int i = 0 ; i < depth; ++i ) {
       ss << ">  ";
@@ -161,7 +161,8 @@ BlockChannelTree::BlockChannelTree() {
 
 
 BlockLogger::BlockLogger(const void* thisPointer, CAP::CHANNEL channel)
-  : mEnabled(BlockChannelTree::getInstance().isChannelEnabled(channel)) {
+  : mEnabled(BlockChannelTree::getInstance().isChannelEnabled(channel)) 
+  , mChannel(channel) {
   if(!mEnabled) {
     return;
   }
