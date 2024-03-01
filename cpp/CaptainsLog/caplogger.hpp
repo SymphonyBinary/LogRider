@@ -62,8 +62,6 @@
 #define SELECT_20TH(a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20, ...) a20
 ///////
 
-#define INIT_CAP_LOG(...)
-
 /*
 The " " here
 snprintf(blockScopeLogCustomBuffer, CAP_LOG_BUFFER_SIZE, FIRST(__VA_ARGS__) " " REST(__VA_ARGS__)); \
@@ -146,25 +144,25 @@ a buffer at all
 namespace CAP {
 
 enum class CHANNEL {
-#define CAPTAINS_LOG_CHANNEL(name, ...) name,
-#define CAPTAINS_LOG_CHANNEL_BEGIN_CHILDREN(...)
-#define CAPTAINS_LOG_CHANNEL_END_CHILDREN(...)
-#include "channeldefs.hpp"
-#undef CAPTAINS_LOG_CHANNEL
-#undef CAPTAINS_LOG_CHANNEL_BEGIN_CHILDREN
-#undef CAPTAINS_LOG_CHANNEL_END_CHILDREN
-COUNT,
+  #define CAPTAINS_LOG_CHANNEL(name, ...) name,
+  #define CAPTAINS_LOG_CHANNEL_BEGIN_CHILDREN(...)
+  #define CAPTAINS_LOG_CHANNEL_END_CHILDREN(...)
+  #include "channeldefs.hpp"
+  #undef CAPTAINS_LOG_CHANNEL
+  #undef CAPTAINS_LOG_CHANNEL_BEGIN_CHILDREN
+  #undef CAPTAINS_LOG_CHANNEL_END_CHILDREN
+  COUNT,
 };
 
-inline std::string& channelToString(CHANNEL channel) {
+inline std::string_view channelToString(CHANNEL channel) {
   static std::array<std::string, (size_t)CHANNEL::COUNT> strings = {
-#define CAPTAINS_LOG_CHANNEL(name, ...) #name,
-#define CAPTAINS_LOG_CHANNEL_BEGIN_CHILDREN(...)
-#define CAPTAINS_LOG_CHANNEL_END_CHILDREN(...)
-#include "channeldefs.hpp"
-#undef CAPTAINS_LOG_CHANNEL
-#undef CAPTAINS_LOG_CHANNEL_BEGIN_CHILDREN
-#undef CAPTAINS_LOG_CHANNEL_END_CHILDREN
+    #define CAPTAINS_LOG_CHANNEL(name, ...) #name,
+    #define CAPTAINS_LOG_CHANNEL_BEGIN_CHILDREN(...)
+    #define CAPTAINS_LOG_CHANNEL_END_CHILDREN(...)
+    #include "channeldefs.hpp"
+    #undef CAPTAINS_LOG_CHANNEL
+    #undef CAPTAINS_LOG_CHANNEL_BEGIN_CHILDREN
+    #undef CAPTAINS_LOG_CHANNEL_END_CHILDREN
   };
   return strings[(size_t)channel];
 }

@@ -2,6 +2,7 @@
 #include <chrono>
 #include <vector>
 #include <array>
+#include <iomanip>
 
 namespace CAP {
 
@@ -21,6 +22,18 @@ static const int colourArraySize = sizeof(colourArray)/sizeof(colourArray[0]);
 //somehow on Android, thread_local didn't really do the expected things.  Also the process is
 
 namespace {
+  void printChannel(std::stringstream& ss, unsigned int processId, unsigned int threadId, unsigned int depth, unsigned int channelID, std::string_view channelName, bool enabled, int verbosityLevel) {
+    ss << COLOUR BOLD CAP_YELLOW << MAIN_PREFIX_DELIMITER << INSERT_THREAD_ID << " : " << PROCESS_ID_DELIMITER 
+      << processId << " " << THREAD_ID_DELIMITER << colourArray[threadId % colourArraySize] << threadId << COLOUR BOLD CAP_GREEN 
+      << " CHANNEL-ID=" << std::setw(3) << std::setfill('0') << channelID << " : ENABLED=" << (enabled ? "YES :" : "NO  :") << " Verbosity : " << verbosityLevel << " : ";
+
+    for(unsigned int i = 0 ; i < depth; ++i ) {
+      ss << ">  ";
+    }
+
+    ss << channelName;
+  }
+
   void printTab(std::stringstream& ss, unsigned int processId, unsigned int threadId, unsigned int depth) {
     ss << COLOUR BOLD CAP_YELLOW << MAIN_PREFIX_DELIMITER << INSERT_THREAD_ID << " : " << PROCESS_ID_DELIMITER 
       << processId << " " << THREAD_ID_DELIMITER << colourArray[threadId % colourArraySize] << threadId << COLOUR BOLD CAP_GREEN << " ";
@@ -29,37 +42,6 @@ namespace {
       ss << TAB_DELIMITER;
     }
   }
-}
-
-/*static*/ BlockChannelTree& BlockChannelTree::getInstance() {
-  static BlockChannelTree instance;
-  return instance;
-}
-
-bool BlockChannelTree::isChannelEnabled(CAP::CHANNEL channel) {
-  return mEnabledChannelsById[(size_t)channel];
-}
-
-BlockChannelTree::BlockChannelTree() {
-  std::vector<char> enabledStack = {true};
-  int index = 0;
-  bool currentEnabled = true;
-
-#define CAPTAINS_LOG_CHANNEL(name, verboseLevel, enabled) \
-currentEnabled = enabled && enabledStack.back(); \
-mEnabledChannelsById[index++] = currentEnabled;
-
-#define CAPTAINS_LOG_CHANNEL_BEGIN_CHILDREN(...) \
-enabledStack.emplace_back(currentEnabled);
-
-#define CAPTAINS_LOG_CHANNEL_END_CHILDREN(...) \
-enabledStack.pop_back();
-
-#include "channeldefs.hpp"
-
-#undef CAPTAINS_LOG_CHANNEL
-#undef CAPTAINS_LOG_CHANNEL_BEGIN_CHILDREN
-#undef CAPTAINS_LOG_CHANNEL_END_CHILDREN
 }
 
 struct LoggerData {
@@ -121,6 +103,62 @@ private:
   //special timestamp used as a key to identify this process from others.
   const unsigned int mProcessTimestamp = 0;
 };
+
+/*static*/ BlockChannelTree& BlockChannelTree::getInstance() {
+  static BlockChannelTree instance;
+  return instance;
+}
+
+bool BlockChannelTree::isChannelEnabled(CAP::CHANNEL channel) {
+  return mEnabledChannelsById[(size_t)channel];
+}
+
+BlockChannelTree::BlockChannelTree() {
+  std::vector<char> enabledStack = {true};
+  int index = 0;
+  bool currentEnabled = true;
+
+  #define CAPTAINS_LOG_CHANNEL(name, verboseLevel, enabled) \
+  currentEnabled = enabled && enabledStack.back(); \
+  mEnabledChannelsById[index++] = currentEnabled;
+
+  #define CAPTAINS_LOG_CHANNEL_BEGIN_CHILDREN(...) \
+  enabledStack.emplace_back(currentEnabled);
+
+  #define CAPTAINS_LOG_CHANNEL_END_CHILDREN(...) \
+  enabledStack.pop_back();
+
+  #include "channeldefs.hpp"
+
+  #undef CAPTAINS_LOG_CHANNEL
+  #undef CAPTAINS_LOG_CHANNEL_BEGIN_CHILDREN
+  #undef CAPTAINS_LOG_CHANNEL_END_CHILDREN
+
+
+  // Now print it.  This should be the first thing caplog prints.
+  auto& loggerDataStore = BlockLoggerDataStore::getInstance();
+  auto logData = loggerDataStore.newBlockLoggerInstance();
+  int channelDepth = 0;
+  int channelId = 0;
+  std::stringstream ss;
+
+  #define CAPTAINS_LOG_CHANNEL(name, verboseLevel, enabled) \
+  printChannel(ss, logData.processTimestamp, logData.relativeThreadIdx, channelDepth, channelId++, #name, enabled, verboseLevel); \
+  PRINT_TO_LOG("%s", ss.str().c_str()); \
+  ss.str("");
+  #define CAPTAINS_LOG_CHANNEL_BEGIN_CHILDREN(...) \
+  ++channelDepth;
+  #define CAPTAINS_LOG_CHANNEL_END_CHILDREN(...) \
+  --channelDepth;
+
+  #include "channeldefs.hpp"
+  #undef CAPTAINS_LOG_CHANNEL
+  #undef CAPTAINS_LOG_CHANNEL_BEGIN_CHILDREN
+  #undef CAPTAINS_LOG_CHANNEL_END_CHILDREN
+//void printChannel(std::stringstream& ss, unsigned int processId, unsigned int threadId, unsigned int depth, unsigned int channelID, std::string_view channelName) {
+  BlockLoggerDataStore::getInstance().removeBlockLoggerInstance();
+}
+
 
 BlockLogger::BlockLogger(const void* thisPointer, CAP::CHANNEL channel)
   : mEnabled(BlockChannelTree::getInstance().isChannelEnabled(channel)) {

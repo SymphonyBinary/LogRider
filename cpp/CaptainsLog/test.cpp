@@ -81,7 +81,7 @@ int main() {
 
   something::TestRender t3("t3");
 
-  CAP_LOG();
+  CAP_LOG("last line before a bunch of testBlockOutput");
 
   t3.testBlockOutput();
   t2.testBlockOutput();
