@@ -1,1 +1,0 @@
-clang++ -Wall -std=c++17 test.cpp caplogger.cpp -o test.out

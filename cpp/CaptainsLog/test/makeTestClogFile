@@ -1,0 +1,6 @@
+cd `dirname "$0"`
+./buildTestGCC
+../out/test.out > ../out/testProc1.clog
+../out/test.out > ../out/testProc2.clog
+paste -d '\n' ../out/testProc1.clog ../out/testProc2.clog > ../out/test.clog
+
