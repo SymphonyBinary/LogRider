@@ -1,0 +1,2 @@
+cd `dirname "$0"`
+g++ src/processClog.cpp -Wall -Wextra -std=c++17 -lstdc++ -o out/processClog.out

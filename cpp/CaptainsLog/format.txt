@@ -5,9 +5,9 @@ CHANNEL MESSAGE (always the first caplog message to get displayed per process)
 CAP_LOG : P=4165984483 T=0 CHANNEL-ID=002 : ENABLED=YES : VERBOSITY : 0 : >  >  RENDER_SUB_CHANNEL_A
 
 1 - main delimiter
-2 - process timestampe (used to uniquely identify this log to the process).  Remaps to a smaller number in vsix.
+2 - process timestamp (used to uniquely identify this log to the process).  Remaps to a smaller number in vsix.
 3 - relative thread id
-4 - channel ID (up to 3 digits)
+4 - channel ID (3 digits)
 5 - If the channel is enabled or not
 6 - verbosity level
 7 - tabs to show channel hierarchical relationship
@@ -17,21 +17,23 @@ CAP_LOG : P=4165984483 T=0 CHANNEL-ID=002 : ENABLED=YES : VERBOSITY : 0 : >  >  
 LOG LINES:
 ------------------------------------------------------------------------------
 
-1         2           3   4     5 6 7           8     9                                               10
-CAP_LOG : P=998913090 T=0 C=000 F 0 [test.cpp]::[48]::[void something::TestRender::testBlockOutput()] 0x0x7ffc7a7f0b25
+1         2            3   4     5  6 7     8           9                                               10
+CAP_LOG : P=4293102038 T=0 C=005 :F 3 [25]::[test.cpp]::[something::TestNetwork::TestNetwork()] 0x7ffecc005730
+CAP_LOG : P=4293102038 T=0 C=005 :-> 3 [25] LOG: Testing format = hello 
+CAP_LOG : P=4293102038 T=0 C=005 :L 3 [25]::[test.cpp]::[something::TestNetwork::TestNetwork()] 0x7ffecc005730
 
 1 - main delimiter
-2 - process timestampe (used to uniquely identify this log to the process).  Remaps to a smaller number in vsix.
+2 - process timestamp (used to uniquely identify this log to the process).  Remaps to a smaller number in vsix.
 3 - relative thread id
-4 - channel ID (up to 3 digits)
+4 - channel ID (3 digits)
 5 - PRIMARY_LOG_BEGIN_DELIMITER (start of block)
     F = start of block
     -> = log within block
     L = end of block
     : = function depth of logged functions (appends as prefix.  Eg. :F, :L, ::F, etc)
 6 - per thread unique function idx (monotonic counter)
-7 - filename
-8 - line in the source file
+7 - line in the source file
+8 - filename
 9 - function name
 10 - *this* pointer
 

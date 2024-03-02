@@ -55,5 +55,6 @@
   #define MAIN_PREFIX_DELIMITER "CAP_LOG"
   #define PROCESS_ID_DELIMITER "P="
   #define THREAD_ID_DELIMITER "T="
+  #define CHANNEL_ID_DELIMITER "C="
   #define TAB_DELIMITER ":"
 #endif

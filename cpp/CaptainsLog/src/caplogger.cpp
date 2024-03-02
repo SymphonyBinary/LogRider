@@ -22,10 +22,10 @@ static const int colourArraySize = sizeof(colourArray)/sizeof(colourArray[0]);
 //somehow on Android, thread_local didn't really do the expected things.  Also the process is
 
 namespace {
-  void printChannel(std::stringstream& ss, unsigned int processId, unsigned int threadId, unsigned int depth, unsigned int channelID, std::string_view channelName, bool enabled, int verbosityLevel) {
+  void printChannel(std::stringstream& ss, unsigned int processId, unsigned int threadId, unsigned int depth, unsigned int channelId, std::string_view channelName, bool enabled, int verbosityLevel) {
     ss << COLOUR BOLD CAP_YELLOW << MAIN_PREFIX_DELIMITER << INSERT_THREAD_ID << " : " << PROCESS_ID_DELIMITER 
       << processId << " " << THREAD_ID_DELIMITER << colourArray[threadId % colourArraySize] << threadId << COLOUR BOLD CAP_GREEN 
-      << " CHANNEL-ID=" << std::setw(3) << std::setfill('0') << channelID << " : ENABLED=" << (enabled ? "YES :" : "NO  :") << " VERBOSITY : " << verbosityLevel << " : ";
+      << " CHANNEL-ID=" << std::setw(3) << std::setfill('0') << channelId << " : ENABLED=" << (enabled ? "YES :" : "NO  :") << " VERBOSITY : " << verbosityLevel << " : ";
 
     for(unsigned int i = 0 ; i < depth; ++i ) {
       ss << ">  ";
@@ -34,9 +34,10 @@ namespace {
     ss << channelName;
   }
 
-  void printTab(std::stringstream& ss, unsigned int processId, unsigned int threadId, unsigned int depth) {
+  void printTab(std::stringstream& ss, unsigned int processId, unsigned int threadId, unsigned int depth, unsigned int channelId) {
     ss << COLOUR BOLD CAP_YELLOW << MAIN_PREFIX_DELIMITER << INSERT_THREAD_ID << " : " << PROCESS_ID_DELIMITER 
-      << processId << " " << THREAD_ID_DELIMITER << colourArray[threadId % colourArraySize] << threadId << COLOUR BOLD CAP_GREEN << " ";
+      << processId << " " << THREAD_ID_DELIMITER << colourArray[threadId % colourArraySize] << threadId << COLOUR BOLD CAP_GREEN 
+      << " " << CHANNEL_ID_DELIMITER << std::setw(3) << std::setfill('0') << channelId << " ";
 
     for(unsigned int i = 0 ; i < depth; ++i ){
       ss << TAB_DELIMITER;
@@ -114,6 +115,8 @@ bool BlockChannelTree::isChannelEnabled(CAP::CHANNEL channel) {
 }
 
 BlockChannelTree::BlockChannelTree() {
+  PRINT_TO_LOG("%s", "CAPTAIN'S LOG - VERSION 1.1"); \
+
   std::vector<char> enabledStack = {true};
   int index = 0;
   bool currentEnabled = true;
@@ -189,7 +192,7 @@ void BlockLogger::setPrimaryLog(int line, std::string_view logInfoBuffer, std::s
   mlogInfoBuffer.append(" ");
 
   std::stringstream ss;
-  printTab(ss, mProcessId, mThreadId, mDepth);
+  printTab(ss, mProcessId, mThreadId, mDepth, (size_t)mChannel);
 
   ss << COLOUR BOLD CAP_GREEN << PRIMARY_LOG_BEGIN_DELIMITER << COLOUR BOLD CAP_YELLOW << " " << mId << mlogInfoBuffer
   << colourArray[reinterpret_cast<std::uintptr_t>(mThisPointer) % colourArraySize] << mThisPointer << COLOUR RESET;
@@ -211,7 +214,7 @@ void BlockLogger::log(int line, std::string_view messageBuffer) {
   while(index < messageBuffer.size()) {
     // The macro which calls this hardcodes a " " to get around some macro limitations regarding zero/1/multi argument __VA_ARGS__
     std::stringstream ss;
-    printTab(ss, mProcessId, mThreadId, mDepth);
+    printTab(ss, mProcessId, mThreadId, mDepth, (size_t)mChannel);
     ss << COLOUR BOLD CAP_GREEN << ADD_LOG_DELIMITER << ADD_LOG_SECOND_DELIMITER << COLOUR BOLD CAP_YELLOW << " " << mId << " "
     << COLOUR RESET << "[" << COLOUR BOLD CAP_GREEN << line << COLOUR RESET << "] LOG: " 
     << messageBuffer.substr(index, LOG_LINE_CHARACTER_LIMIT) << COLOUR RESET;
@@ -229,7 +232,7 @@ void BlockLogger::error(int line, std::string_view messageBuffer) {
   while(index < messageBuffer.size()) {
     // The macro which calls this hardcodes a " " to get around some macro limitations regarding zero/1/multi argument __VA_ARGS__
     std::stringstream ss;
-    printTab(ss, mProcessId, mThreadId, mDepth);
+    printTab(ss, mProcessId, mThreadId, mDepth, (size_t)mChannel);
     ss << COLOUR BOLD CAP_GREEN << ADD_LOG_DELIMITER << ADD_LOG_SECOND_DELIMITER << COLOUR BOLD CAP_YELLOW << " " << mId << " "
     << COLOUR RESET << "[" << COLOUR BOLD CAP_GREEN << line << COLOUR RESET << "] " << COLOUR BOLD CAP_RED << "ERROR: " 
     << messageBuffer.substr(index, LOG_LINE_CHARACTER_LIMIT) << COLOUR RESET;
@@ -240,7 +243,7 @@ void BlockLogger::error(int line, std::string_view messageBuffer) {
 
 void BlockLogger::set(int line, std::string_view name, std::string_view value) {
   std::stringstream ss;
-  printTab(ss, mProcessId, mThreadId, mDepth);
+  printTab(ss, mProcessId, mThreadId, mDepth, (size_t)mChannel);
   ss << COLOUR BOLD CAP_GREEN << ADD_LOG_DELIMITER << ADD_LOG_SECOND_DELIMITER << COLOUR BOLD CAP_YELLOW << " " << mId << " "
   << COLOUR RESET << "[" << COLOUR BOLD CAP_GREEN << line << COLOUR RESET << "] " << COLOUR BOLD CAP_RED << "SET: " <<  name << " = " << value << COLOUR RESET;
   PRINT_TO_LOG("%s", ss.str().c_str());
@@ -254,7 +257,7 @@ BlockLogger::~BlockLogger() {
   BlockLoggerDataStore::getInstance().removeBlockLoggerInstance();
 
   std::stringstream ss;
-  printTab(ss, mProcessId, mThreadId, mDepth);
+  printTab(ss, mProcessId, mThreadId, mDepth, (size_t)mChannel);
   ss << COLOUR BOLD CAP_GREEN << PRIMARY_LOG_END_DELIMITER << COLOUR BOLD CAP_YELLOW << " " << mId << mlogInfoBuffer
   << colourArray[reinterpret_cast<std::uintptr_t>(mThisPointer) % colourArraySize] << mThisPointer << COLOUR RESET;
   PRINT_TO_LOG("%s", ss.str().c_str());
