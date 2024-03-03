@@ -9,6 +9,7 @@
 #include <vector>
 #include <cassert>
 #include <algorithm>
+#include <cstdlib>
 
 /*
 ------------------------------------------------------------------------------
@@ -74,8 +75,8 @@ public:
 
   struct StackNode {
     StackNode(
-      size_t line, 
-      size_t depth, 
+      int line, 
+      int depth, 
       size_t uniqueThreadId, 
       size_t uniqueProcessId,
       size_t channelId,
@@ -90,8 +91,8 @@ public:
       , functionName(std::move(functionName))
       , caller(caller) {}
 
-    const size_t line;
-    const size_t depth;
+    const int line;
+    const int depth;
     const size_t uniqueThreadId;
     const size_t uniqueProcessId;
     const std::string filename;
@@ -122,8 +123,7 @@ public:
   }
 
   StackNode& pushNewStackNode(
-      size_t line,
-      size_t depth, 
+      int depth, 
       size_t uniqueThreadId, 
       size_t uniqueProcessId,
       size_t channelId,
@@ -131,10 +131,9 @@ public:
       std::string functionName,
       StackNode* caller) {
     size_t stackNodeIdx = mStackNodeArray.size();
-    assert(stackNodeIdx == line);
 
     mStackNodeArray.emplace_back(std::make_unique<StackNode>(
-      line, depth, uniqueThreadId, uniqueProcessId, channelId, std::move(filename), std::move(functionName), caller));
+      stackNodeIdx, depth, uniqueThreadId, uniqueProcessId, channelId, std::move(filename), std::move(functionName), caller));
 
     UniqueThreadIdToStackNodeIdxArray& uniqueThreadIdToStackNodeIdxArray = 
       mUniqueProcessIdToUniqueThreadIdToStackNodeIdxArray[uniqueProcessId];
@@ -244,15 +243,19 @@ bool processLogLine(WorldStateWorkingData& workingData, WorldState& worldState, 
   if (matched) {
     // structured bindings don't work for regex match :(
     // cannot decompose inaccessible member ‘std::__cxx11::match_results<__gnu_cxx::__normal_iterator<...
-    auto&& inputFullMatch = pieces_match[0];
-    auto&& inputProcessId = pieces_match[1];   // 2
-    auto&& inputThreadId = pieces_match[2];    // 3
-    auto&& inputChannelId = pieces_match[3];   // 4
-    auto&& inputIndentation = pieces_match[4]; // 5
-    auto&& inputFunctionId = pieces_match[5];  // 6
-    auto&& inputSourceLine = pieces_match[6];  // 7
-    auto&& inputInfoString = pieces_match[7];  // 8
-    // size_t indentationDepth = 
+    std::string inputFullMatch = pieces_match[0];
+    // std::cout << inputFullMatch << std::endl;
+
+    std::string inputProcessId = pieces_match[1];   // 2
+    std::string inputThreadId = pieces_match[2];    // 3
+    std::string inputChannelId = pieces_match[3];   // 4
+    std::string inputIndentation = pieces_match[4]; // 5
+    std::string inputFunctionId = pieces_match[5];  // 6
+    std::string inputSourceLine = pieces_match[6];  // 7
+    std::string inputInfoString = pieces_match[7];  // 8
+
+    int inputIndentationDepth = inputIndentation.size();
+    // std::cout << inputIndentationDepth << std::endl;
 
     std::string outputIndentation = inputIndentation;
     outputIndentation = std::regex_replace(outputIndentation, std::regex(":+"), "║");
@@ -275,11 +278,30 @@ bool processLogLine(WorldStateWorkingData& workingData, WorldState& worldState, 
     // std::cout << outputUniqueThreadId << std::endl;
 
     // Determine who is the "caller" if there is one.  The caller is the 
-    // previous logged line if it has less depth than this one
-    // if the different in depth between the last line and this exceeds 1, then 
+    // previous logged line if it has less depth than this one.
+    //
+    // If the different in depth between the last line and this exceeds 1, then 
     // a log line failed to get output and/or was corrupted.  We'll
     // fill that in with ???
-    // StackNode* stackNode = workingData.getLastStackNodeForProcessThread()
+    WorldState::StackNode* callerStackNode = nullptr;
+    WorldState::StackNode* prevStackNode = worldState.getLastStackNodeForProcessThread(outputUniqueProcessId, outputUniqueThreadId);
+    if (prevStackNode) {
+      int depthDifferenceWithPrev = inputIndentationDepth - prevStackNode->depth;
+      // if difference is larger, we're "in" the prev stackNode's scope.
+    //wip section
+      // if (depthDifferenceWithPrev > 0) {
+      //   // if difference is larger than 1, some logs somehow didn't print so we need to make up the difference.
+      //   int b  = inputIndentationDepth - 1;
+      //   while (parentDepth != ) {
+      //     worldState.pushNewStackNode()
+      //     --depthDifferenceWithPrev;
+      //   }
+      // }
+    
+      // 
+
+      // if our depth is teh same, we need to inherit the same parent 
+    }
 
   }
 

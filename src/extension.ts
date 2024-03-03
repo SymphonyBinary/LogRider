@@ -118,7 +118,12 @@ class LogRiderProvider implements vscode.TextDocumentContentProvider {
 						vscode.window.showErrorMessage("unexpected jump in depth on line " + (i+1));
 					}
 
-					for(; caller && (depth - 1) < caller.depth; caller = caller.caller) {}
+					// if our depth is smaller then the caller, they're either another 
+					// log line with same depth as us, or their scope has closed and we need to 
+					// find their parent.
+					if (depth < caller.depth) {
+						for(; caller && (depth - 1) < caller.depth; caller = caller.caller) {}
+					}
 				}
 
 				const infoStringBlockMatch = infoString.match(/::\[(.*)\]::\[(.*)\] ([0-9a-z]+)/);
