@@ -161,11 +161,37 @@ private:
   ProcessIdToThreadIdToStackNodeIdxArray mProcessIdToThreadIdToStackNodeIdxArray;
 };
 
-struct WorldStateWorkingData {
-  size_t nextProcessId = 0;
-  size_t nextThreadId = 0;
+class WorldStateWorkingData {
+public:  
   size_t nextLogLineNumber = 0;
   std::string inputLine;
+
+  size_t getUniqueIdForProcessId(const std::string& processId) {
+    if (auto findUniqueIdIter = mProcessToUniqueId.find(processId); findUniqueIdIter != mProcessToUniqueId.end()) {
+      return findUniqueIdIter->second;
+    } else {
+      size_t retId = nextUniqueProcessId++;
+      mProcessToUniqueId[processId] = retId;
+      return retId;
+    }
+  }
+
+  size_t getUniqueIdForThreadId(const std::string& threadId) {
+    if (auto findUniqueIdIter = mThreadToUniqueId.find(threadId); findUniqueIdIter != mThreadToUniqueId.end()) {
+      return findUniqueIdIter->second;
+    } else {
+      size_t retId = nextUniqueThreadId++;
+      mThreadToUniqueId[threadId] = retId;
+      return retId;
+    }
+  }
+
+private:
+  size_t nextUniqueProcessId = 0;
+  std::unordered_map<std::string, size_t> mProcessToUniqueId;
+
+  size_t nextUniqueThreadId = 0;
+  std::unordered_map<std::string, size_t> mThreadToUniqueId;
 };
 
 struct OutputState {
@@ -204,12 +230,19 @@ bool processLogLine(WorldStateWorkingData& workingData, WorldState& worldState, 
     auto&& inputSourceLine = pieces_match[6];  // 7
     auto&& inputInfoString = pieces_match[7];  // 8
 
-    std::outputIndentation = inputIndentation;
-    std::replace(outputIndentation.begin(), outputIndentation.end(), ":", "║");
-    std::replace(outputIndentation.begin(), outputIndentation.end(), "F", "║");
-    std::replace(outputIndentation.begin(), outputIndentation.end(), "L", "║");
-    std::replace(outputIndentation.begin(), outputIndentation.end(), "-", "║");
-    std::replace(outputIndentation.begin(), outputIndentation.end(), ">", "║");
+    std::string outputIndentation = inputIndentation;
+    outputIndentation = std::regex_replace(outputIndentation, std::regex(":+"), "║");
+    outputIndentation = std::regex_replace(outputIndentation, std::regex("F"), "╔");
+    outputIndentation = std::regex_replace(outputIndentation, std::regex("L"), "╚");
+    outputIndentation = std::regex_replace(outputIndentation, std::regex("-"), "╠");
+    outputIndentation = std::regex_replace(outputIndentation, std::regex(">"), "╾");
+    // std::cout << outputIndentation << std::endl;
+
+    size_t outputProcessId = workingData.getUniqueIdForProcessId(inputProcessId);
+    std::cout << outputProcessId << std::endl;
+
+    
+
   }
 
   return matched;
