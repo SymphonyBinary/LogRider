@@ -87,6 +87,7 @@ public:
       , depth(depth)
       , uniqueThreadId(uniqueThreadId)
       , uniqueProcessId(uniqueProcessId)
+      , channelId(channelId)
       , filename(std::move(filename))
       , functionName(std::move(functionName))
       , caller(caller) {}
@@ -95,10 +96,11 @@ public:
     const int depth;
     const size_t uniqueThreadId;
     const size_t uniqueProcessId;
+    const size_t channelId;
     const std::string filename;
     const std::string functionName;
     const StackNode* caller;
-    std::optional<LoggedObject> loggedObject;
+    LoggedObject* loggedObject;
   };
 
   // should use expected, but that's only in c++23
@@ -133,7 +135,8 @@ public:
     size_t stackNodeIdx = mStackNodeArray.size();
 
     mStackNodeArray.emplace_back(std::make_unique<StackNode>(
-      stackNodeIdx, depth, uniqueThreadId, uniqueProcessId, channelId, std::move(filename), std::move(functionName), caller));
+      stackNodeIdx, depth, uniqueThreadId, uniqueProcessId, channelId, std::move(filename), 
+      std::move(functionName), caller));
 
     UniqueThreadIdToStackNodeIdxArray& uniqueThreadIdToStackNodeIdxArray = 
       mUniqueProcessIdToUniqueThreadIdToStackNodeIdxArray[uniqueProcessId];
@@ -163,6 +166,10 @@ public:
     return nullptr;
   }
 
+  size_t getStackNodeArraySize() const {
+    return mStackNodeArray.size();
+  }
+
 private:
   std::unordered_map<std::string, std::unique_ptr<LoggedObject>> mLoggedObjects;
   
@@ -178,6 +185,7 @@ private:
 class WorldStateWorkingData {
 public:  
   size_t nextLogLineNumber = 0;
+  size_t intputFileLineNumber = 0;
   std::string inputLine;
 
   size_t getUniqueProcessIdForInputProcessId(const std::string& inputProcessId) {
@@ -219,6 +227,17 @@ private:
 struct OutputState {
   std::string outputText;
 };
+
+bool processBlockOpenCloseLine() {
+  return false;
+}
+
+bool processBlockInnerLine() {
+  return false;
+}
+
+
+
 
 bool processLogLine(WorldStateWorkingData& workingData, WorldState& worldState, OutputState& outputState) {
   /**
@@ -268,7 +287,8 @@ bool processLogLine(WorldStateWorkingData& workingData, WorldState& worldState, 
     size_t outputUniqueProcessId = workingData.getUniqueProcessIdForInputProcessId(inputProcessId);
     // std::cout << outputUniqueProcessId << std::endl;
 
-    std::optional<size_t> maybeOutputUniqueThreadId = workingData.getUniqueThreadIdForInputThreadId(outputUniqueProcessId, inputThreadId);
+    std::optional<size_t> maybeOutputUniqueThreadId = workingData.getUniqueThreadIdForInputThreadId(
+        outputUniqueProcessId, inputThreadId);
     assert(maybeOutputUniqueThreadId);
     if (!maybeOutputUniqueThreadId) {
       std::cerr << "Cannot find inputThreadId to UniqueId map for given uniqueProcessId" << std::endl;
@@ -277,6 +297,12 @@ bool processLogLine(WorldStateWorkingData& workingData, WorldState& worldState, 
     size_t outputUniqueThreadId = maybeOutputUniqueThreadId.value();
     // std::cout << outputUniqueThreadId << std::endl;
 
+
+    // figure out if this is a block or not first, using the indent hint.
+
+
+
+
     // Determine who is the "caller" if there is one.  The caller is the 
     // previous logged line if it has less depth than this one.
     //
@@ -284,19 +310,45 @@ bool processLogLine(WorldStateWorkingData& workingData, WorldState& worldState, 
     // a log line failed to get output and/or was corrupted.  We'll
     // fill that in with ???
     WorldState::StackNode* callerStackNode = nullptr;
-    WorldState::StackNode* prevStackNode = worldState.getLastStackNodeForProcessThread(outputUniqueProcessId, outputUniqueThreadId);
+    WorldState::StackNode* prevStackNode = worldState.getLastStackNodeForProcessThread(outputUniqueProcessId,
+      outputUniqueThreadId);
     if (prevStackNode) {
-      int depthDifferenceWithPrev = inputIndentationDepth - prevStackNode->depth;
-      // if difference is larger, we're "in" the prev stackNode's scope.
-    //wip section
-      // if (depthDifferenceWithPrev > 0) {
-      //   // if difference is larger than 1, some logs somehow didn't print so we need to make up the difference.
-      //   int b  = inputIndentationDepth - 1;
-      //   while (parentDepth != ) {
-      //     worldState.pushNewStackNode()
-      //     --depthDifferenceWithPrev;
-      //   }
-      // }
+      // if this indentation depth is larger, we're "in" the previous stackNode's "scope"
+      if (inputIndentationDepth > prevStackNode->depth) {
+        // if difference is larger than 1, some logs somehow didn't print so we need to make up the difference.
+        // these should be "new" blocks to open, but we don't have a unique key for the "this pointer"
+        // TODO: create a new map from "inputObjectId" to "uniqueObjectId".  This way we can insert extra
+        // objectids if needed, such as in this case.
+        while ((inputIndentationDepth - 1) != prevStackNode->depth) {
+          std::cerr << "unexpected jump in depth on line# " << workingData.intputFileLineNumber 
+          << " in input file. Output file is on line# " << worldState.getStackNodeArraySize();
+          prevStackNode = &worldState.pushNewStackNode(
+              prevStackNode->depth + 1, prevStackNode->uniqueThreadId, prevStackNode->uniqueProcessId, prevStackNode->channelId,
+              "???", "???", prevStackNode);
+        }
+        callerStackNode = prevStackNode;
+      // conversely, if the indentation is smaller, the previous scope was our "child".  
+      // so our caller is their great-grandparent.
+      } else if (inputIndentationDepth < prevStackNode->depth) {
+        // WorldState::StackNode* ancestor = (prevStackNode->caller ? prevStackNode->caller->caller : nullptr);
+        
+        // // if difference is larger than 1, some logs somehow didn't print so we need to make up the difference.
+        // while ((inputIndentationDepth + 1) != prevStackNode->depth) {
+        //   std::cerr << "unexpected jump in depth on line# " << workingData.intputFileLineNumber 
+        //   << " in input file. Output file is on line# " << worldState.getStackNodeArraySize();
+          
+        //   // We're missing a line so we just use the previous node's processid, threadid, and channelid because we have to guess.
+        //   // the log needs to look like an end of block.
+        //   prevStackNode = worldState.pushNewStackNode(
+        //       prevStackNode->depth - 1, prevStackNode->uniqueThreadId, prevStackNode->uniqueProcessId, prevStackNode->channelId,
+        //       "???", "???", ancestor);
+        //   if (ancestor) {
+        //     prevStackNode->loggedObject = ancestor->loggedObject;
+        //   }            
+        //   ancestor = (prevStackNode->caller ? prevStackNode->caller->caller : nullptr);
+        // }
+        // callerStackNode = ancestor;
+      }
     
       // 
 
@@ -339,6 +391,8 @@ int main(int argc, char* argv[]) {
     if (processLogLine(worldWorkingData, worldState, output)) {
       continue;
     }
+
+    ++worldWorkingData.intputFileLineNumber;
   }
 
 
