@@ -1,2 +1,0 @@
-cd `dirname "$0"`
-clang++ -Wall -std=c++17 ../test/test.cpp ../src/caplogger.cpp -I../include -o ../out/test.out

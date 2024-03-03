@@ -1,0 +1,2 @@
+cd `dirname "$0"`
+g++ test/test.cpp src/caplogger.cpp -Wall -Wextra -std=c++17 -lstdc++ -Isrc -DENABLE_CAP_LOGGER -o out/test.out

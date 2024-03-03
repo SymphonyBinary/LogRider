@@ -125,6 +125,8 @@ a buffer at all
 #define CAP_LOG(...)
 #define CAP_LOG_ERROR(...)
 
+#define CAP_SET(...)
+
 // #define CAP_LOG_SET(...);
 
 // #define CAP_LOG_CREATE_STATE_ON_THIS()
@@ -147,7 +149,7 @@ enum class CHANNEL {
   #define CAPTAINS_LOG_CHANNEL(name, ...) name,
   #define CAPTAINS_LOG_CHANNEL_BEGIN_CHILDREN(...)
   #define CAPTAINS_LOG_CHANNEL_END_CHILDREN(...)
-  #include "channeldefs.hpp"
+  #include "../channels/channeldefs.hpp"
   #undef CAPTAINS_LOG_CHANNEL
   #undef CAPTAINS_LOG_CHANNEL_BEGIN_CHILDREN
   #undef CAPTAINS_LOG_CHANNEL_END_CHILDREN
@@ -159,7 +161,7 @@ inline std::string_view channelToString(CHANNEL channel) {
     #define CAPTAINS_LOG_CHANNEL(name, ...) #name,
     #define CAPTAINS_LOG_CHANNEL_BEGIN_CHILDREN(...)
     #define CAPTAINS_LOG_CHANNEL_END_CHILDREN(...)
-    #include "channeldefs.hpp"
+    #include "../channels/channeldefs.hpp"
     #undef CAPTAINS_LOG_CHANNEL
     #undef CAPTAINS_LOG_CHANNEL_BEGIN_CHILDREN
     #undef CAPTAINS_LOG_CHANNEL_END_CHILDREN

@@ -1,6 +1,4 @@
-#define ENABLE_CAP_LOGGER
-
-#include "caplogger.hpp"
+#include "../src/caplogger.hpp"
 #include <vector>
 
 namespace something{
