@@ -76,23 +76,24 @@ public:
     StackNode(
       size_t line, 
       size_t depth, 
-      size_t threadId, 
-      size_t processId, 
+      size_t uniqueThreadId, 
+      size_t uniqueProcessId,
+      size_t channelId,
       std::string filename, 
       std::string functionName,
       StackNode* caller)
       : line(line)
       , depth(depth)
-      , threadId(threadId)
-      , processId(processId)
+      , uniqueThreadId(uniqueThreadId)
+      , uniqueProcessId(uniqueProcessId)
       , filename(std::move(filename))
       , functionName(std::move(functionName))
       , caller(caller) {}
 
     const size_t line;
     const size_t depth;
-    const size_t threadId;
-    const size_t processId;
+    const size_t uniqueThreadId;
+    const size_t uniqueProcessId;
     const std::string filename;
     const std::string functionName;
     const StackNode* caller;
@@ -108,7 +109,7 @@ public:
     }
 
     LoggedObject* retLoggedObject;
-    if (auto loggedObjMapIter = mLoggedObjects.begin(); loggedObjMapIter != mLoggedObjects.end()) {
+    if (auto loggedObjMapIter = mLoggedObjects.find(objectId); loggedObjMapIter != mLoggedObjects.end()) {
       retLoggedObject = loggedObjMapIter->second.get();
     } else if (existsPolicy == ExistsPolicy::CreateIfNotExist) {
       auto newLoggedObject = std::make_unique<LoggedObject>();
@@ -123,8 +124,9 @@ public:
   StackNode& pushNewStackNode(
       size_t line,
       size_t depth, 
-      size_t threadId, 
-      size_t processId, 
+      size_t uniqueThreadId, 
+      size_t uniqueProcessId,
+      size_t channelId,
       std::string filename, 
       std::string functionName,
       StackNode* caller) {
@@ -132,11 +134,11 @@ public:
     assert(stackNodeIdx == line);
 
     mStackNodeArray.emplace_back(std::make_unique<StackNode>(
-      line, depth, threadId, processId, std::move(filename), std::move(functionName), caller));
+      line, depth, uniqueThreadId, uniqueProcessId, channelId, std::move(filename), std::move(functionName), caller));
 
-    ThreadIdToStackNodeIdxArray& threadIdToStackNodeIdxArray = 
-      mProcessIdToThreadIdToStackNodeIdxArray[processId];
-    threadIdToStackNodeIdxArray[threadId].emplace_back(stackNodeIdx);
+    UniqueThreadIdToStackNodeIdxArray& uniqueThreadIdToStackNodeIdxArray = 
+      mUniqueProcessIdToUniqueThreadIdToStackNodeIdxArray[uniqueProcessId];
+    uniqueThreadIdToStackNodeIdxArray[uniqueThreadId].emplace_back(stackNodeIdx);
     
     return *mStackNodeArray.back().get();
   }
@@ -149,6 +151,19 @@ public:
     }
   }
 
+  StackNode* getLastStackNodeForProcessThread(size_t uniqueProcessId, size_t uniqueThreadId) {
+    if (auto findThreadArrayIter = mUniqueProcessIdToUniqueThreadIdToStackNodeIdxArray.find(uniqueProcessId);
+        findThreadArrayIter != mUniqueProcessIdToUniqueThreadIdToStackNodeIdxArray.end()) {
+      if (auto findStackArrayIter = findThreadArrayIter->second.find(uniqueThreadId);
+          findStackArrayIter != findThreadArrayIter->second.end()) {
+        size_t stackNodeIdx = findStackArrayIter->second.back();
+        return mStackNodeArray[stackNodeIdx].get();
+      }
+    }
+
+    return nullptr;
+  }
+
 private:
   std::unordered_map<std::string, std::unique_ptr<LoggedObject>> mLoggedObjects;
   
@@ -156,9 +171,9 @@ private:
   StackNodeArray mStackNodeArray;
 
   using StackNodeIdxArray = std::vector<size_t>;
-  using ThreadIdToStackNodeIdxArray = std::unordered_map<size_t, StackNodeIdxArray>;
-  using ProcessIdToThreadIdToStackNodeIdxArray = std::unordered_map<size_t, ThreadIdToStackNodeIdxArray>;
-  ProcessIdToThreadIdToStackNodeIdxArray mProcessIdToThreadIdToStackNodeIdxArray;
+  using UniqueThreadIdToStackNodeIdxArray = std::unordered_map<size_t, StackNodeIdxArray>;
+  using UniqueProcessIdToUniqueThreadIdToStackNodeIdxArray = std::unordered_map<size_t, UniqueThreadIdToStackNodeIdxArray>;
+  UniqueProcessIdToUniqueThreadIdToStackNodeIdxArray mUniqueProcessIdToUniqueThreadIdToStackNodeIdxArray;
 };
 
 class WorldStateWorkingData {
@@ -166,32 +181,40 @@ public:
   size_t nextLogLineNumber = 0;
   std::string inputLine;
 
-  size_t getUniqueIdForProcessId(const std::string& processId) {
-    if (auto findUniqueIdIter = mProcessToUniqueId.find(processId); findUniqueIdIter != mProcessToUniqueId.end()) {
-      return findUniqueIdIter->second;
+  size_t getUniqueProcessIdForInputProcessId(const std::string& inputProcessId) {
+    if (auto findUniqueProcessIdIter = mProcessToUniqueProcessId.find(inputProcessId); 
+        findUniqueProcessIdIter != mProcessToUniqueProcessId.end()) {
+      return findUniqueProcessIdIter->second;
     } else {
       size_t retId = nextUniqueProcessId++;
-      mProcessToUniqueId[processId] = retId;
+      mProcessToUniqueProcessId[inputProcessId] = retId;
+      mUniqueProcessIdToInputThreadToUniqueThreadId[retId];
       return retId;
     }
   }
 
-  size_t getUniqueIdForThreadId(const std::string& threadId) {
-    if (auto findUniqueIdIter = mThreadToUniqueId.find(threadId); findUniqueIdIter != mThreadToUniqueId.end()) {
-      return findUniqueIdIter->second;
-    } else {
-      size_t retId = nextUniqueThreadId++;
-      mThreadToUniqueId[threadId] = retId;
-      return retId;
+  std::optional<size_t> getUniqueThreadIdForInputThreadId(size_t uniqueProcessId, const std::string& inputThreadId) {
+    if (auto findThreadMapIter = mUniqueProcessIdToInputThreadToUniqueThreadId.find(uniqueProcessId);
+        findThreadMapIter != mUniqueProcessIdToInputThreadToUniqueThreadId.end()) {
+      if (auto findUniqueThreadIdIter = findThreadMapIter->second.find(inputThreadId); 
+          findUniqueThreadIdIter != findThreadMapIter->second.end()) {
+        return findUniqueThreadIdIter->second;
+      } else {
+        size_t retId = nextUniqueThreadId++;
+        findThreadMapIter->second[inputThreadId] = retId;
+        return retId;
+      }
     }
+
+    return std::nullopt;    
   }
 
 private:
   size_t nextUniqueProcessId = 0;
-  std::unordered_map<std::string, size_t> mProcessToUniqueId;
+  std::unordered_map<std::string, size_t> mProcessToUniqueProcessId;
 
   size_t nextUniqueThreadId = 0;
-  std::unordered_map<std::string, size_t> mThreadToUniqueId;
+  std::unordered_map<size_t, std::unordered_map<std::string, size_t>> mUniqueProcessIdToInputThreadToUniqueThreadId;
 };
 
 struct OutputState {
@@ -216,8 +239,8 @@ bool processLogLine(WorldStateWorkingData& workingData, WorldState& worldState, 
     ".*CAP_LOG : P=(.+?) T=(.+?) C=(.+?) (.+?) (.+?) (\\[.+?\\])(.*)",
     std::regex_constants::ECMAScript);
 
-  std::cmatch pieces_match;
-  bool matched = std::regex_match (workingData.inputLine.c_str(), pieces_match, logLineRegex);
+  std::smatch pieces_match;
+  bool matched = std::regex_match (workingData.inputLine, pieces_match, logLineRegex);
   if (matched) {
     // structured bindings don't work for regex match :(
     // cannot decompose inaccessible member ‘std::__cxx11::match_results<__gnu_cxx::__normal_iterator<...
@@ -229,6 +252,7 @@ bool processLogLine(WorldStateWorkingData& workingData, WorldState& worldState, 
     auto&& inputFunctionId = pieces_match[5];  // 6
     auto&& inputSourceLine = pieces_match[6];  // 7
     auto&& inputInfoString = pieces_match[7];  // 8
+    // size_t indentationDepth = 
 
     std::string outputIndentation = inputIndentation;
     outputIndentation = std::regex_replace(outputIndentation, std::regex(":+"), "║");
@@ -238,10 +262,24 @@ bool processLogLine(WorldStateWorkingData& workingData, WorldState& worldState, 
     outputIndentation = std::regex_replace(outputIndentation, std::regex(">"), "╾");
     // std::cout << outputIndentation << std::endl;
 
-    size_t outputProcessId = workingData.getUniqueIdForProcessId(inputProcessId);
-    std::cout << outputProcessId << std::endl;
+    size_t outputUniqueProcessId = workingData.getUniqueProcessIdForInputProcessId(inputProcessId);
+    // std::cout << outputUniqueProcessId << std::endl;
 
-    
+    std::optional<size_t> maybeOutputUniqueThreadId = workingData.getUniqueThreadIdForInputThreadId(outputUniqueProcessId, inputThreadId);
+    assert(maybeOutputUniqueThreadId);
+    if (!maybeOutputUniqueThreadId) {
+      std::cerr << "Cannot find inputThreadId to UniqueId map for given uniqueProcessId" << std::endl;
+      abort();
+    }
+    size_t outputUniqueThreadId = maybeOutputUniqueThreadId.value();
+    // std::cout << outputUniqueThreadId << std::endl;
+
+    // Determine who is the "caller" if there is one.  The caller is the 
+    // previous logged line if it has less depth than this one
+    // if the different in depth between the last line and this exceeds 1, then 
+    // a log line failed to get output and/or was corrupted.  We'll
+    // fill that in with ???
+    // StackNode* stackNode = workingData.getLastStackNodeForProcessThread()
 
   }
 
@@ -272,6 +310,7 @@ int main(int argc, char* argv[]) {
   WorldState worldState;
   WorldStateWorkingData worldWorkingData;
 
+  //TODO: progress bar
   std::string inputLine;
   while (std::getline(fileStream, inputLine)) {
     worldWorkingData.inputLine = std::move(inputLine);
