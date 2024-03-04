@@ -81,7 +81,7 @@ class LogRiderProvider implements vscode.TextDocumentContentProvider {
 		let uniqueProcessIDCounter = 0;
 		let uniqueProcessIDMap = new Map<string, number>();
 		for(let i = 0; i < lines.length; i++) {
-			const clogMatch = lines[i].match(/.*CAP_LOG : P=(.+?) T=(.*?) (.+?) (.*?) (\[.*?\])(.*)/);
+			const clogMatch = lines[i].match(/.*CAP_LOG : P=(.+?) T=(.*?) C=.*? (.+?) (.*?) (\[.*?\])(.*)/);
 			if(clogMatch !== null) {
 				const processId = clogMatch[1];
 				const threadId = clogMatch[2];

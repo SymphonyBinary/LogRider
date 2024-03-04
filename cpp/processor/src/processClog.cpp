@@ -662,6 +662,9 @@ bool processLogLine(
   return matched;
 }
 
+// bool processChannelLing(WorldStateWorkingData& workingData, 
+//     WorldState& worldState) {
+// }
 
 // void adjustToExpectedDepth(expected depth)
 
@@ -733,6 +736,10 @@ int main(int argc, char* argv[]) {
   }
 
   std::cout << "Finished processessing input file.  Writing to output now." << std::endl;
+
+  output.outputFileStream << "CAPTAINS LOG PROCESSED - VERSION 1" << std::endl;
+
+
 
   for (auto&& nodePtr : worldState.getNodeArray() ) {
     auto& node = *nodePtr.get();
