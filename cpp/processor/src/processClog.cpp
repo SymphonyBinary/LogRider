@@ -55,21 +55,37 @@ CAP_LOG : P=4293102038 T=0 C=005 :L 3 [25]::[test.cpp]::[something::TestNetwork:
 
 namespace {
 /**
-   * This will match all the logs:
-   * CAP_LOG_BLOCK, CAP_LOG_BLOCK_NO_THIS, CAP_LOG, CAP_LOG_ERROR, CAP_SET
-   * the sub-expressions:
-   * 0 - the full string
-   * 1 - ProcessId
-   * 2 - ThreadId
-   * 3 - ChannelId
-   * 4 - Indentation
-   * 5 - FunctionId
-   * 6 - Line number in source code
-   * 7 - Info string; the remainder of the string.  Changes depending on log type.
-   **/
-  std::regex logLineRegex(
-    ".*CAP_LOG : P=(.+?) T=(.+?) C=(.+?) (.+?) (.+?) (\\[.+?\\])(.*)",
-    std::regex_constants::ECMAScript);
+ * This will match all the channel logs
+ * the sub-expressions:
+ * 0 - the full string
+ * 1 - ProcessId
+ * 2 - ThreadId
+ * 3 - ChannelId
+ * 4 - Enabled
+ * 5 - VerbosityLevel
+ * 6 - ChannelName
+ **/
+std::regex channelLineRegex(
+  ".*CAP_LOG : P=(.+?) T=(.+?) CHANNEL-ID=(.+?) : ENABLED=(.+?) : VERBOSITY=(.+?) : (.+?)",
+  std::regex_constants::ECMAScript);
+
+
+/**
+ * This will match all the logs:
+ * CAP_LOG_BLOCK, CAP_LOG_BLOCK_NO_THIS, CAP_LOG, CAP_LOG_ERROR, CAP_SET
+ * the sub-expressions:
+ * 0 - the full string
+ * 1 - ProcessId
+ * 2 - ThreadId
+ * 3 - ChannelId
+ * 4 - Indentation
+ * 5 - FunctionId
+ * 6 - Line number in source code
+ * 7 - Info string; the remainder of the string.  Changes depending on log type.
+ **/
+std::regex logLineRegex(
+  ".*CAP_LOG : P=(.+?) T=(.+?) C=(.+?) (.+?) (.+?) (\\[.+?\\])(.*)",
+  std::regex_constants::ECMAScript);
 
 /**
  * This will match the opening and closing block tags
@@ -81,8 +97,7 @@ namespace {
  **/
 std::regex infoStringBlockMatch(
   "::\\[(.*)\\]::\\[(.*)\\] ([0-9a-z]+)",
-  std::regex_constants::ECMAScript
-);
+  std::regex_constants::ECMAScript);
 
 /**
  * This will match the opening and closing block tags
@@ -93,8 +108,7 @@ std::regex infoStringBlockMatch(
  **/
 std::regex infoStringInnerMatch(
   " (.*?): (.*)",
-  std::regex_constants::ECMAScript
-);
+  std::regex_constants::ECMAScript);
 
 enum class CapLineType {
   CAPLOG,
@@ -170,6 +184,16 @@ struct LoggedObject {
   std::unordered_map<std::string, std::unordered_map<int, std::string>> pushedVariables;
 };
 
+struct ChannelLine {
+  std::string fullString;
+  size_t uniqueProcessId;
+  size_t uniqueThreadId;
+  std::string channelId;
+  std::string enabled;
+  std::string verbosityLevel;
+  std::string channelName;
+};
+
 // should rename this, this only represents CapLog types, not channels.
 struct StackNode {
   StackNode(
@@ -205,6 +229,7 @@ struct StackNode {
 class WorldState {
 public:
   using StackNodeArray = std::vector<std::unique_ptr<StackNode>>;
+  using ChannelArray = std::vector<std::unique_ptr<ChannelLine>>;
 
   // should use expected, but that's only in c++23
   // the objectId is address of the object for logs in c++
@@ -263,18 +288,24 @@ public:
     return nullptr;
   }
 
-  size_t getStackNodeArraySize() const {
-    return mStackNodeArray.size();
-  }
-
   const StackNodeArray& getNodeArray() const {
     return mStackNodeArray;
+  }
+
+  ChannelLine& pushChannelLine(ChannelLine&& channelLine) {
+    mChannelArray.emplace_back(std::make_unique<ChannelLine>(std::move(channelLine)));
+    return *mChannelArray.back().get();
+  }
+
+  const ChannelArray& getChannelArray() const {
+    return mChannelArray;
   }
 
 private:
   std::unordered_map<std::string, std::unique_ptr<LoggedObject>> mLoggedObjects;
   
   StackNodeArray mStackNodeArray;
+  ChannelArray mChannelArray;
 
   using StackNodeIdxArray = std::vector<size_t>;
 
@@ -305,9 +336,7 @@ public:
   StackNode* prevStackNode = nullptr;
 
   // todo channel types.
-  //
-  //
-  
+  std::unique_ptr<ChannelLine> channelLine; 
 
   size_t getUniqueProcessIdForInputProcessId(const std::string& inputProcessId) {
     size_t retId;
@@ -662,10 +691,31 @@ bool processLogLine(
   return matched;
 }
 
-// bool processChannelLing(WorldStateWorkingData& workingData, 
-//     WorldState& worldState) {
-// }
+bool processChannelLine(
+    WorldStateWorkingData& workingData, 
+    WorldState& worldState) {
+  std::smatch pieces_match;
+  bool matched = std::regex_match(workingData.inputLine, pieces_match, channelLineRegex);
+  if (matched) {
+    workingData.lineType = CapLineType::CHANNEL;
+    workingData.channelLine = std::make_unique<ChannelLine>();
+    ChannelLine& channelLine = *workingData.channelLine.get();
 
+    channelLine.fullString = pieces_match[0];
+    channelLine.uniqueProcessId = workingData.getUniqueProcessIdForInputProcessId(pieces_match[1]);
+    channelLine.uniqueThreadId = workingData.getUniqueThreadIdForInputThreadId(channelLine.uniqueProcessId, pieces_match[2]);
+    channelLine.channelId = pieces_match[3];
+    channelLine.enabled = pieces_match[4];
+    channelLine.verbosityLevel = pieces_match[5];
+    channelLine.channelName = pieces_match[6];
+
+    worldState.pushChannelLine(std::move(channelLine));
+  }
+
+  return matched;
+}
+
+// TODO handle broken lines
 // void adjustToExpectedDepth(expected depth)
 
 [[maybe_unused]] size_t getFileSize(char* filename) {
@@ -729,6 +779,8 @@ int main(int argc, char* argv[]) {
     worldWorkingData.inputLine = std::move(inputLine);
     if (processLogLine(worldWorkingData, worldState)) {
       // output.outputText.append 
+    } else if (processChannelLine(worldWorkingData, worldState)) {
+      // 
     }
 
     ++worldWorkingData.intputFileLineNumber;
@@ -737,9 +789,24 @@ int main(int argc, char* argv[]) {
 
   std::cout << "Finished processessing input file.  Writing to output now." << std::endl;
 
-  output.outputFileStream << "CAPTAINS LOG PROCESSED - VERSION 1" << std::endl;
+  output.outputFileStream << "************************************************************************" << std::endl << std::endl;
+  output.outputFileStream << "CAPTAINS LOG PROCESSED - VERSION 1" << std::endl << std::endl;
+  output.outputFileStream << "************************************************************************" << std::endl << std::endl;
+  output.outputFileStream << "CHANNEL INFO" << std::endl << std::endl;
+  for (auto&& channelLinePtr : worldState.getChannelArray() ) {
+    auto& channelLine = *channelLinePtr.get();
+    output.outputFileStream
+      << "P=" << channelLine.uniqueProcessId
+      << " T=" << channelLine.uniqueThreadId
+      << " CHANNEL-ID=" << channelLine.channelId
+      << " : ENABLED=" << channelLine.enabled
+      << " : VERBOSITY=" << channelLine.verbosityLevel
+      << " : " << channelLine.channelName
+      << std::endl;
+  }
 
-
+  output.outputFileStream << std::endl;
+  output.outputFileStream << "************************************************************************" << std::endl << std::endl;
 
   for (auto&& nodePtr : worldState.getNodeArray() ) {
     auto& node = *nodePtr.get();
