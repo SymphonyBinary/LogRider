@@ -10,6 +10,7 @@
 #include <cassert>
 #include <algorithm>
 #include <cstdlib>
+#include <cmath> // for progress bar
 
 /*
 ------------------------------------------------------------------------------
@@ -83,6 +84,18 @@ std::regex infoStringBlockMatch(
   std::regex_constants::ECMAScript
 );
 
+/**
+ * This will match the opening and closing block tags
+ * eg. ::[test.cpp]::[something::TestNetwork::TestNetwork()] 0x7ffecc005730
+ * 0 - the full string
+ * 1 - inner type: LOG/ERROR/SET
+ * 2 - inner message
+ **/
+std::regex infoStringInnerMatch(
+  " (.*?): (.*)",
+  std::regex_constants::ECMAScript
+);
+
 enum class CapLineType {
   CAPLOG,
   CHANNEL,
@@ -131,7 +144,8 @@ struct OutputLogTextBlock {
 };
 
 struct OutputLogTextMessage {
-  CapLogInnerType innerType;
+  // CapLogInnerType innerType; //may need later...
+  std::string innerTypeString; //x-macros this instead.
   std::string innerPayload;
 };
 
@@ -151,44 +165,46 @@ struct OutputLogData {
   OutputLogTextMessage messageText;
 };
 
+struct LoggedObject {
+  std::string objectId;
+  std::unordered_map<std::string, std::unordered_map<int, std::string>> pushedVariables;
+};
+
+// should rename this, this only represents CapLog types, not channels.
+struct StackNode {
+  StackNode(
+    int line, 
+    OutputLogData&& logData,
+    const StackNode* caller)
+    : line(line)
+    , depth(std::move(logData.lineDepth))
+    , uniqueProcessId(std::move(logData.uniqueProcessId))
+    , uniqueThreadId(std::move(logData.uniqueThreadId))
+    , commonLogText(std::move(logData.commonLogText))
+    , logLineType(std::move(logData.logLineType))
+    , blockText(std::move(logData.blockText))
+    , messageText(std::move(logData.messageText))
+    , caller(caller) {}
+
+  const int line;
+  const int depth;
+  const size_t uniqueProcessId;
+  const size_t uniqueThreadId;
+
+  OutputLogTextCommon commonLogText;
+  CapLogType logLineType = CapLogType::UNKNOWN;
+  //logLineType = block open/close, if applicable
+  OutputLogTextBlock blockText;
+  // logLineType = logs/error/set, if applicable
+  OutputLogTextMessage messageText;
+
+  const StackNode* caller;
+  LoggedObject* loggedObject;
+};
+
 class WorldState {
-public:    
-  struct LoggedObject {
-    std::string objectId;
-    std::unordered_map<std::string, std::unordered_map<int, std::string>> pushedVariables;
-  };
-
-  // should rename this, this only represents CapLog types, not channels.
-  struct StackNode {
-    StackNode(
-      int line, 
-      OutputLogData&& logData,
-      const StackNode* caller)
-      : line(line)
-      , depth(std::move(logData.lineDepth))
-      , uniqueProcessId(std::move(logData.uniqueProcessId))
-      , uniqueThreadId(std::move(logData.uniqueThreadId))
-      , commonLogText(std::move(logData.commonLogText))
-      , logLineType(std::move(logData.logLineType))
-      , blockText(std::move(logData.blockText))
-      , messageText(std::move(logData.messageText))
-      , caller(caller) {}
-
-    const int line;
-    const int depth;
-    const size_t uniqueProcessId;
-    const size_t uniqueThreadId;
-
-    OutputLogTextCommon commonLogText;
-    CapLogType logLineType = CapLogType::UNKNOWN;
-    //logLineType = block open/close, if applicable
-    OutputLogTextBlock blockText;
-    // logLineType = logs/error/set, if applicable
-    OutputLogTextMessage messageText;
-
-    const StackNode* caller;
-    LoggedObject* loggedObject;
-  };
+public:
+  using StackNodeArray = std::vector<std::unique_ptr<StackNode>>;
 
   // should use expected, but that's only in c++23
   // the objectId is address of the object for logs in c++
@@ -251,10 +267,13 @@ public:
     return mStackNodeArray.size();
   }
 
+  const StackNodeArray& getNodeArray() const {
+    return mStackNodeArray;
+  }
+
 private:
   std::unordered_map<std::string, std::unique_ptr<LoggedObject>> mLoggedObjects;
   
-  using StackNodeArray = std::vector<std::unique_ptr<StackNode>>;
   StackNodeArray mStackNodeArray;
 
   using StackNodeIdxArray = std::vector<size_t>;
@@ -283,7 +302,7 @@ public:
   // maybe use variants on this to better select the right type
   std::unique_ptr<InputLogLine> inputLogLine;
   std::unique_ptr<OutputLogData> outputLogData;
-  WorldState::StackNode* prevStackNode = nullptr;
+  StackNode* prevStackNode = nullptr;
 
   // todo channel types.
   //
@@ -334,14 +353,14 @@ private:
 };
 
 struct OutputState {
-  std::string outputText;
+  std::ofstream outputFileStream;
 };
 
 void failWithAbort(const WorldStateWorkingData& workingData, std::string additionalInfo = "") {
-  std::cout << "FAILED TO PROCESS LINE" << std::endl;
-  std::cout << "line(" << workingData.intputFileLineNumber << "): "
+  std::cerr << "FAILED TO PROCESS LINE" << std::endl;
+  std::cerr << "line(" << workingData.intputFileLineNumber << "): "
             << workingData.inputLine << std::endl;
-  std::cout << additionalInfo << std::endl;
+  std::cerr << additionalInfo << std::endl;
   std::abort();
 }
 
@@ -356,14 +375,14 @@ CapLogType getLineType(const std::string& inputIndentation) {
     retType = CapLogType::BLOCK_INNER_LINE;
   }
 
-  std::cout << "inputIndendation: " << inputIndentation << std::endl;
-  std::cout << "getLineType: " << (size_t)retType << std::endl;
+  // std::cout << "inputIndendation: " << inputIndentation << std::endl;
+  // std::cout << "getLineType: " << (size_t)retType << std::endl;
   return retType;
 }
 
 int getLineDepth(const std::string& inputIndentation) {
   int retVal = inputIndentation.size();
-  std::cout << retVal << std::endl;
+  // std::cout << retVal << std::endl;
   return retVal;
 }
 
@@ -377,7 +396,6 @@ std::string replaceIndentationChars (std::string inputIndentation) {
 
   return inputIndentation;
 }
-
 
 void processBlockScopeOpen (
     WorldStateWorkingData& workingData, 
@@ -393,9 +411,10 @@ void processBlockScopeOpen (
   if (workingData.prevStackNode) {
     switch (workingData.prevStackNode->logLineType) {
       case CapLogType::BLOCK_SCOPE_OPEN:
-        // intentional fall-through
-      case CapLogType::BLOCK_INNER_LINE:
         expectedSelfDepth = workingData.prevStackNode->depth + 1;
+        break;
+      case CapLogType::BLOCK_INNER_LINE:
+        expectedSelfDepth = workingData.prevStackNode->depth;
         break;
       case CapLogType::BLOCK_SCOPE_CLOSE:
         expectedSelfDepth = workingData.prevStackNode->depth;
@@ -407,14 +426,14 @@ void processBlockScopeOpen (
     expectedSelfDepth = 1;
   }
 
-  if (selfDepth != expectedSelfDepth) {
+  if ((selfDepth != expectedSelfDepth) || (expectedSelfDepth < 1)) {
     // TODO: use fix up method here later.
-    std::cout << "selfDepth: " << selfDepth << std::endl;
-    std::cout << "expectedSelfDepth: " << expectedSelfDepth << std::endl;
-    failWithAbort(workingData, "selfDepth != expectedSelfDepth");
+    std::cerr << "selfDepth: " << selfDepth << std::endl;
+    std::cerr << "expectedSelfDepth: " << expectedSelfDepth << std::endl;
+    failWithAbort(workingData, "selfDepth != expectedSelfDepth || expectedSelfDepth < 1");
   }
 
-  const WorldState::StackNode* callerStackNode = nullptr;
+  const StackNode* callerStackNode = nullptr;
   if (workingData.prevStackNode) {
     switch (workingData.prevStackNode->logLineType) {
       case CapLogType::BLOCK_SCOPE_OPEN:
@@ -441,6 +460,148 @@ void processBlockScopeOpen (
     outputLogData.blockText.objectId = pieces_match[3];
   } else {
     failWithAbort(workingData, "Unabled to match infoStringBlockMatch with expected block opening line");
+  }
+
+  worldState.pushNewStackNode(std::move(outputLogData), callerStackNode);
+}
+
+void processBlockScopeClose (
+    WorldStateWorkingData& workingData, 
+    WorldState& worldState) {
+  InputLogLine& inputLogLine = *workingData.inputLogLine.get();
+  OutputLogData& outputLogData = *workingData.outputLogData.get();
+
+  int selfDepth = inputLogLine.inputLineDepth;
+  int expectedSelfDepth = -1;
+
+  // determine expected depth first, then do fix up if necessary
+  // then get the caller node (which might be newly created)
+  if (workingData.prevStackNode) {
+    switch (workingData.prevStackNode->logLineType) {
+      case CapLogType::BLOCK_SCOPE_OPEN:
+        expectedSelfDepth = workingData.prevStackNode->depth;
+        break;
+      case CapLogType::BLOCK_INNER_LINE:
+        expectedSelfDepth = workingData.prevStackNode->depth - 1;
+        break;
+      case CapLogType::BLOCK_SCOPE_CLOSE:
+        expectedSelfDepth = workingData.prevStackNode->depth - 1;
+        break;
+      case CapLogType::UNKNOWN:
+        failWithAbort(workingData, "processBlockScopeClose can't determine prev logline type");
+    }
+  } else {
+    expectedSelfDepth = 1;
+  }
+
+  if ((selfDepth != expectedSelfDepth) || (expectedSelfDepth < 1)) {
+    // TODO: use fix up method here later.
+    std::cerr << "selfDepth: " << selfDepth << std::endl;
+    std::cerr << "expectedSelfDepth: " << expectedSelfDepth << std::endl;
+    failWithAbort(workingData, "selfDepth != expectedSelfDepth || expectedSelfDepth < 1");
+  }
+
+  const StackNode* callerStackNode = nullptr;
+  if (workingData.prevStackNode) {
+    switch (workingData.prevStackNode->logLineType) {
+      case CapLogType::BLOCK_SCOPE_OPEN:
+        // intentional fall-through
+      case CapLogType::BLOCK_INNER_LINE:
+        callerStackNode = workingData.prevStackNode->caller;
+        break;
+      case CapLogType::BLOCK_SCOPE_CLOSE:
+        if (workingData.prevStackNode->caller == nullptr) {
+          failWithAbort(workingData, "workingData.prevStackNode->caller == nullptr");
+        }
+        callerStackNode = workingData.prevStackNode->caller->caller;
+        break;
+      case CapLogType::UNKNOWN:
+        failWithAbort(workingData, "processBlockScopeClose can't determine prev logline type");
+    }
+  } else {
+    callerStackNode = nullptr;
+  }
+
+  std::smatch pieces_match;
+  bool matched = std::regex_match(workingData.inputLogLine->inputInfoString, pieces_match, infoStringBlockMatch);
+  if(matched) {
+    // TODO: Should move this into a similar "input" struct like the initial log line.
+    outputLogData.blockText.filename = pieces_match[1];
+    outputLogData.blockText.functionName = pieces_match[2];
+    outputLogData.blockText.objectId = pieces_match[3];
+  } else {
+    failWithAbort(workingData, "processBlockScopeClose Unabled to match infoStringBlockMatch with expected block opening line");
+  }
+
+  worldState.pushNewStackNode(std::move(outputLogData), callerStackNode);
+}
+
+void processBlockInnerLine (
+    WorldStateWorkingData& workingData, 
+    WorldState& worldState) {
+  InputLogLine& inputLogLine = *workingData.inputLogLine.get();
+  OutputLogData& outputLogData = *workingData.outputLogData.get();
+
+  int selfDepth = inputLogLine.inputLineDepth;
+  int expectedSelfDepth = -1;
+
+  // determine expected depth first, then do fix up if necessary
+  // then get the caller node (which might be newly created)
+  if (workingData.prevStackNode) {
+    switch (workingData.prevStackNode->logLineType) {
+      case CapLogType::BLOCK_SCOPE_OPEN:
+        expectedSelfDepth = workingData.prevStackNode->depth + 1;
+        break;
+      case CapLogType::BLOCK_INNER_LINE:
+        expectedSelfDepth = workingData.prevStackNode->depth;
+        break;
+      case CapLogType::BLOCK_SCOPE_CLOSE:
+        expectedSelfDepth = workingData.prevStackNode->depth;
+        break;
+      case CapLogType::UNKNOWN:
+        failWithAbort(workingData, "processBlockInnerLine can't determine prev logline type");
+    }
+  } else {
+    expectedSelfDepth = 1;
+  }
+
+  if ((selfDepth != expectedSelfDepth) || (expectedSelfDepth < 1)) {
+    // TODO: use fix up method here later.
+    std::cout << "selfDepth: " << selfDepth << std::endl;
+    std::cout << "expectedSelfDepth: " << expectedSelfDepth << std::endl;
+    failWithAbort(workingData, "selfDepth != expectedSelfDepth || expectedSelfDepth < 1");
+  }
+
+  const StackNode* callerStackNode = nullptr;
+  if (workingData.prevStackNode) {
+    switch (workingData.prevStackNode->logLineType) {
+      case CapLogType::BLOCK_SCOPE_OPEN:
+        // intentional fall-through
+      case CapLogType::BLOCK_INNER_LINE:
+        callerStackNode = workingData.prevStackNode->caller;
+        break;
+      case CapLogType::BLOCK_SCOPE_CLOSE:
+        if (workingData.prevStackNode->caller == nullptr) {
+          failWithAbort(workingData, "workingData.prevStackNode->caller == nullptr");
+        }
+        callerStackNode = workingData.prevStackNode->caller->caller;
+        break;
+      case CapLogType::UNKNOWN:
+        failWithAbort(workingData, "processBlockInnerLine can't determine prev logline type");
+    }
+  } else {
+    callerStackNode = nullptr;
+  }
+
+  std::smatch pieces_match;
+  bool matched = std::regex_match(workingData.inputLogLine->inputInfoString, pieces_match, infoStringInnerMatch);
+  if(matched) {
+    // TODO: Should move this into a similar "input" struct like the initial log line.
+    // outputLogData.messageText.innerType = pieces_match[1];
+    outputLogData.messageText.innerTypeString = pieces_match[1];
+    outputLogData.messageText.innerPayload = pieces_match[2];
+  } else {
+    failWithAbort(workingData, "processBlockInnerLine Unabled to match infoStringBlockMatch with expected block opening line");
   }
 
   worldState.pushNewStackNode(std::move(outputLogData), callerStackNode);
@@ -489,110 +650,121 @@ bool processLogLine(
         processBlockScopeOpen(workingData, worldState);
         break;
       case CapLogType::BLOCK_SCOPE_CLOSE:
+        processBlockScopeClose(workingData, worldState);
         break;
       case CapLogType::BLOCK_INNER_LINE:
+        processBlockInnerLine(workingData, worldState);
         break;
       case CapLogType::UNKNOWN:
         failWithAbort(workingData, "Unknown input log line type");
     }
-
-    // // Determine who is the "caller" if there is one.  The caller is the 
-    // // previous logged line if it has less depth than this one.
-    // //
-    // // If the different in depth between the last line and this exceeds 1, then 
-    // // a log line failed to get output and/or was corrupted.  We'll
-    // // fill that in with ???
-    // WorldState::StackNode* callerStackNode = nullptr;
-    // WorldState::StackNode* prevStackNode = worldState.getLastStackNodeForProcessThread(outputUniqueProcessId,
-    //   outputUniqueThreadId);
-    // if (prevStackNode) {
-    //   // if this indentation depth is larger, we're "in" the previous stackNode's "scope"
-    //   if (inputIndentationDepth > prevStackNode->depth) {
-    //     // if difference is larger than 1, some logs somehow didn't print so we need to make up the difference.
-    //     // these should be "new" blocks to open, but we don't have a unique key for the "this pointer"
-    //     // TODO: create a new map from "inputObjectId" to "uniqueObjectId".  This way we can insert extra
-    //     // objectids if needed, such as in this case.
-    //     while ((inputIndentationDepth - 1) != prevStackNode->depth) {
-    //       std::cerr << "unexpected jump in depth on line# " << workingData.intputFileLineNumber 
-    //       << " in input file. Output file is on line# " << worldState.getStackNodeArraySize();
-    //       prevStackNode = &worldState.pushNewStackNode(
-    //           prevStackNode->depth + 1, prevStackNode->uniqueThreadId, prevStackNode->uniqueProcessId, prevStackNode->channelId,
-    //           "???", "???", prevStackNode);
-    //       std::abort; // abort for now              
-    //     }
-    //     callerStackNode = prevStackNode;
-    //   // conversely, if the indentation is smaller, the previous scope was our "child".  
-    //   // so our caller is their great-grandparent.
-    //   } else if (inputIndentationDepth < prevStackNode->depth) {
-    //     // WorldState::StackNode* ancestor = (prevStackNode->caller ? prevStackNode->caller->caller : nullptr);
-        
-    //     // // if difference is larger than 1, some logs somehow didn't print so we need to make up the difference.
-    //     // while ((inputIndentationDepth + 1) != prevStackNode->depth) {
-    //     //   std::cerr << "unexpected jump in depth on line# " << workingData.intputFileLineNumber 
-    //     //   << " in input file. Output file is on line# " << worldState.getStackNodeArraySize();
-          
-    //     //   // We're missing a line so we just use the previous node's processid, threadid, and channelid because we have to guess.
-    //     //   // the log needs to look like an end of block.
-    //     //   prevStackNode = worldState.pushNewStackNode(
-    //     //       prevStackNode->depth - 1, prevStackNode->uniqueThreadId, prevStackNode->uniqueProcessId, prevStackNode->channelId,
-    //     //       "???", "???", ancestor);
-    //     //   if (ancestor) {
-    //     //     prevStackNode->loggedObject = ancestor->loggedObject;
-    //     //   }            
-    //     //   ancestor = (prevStackNode->caller ? prevStackNode->caller->caller : nullptr);
-    //     // }
-    //     // callerStackNode = ancestor;
-    //   }
-    
-    //   // 
-
-    //   // if our depth is teh same, we need to inherit the same parent 
-    // }
-
   }
-
   return matched;
 }
 
 
-
 // void adjustToExpectedDepth(expected depth)
 
-size_t getFileSize(char* filename) {
+[[maybe_unused]] size_t getFileSize(char* filename) {
   std::ifstream file(filename, std::ios::binary | std::ios::ate);
   return file.tellg();
 }
 
+size_t countLines(char* filename) {
+  std::ifstream file(filename); 
+  return std::count(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>(), '\n');
+}
+
+struct FileReadProgress {
+  size_t currentLine = 0;
+  size_t totalLines;
+  
+  float lastPrintedProgressPercent = 0.f;
+
+  FileReadProgress(size_t totalLines): totalLines(totalLines){
+    std::cout << "PROGRESS: " << std::endl;
+  }
+
+  void incrementProgress() {
+    ++currentLine;
+    float currentPercent = ((float)currentLine / totalLines) * 100.f;
+    
+    // print out in 1% increments
+    if(currentPercent - lastPrintedProgressPercent >= 1.f) {
+      std::cout << currentPercent << std::endl;
+      lastPrintedProgressPercent = currentPercent;
+    }
+  }
+};
+
 } // namespace
 
 int main(int argc, char* argv[]) {
-  if (argc != 2) {
-    std::cout << "Usage: processClog [clogfile.clog]";
+  if (argc != 3) {
+    std::cout << "Usage: processClog [input clogfile.clog] [output file]";
     return 0;
   }
-  char* inputfilename = argv[1];
+  char* inputFilename = argv[1];
+  char* outputFilename = argv[2];
 
-  size_t inputFileSize = getFileSize(inputfilename);
+  // size_t inputFileSize = getFileSize(inputFilename);
+  size_t inputFileLineCount = countLines(inputFilename);
 
-  std::ifstream fileStream(inputfilename);
+  std::ifstream fileStream(inputFilename);
 
-  // OutputState output;
+  OutputState output;
   // output.outputText.reserve(inputFileSize * 2);
+  output.outputFileStream.open(outputFilename);
 
   WorldState worldState;
   WorldStateWorkingData worldWorkingData;
 
-  //TODO: progress bar
+  FileReadProgress progress(inputFileLineCount);
+
   std::string inputLine;
   while (std::getline(fileStream, inputLine)) {
     worldWorkingData.inputLine = std::move(inputLine);
     if (processLogLine(worldWorkingData, worldState)) {
-      continue;
+      // output.outputText.append 
     }
 
     ++worldWorkingData.intputFileLineNumber;
+    progress.incrementProgress();
   }
 
+  std::cout << "Finished processessing input file.  Writing to output now." << std::endl;
+
+  for (auto&& nodePtr : worldState.getNodeArray() ) {
+    auto& node = *nodePtr.get();
+    output.outputFileStream
+      << "P=" << node.uniqueProcessId
+      << " T=" << node.uniqueThreadId
+      << " C=" << node.commonLogText.channelId
+      << " " << node.commonLogText.indentation
+      << " " << node.commonLogText.functionId
+      << " " << node.commonLogText.sourceFileLine;
+    
+    switch (node.logLineType) {
+      case CapLogType::BLOCK_SCOPE_OPEN:
+        // intentional fall through
+      case CapLogType::BLOCK_SCOPE_CLOSE:
+        output.outputFileStream << "::[" 
+          << node.blockText.filename << "]::["
+          << node.blockText.functionName << "] "
+          << node.blockText.objectId;
+        break;
+      case CapLogType::BLOCK_INNER_LINE:
+        output.outputFileStream << " :"
+          << node.messageText.innerTypeString
+          << " " << node.messageText.innerPayload;
+        break;
+      case CapLogType::UNKNOWN:
+        std::cerr << "CapLogType::UNKNOWN line" << std::endl;
+        std::abort();
+    }
+
+    output.outputFileStream << std::endl;
+  }
 
   //std::cout << outputText << std::endl;
 
