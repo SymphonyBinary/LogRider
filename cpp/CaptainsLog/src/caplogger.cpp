@@ -132,23 +132,23 @@ struct BlockLoggerDataStore {
     --data.logDepth;
   }
 
-  const std::string& setState(void* objectId, const std::string& stateName, 
+  const std::string& setState(const void* objectId, const std::string& stateName, 
       std::function<std::string(std::optional<std::string>)>& stateUpdater) {
     const std::lock_guard<std::mutex> guard(mMut);
     return mCustomLogStatePointers.setState(objectId, stateName, stateUpdater);
   }
 
-  std::optional<std::string> getState(void* objectId, const std::string& stateName) {
+  std::optional<std::string> getState(const void* objectId, const std::string& stateName) {
     const std::lock_guard<std::mutex> guard(mMut);
     return mCustomLogStatePointers.getState(objectId, stateName);
   }
 
-  std::optional<std::string> releaseState(void* objectId, const std::string& stateName) {
+  std::optional<std::string> releaseState(const void* objectId, const std::string& stateName) {
     const std::lock_guard<std::mutex> guard(mMut);
     return mCustomLogStatePointers.releaseState(objectId, stateName);
   }
 
-  int releaseAllState(void* objectId) {
+  int releaseAllState(const void* objectId) {
     const std::lock_guard<std::mutex> guard(mMut);
     return mCustomLogStatePointers.releaseAllState(objectId);
   }
@@ -191,7 +191,7 @@ private:
   const unsigned int mProcessTimestamp = 0;
 
   // for set/get/release commands.  Used for addresses.  Care must be taken not to send literal strings to this (which are just char*)
-  StateStore<void*> mCustomLogStatePointers;
+  StateStore<const void*> mCustomLogStatePointers;
 
   // for set/get/release commands.  Used for strings.
   StateStore<std::string> mCustomLogStateStoreNames;
@@ -335,7 +335,7 @@ void BlockLogger::error(int line, std::string_view messageBuffer) {
 
 //-------- State Addresses
 
-void BlockLogger::setState(int line, void* address, const std::string& stateName, 
+void BlockLogger::setState(int line, const void* address, const std::string& stateName, 
     std::function<std::string(std::optional<std::string>)>& stateUpdater) {
   if(!mEnabled) {
     return;
@@ -348,11 +348,11 @@ void BlockLogger::setState(int line, void* address, const std::string& stateName
   printTab(ss, mProcessId, mThreadId, mDepth, (size_t)mChannel);
   ss << COLOUR BOLD CAP_GREEN << ADD_LOG_DELIMITER << ADD_LOG_SECOND_DELIMITER << COLOUR BOLD CAP_YELLOW << " " << mId << " "
   << COLOUR RESET << "[" << COLOUR BOLD CAP_GREEN << line << COLOUR RESET << "] " << COLOUR BOLD CAP_RED << "SET STATE: " 
-  << "Address=" << address << " : StateName='" << stateName << "' = " << newState << COLOUR RESET;
+  << "Address=" << address << " : StateName='" << stateName << "' : Value='" << newState << "'" << COLOUR RESET;
   PRINT_TO_LOG("%s", ss.str().c_str());
 }
 
-void BlockLogger::printCurrentState(int line, void* address, const std::string& stateName) {
+void BlockLogger::printCurrentState(int line, const void* address, const std::string& stateName) {
   if(!mEnabled) {
     return;
   }
@@ -364,12 +364,12 @@ void BlockLogger::printCurrentState(int line, void* address, const std::string& 
   printTab(ss, mProcessId, mThreadId, mDepth, (size_t)mChannel);
   ss << COLOUR BOLD CAP_GREEN << ADD_LOG_DELIMITER << ADD_LOG_SECOND_DELIMITER << COLOUR BOLD CAP_YELLOW << " " << mId << " "
   << COLOUR RESET << "[" << COLOUR BOLD CAP_GREEN << line << COLOUR RESET << "] " << COLOUR BOLD CAP_RED << "PRINT STATE: " 
-  << "Address=" << address << " : StateName='" << stateName << "' = " << (state ? state.value() : "NO STATE") 
+  << "Address=" << address << " : StateName='" << stateName << "' : Value='" << (state ? state.value() : "NO STATE") << "'"
   << COLOUR RESET;
   PRINT_TO_LOG("%s", ss.str().c_str());
 }
 
-void BlockLogger::releaseState(int line, void* address, const std::string& stateName) {
+void BlockLogger::releaseState(int line, const void* address, const std::string& stateName) {
   if(!mEnabled) {
     return;
   }
@@ -381,12 +381,12 @@ void BlockLogger::releaseState(int line, void* address, const std::string& state
   printTab(ss, mProcessId, mThreadId, mDepth, (size_t)mChannel);
   ss << COLOUR BOLD CAP_GREEN << ADD_LOG_DELIMITER << ADD_LOG_SECOND_DELIMITER << COLOUR BOLD CAP_YELLOW << " " << mId << " "
   << COLOUR RESET << "[" << COLOUR BOLD CAP_GREEN << line << COLOUR RESET << "] " << COLOUR BOLD CAP_RED << "RELEASE STATE: " 
-  << "Address=" << address << " : StateName='" << stateName << "' = " << (deletedState ? deletedState.value() : "NO STATE") 
+  << "Address=" << address << " : StateName='" << stateName << "' : Value='" << (deletedState ? deletedState.value() : "NO STATE") << "'"
   << COLOUR RESET;
   PRINT_TO_LOG("%s", ss.str().c_str());
 }
 
-void BlockLogger::releaseAllState(int line, void* address) {
+void BlockLogger::releaseAllState(int line, const void* address) {
   if(!mEnabled) {
     return;
   }
@@ -418,7 +418,7 @@ void BlockLogger::setStateOnStoreName(int line, const std::string& stateStoreNam
   printTab(ss, mProcessId, mThreadId, mDepth, (size_t)mChannel);
   ss << COLOUR BOLD CAP_GREEN << ADD_LOG_DELIMITER << ADD_LOG_SECOND_DELIMITER << COLOUR BOLD CAP_YELLOW << " " << mId << " "
   << COLOUR RESET << "[" << COLOUR BOLD CAP_GREEN << line << COLOUR RESET << "] " << COLOUR BOLD CAP_RED << "SET STATE: " 
-  << "StoreName=" << stateStoreName << " : StateName='" << stateName << "' = " << newState << COLOUR RESET;
+  << "StoreName=" << stateStoreName << " : StateName='" << stateName << "' : Value='" << newState << "'" << COLOUR RESET;
   PRINT_TO_LOG("%s", ss.str().c_str());
 }
 
@@ -434,7 +434,7 @@ void BlockLogger::printCurrentStateOnStoreName(int line, const std::string& stat
   printTab(ss, mProcessId, mThreadId, mDepth, (size_t)mChannel);
   ss << COLOUR BOLD CAP_GREEN << ADD_LOG_DELIMITER << ADD_LOG_SECOND_DELIMITER << COLOUR BOLD CAP_YELLOW << " " << mId << " "
   << COLOUR RESET << "[" << COLOUR BOLD CAP_GREEN << line << COLOUR RESET << "] " << COLOUR BOLD CAP_RED << "PRINT STATE: " 
-  << "StoreName=" << stateStoreName << " : StateName='" << stateName << "' = " << (state ? state.value() : "NO STATE") 
+  << "StoreName=" << stateStoreName << " : StateName='" << stateName << "' : Value='" << (state ? state.value() : "NO STATE") << "'"
   << COLOUR RESET;
   PRINT_TO_LOG("%s", ss.str().c_str());
 }
@@ -451,7 +451,7 @@ void BlockLogger::releaseStateOnStoreName(int line, const std::string& stateStor
   printTab(ss, mProcessId, mThreadId, mDepth, (size_t)mChannel);
   ss << COLOUR BOLD CAP_GREEN << ADD_LOG_DELIMITER << ADD_LOG_SECOND_DELIMITER << COLOUR BOLD CAP_YELLOW << " " << mId << " "
   << COLOUR RESET << "[" << COLOUR BOLD CAP_GREEN << line << COLOUR RESET << "] " << COLOUR BOLD CAP_RED << "RELEASE STATE: " 
-  << "StoreName=" << stateStoreName << " : StateName='" << stateName << "' = " << (deletedState ? deletedState.value() : "NO STATE") 
+  << "StoreName=" << stateStoreName << " : StateName='" << stateName << "' : Value='" << (deletedState ? deletedState.value() : "NO STATE") << "'" 
   << COLOUR RESET;
   PRINT_TO_LOG("%s", ss.str().c_str());
 }

@@ -54,9 +54,7 @@ public:
   void testBlockOutput() {
     CAP_LOG_BLOCK(CAP::CHANNEL::RENDER);
     CAP_LOG_SET_STATE("Current Name", [&](std::optional<std::string> prev){
-      if(prev) {
-        return prev.value() + " APPENDED SOME STUFF";
-      }})
+        return (prev ? prev.value() + " APPENDED SOME STUFF" : "no state yet");})
   }
 };
 

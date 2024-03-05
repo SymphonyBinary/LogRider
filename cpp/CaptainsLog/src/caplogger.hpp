@@ -233,14 +233,14 @@ public:
 
   void error(int line, std::string_view messageBuffer);
 
-  void setState(int line, void* address, const std::string& stateName, 
+  void setState(int line, const void* address, const std::string& stateName, 
     std::function<std::string(std::optional<std::string>)>& stateUpdater);
 
-  void printCurrentState(int line, void* address, const std::string& stateName);
+  void printCurrentState(int line, const void* address, const std::string& stateName);
 
-  void releaseState(int line, void* address, const std::string& stateName);
+  void releaseState(int line, const void* address, const std::string& stateName);
 
-  void releaseAllState(int line, void* address);
+  void releaseAllState(int line, const void* address);
 
   void setStateOnStoreName(int line, const std::string& stateStoreName, const std::string& stateName, 
     std::function<std::string(std::optional<std::string>)>& stateUpdater);
