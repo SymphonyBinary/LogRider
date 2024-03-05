@@ -828,9 +828,9 @@ int main(int argc, char* argv[]) {
           << node.blockText.objectId;
         break;
       case CapLogType::BLOCK_INNER_LINE:
-        output.outputFileStream << " :"
+        output.outputFileStream << " "
           << node.messageText.innerTypeString
-          << " " << node.messageText.innerPayload;
+          << ": " << node.messageText.innerPayload;
         break;
       case CapLogType::UNKNOWN:
         std::cerr << "CapLogType::UNKNOWN line" << std::endl;
