@@ -1,5 +1,6 @@
 #include "../src/caplogger.hpp"
 #include <vector>
+#include <sstream>
 
 namespace something{
 
@@ -8,8 +9,17 @@ public:
   TestRender(std::string name) {
     CAP_LOG_BLOCK(CAP::CHANNEL::RENDER);
     (void)name;
-    CAP_SET("Current Name", "%s", name.c_str());
+    CAP_LOG_SET_STATE("Current Name", [&](std::optional<std::string>){return name.c_str();})
+    CAP_LOG_SET_STATE("Current Name 1", [&](std::optional<std::string>){return name.c_str();})
+    CAP_LOG_SET_STATE("Current Name 2", [&](std::optional<std::string>){return name.c_str();})
+    CAP_LOG_SET_STATE("Current Name 3", [&](std::optional<std::string>){return name.c_str();})
   }
+
+  ~TestRender() {
+    CAP_LOG_BLOCK(CAP::CHANNEL::RENDER);
+    CAP_LOG_RELEASE_ALL_STATE();
+  }
+
   void testBlockOutput() {
     CAP_LOG_BLOCK(CAP::CHANNEL::RENDER);
   }
@@ -31,9 +41,14 @@ public:
 
 class NestTest1 {
 public:
+  ~NestTest1(){
+    CAP_LOG_BLOCK(CAP::CHANNEL::AUDIO_SUB_CHANNEL_Z);
+    CAP_LOG_RELEASE_STATE(static_cast<std::ostringstream&>(std::stringstream{} << "asdf " << 1).str().c_str());
+  }
+
   void doIt() {
     CAP_LOG_BLOCK(CAP::CHANNEL::AUDIO_SUB_CHANNEL_OTHER);
-    CAP_SET("123","asdfasdf");
+    // CAP_LOG_SET_STATE(static_cast<std::ostringstream&>(std::stringstream{} << "asdf " << 1).str().c_str(),[&](std::optional<std::string>){return "asdfasdf";})
   }
 
   void doSomething(){

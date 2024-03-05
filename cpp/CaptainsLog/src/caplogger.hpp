@@ -10,6 +10,8 @@
 #include <cstring>
 #include <unordered_map>
 #include <mutex>
+#include <functional>
+// #include <optional>
 
 #include <cstdint>
 
@@ -108,13 +110,37 @@ a buffer at all
     delete[] buffer; \
   }
 
-#define CAP_SET(name, ...) \
+// https://stackoverflow.com/questions/36030589/i-cannot-pass-lambda-as-stdfunction
+// updaterLambda is of form CAP::StateUpdaterFunc
+#define CAP_LOG_SET_STATE_ON_ADDRESS(address, name, updaterLambda) \
   if (blockScopeLog.isEnabled()) { \
-    size_t needed = snprintf(NULL, 0, FIRST(__VA_ARGS__) " " REST(__VA_ARGS__)) + 1; \
-    char* buffer = new char[needed]; \
-    snprintf(buffer, needed, FIRST(__VA_ARGS__) " " REST(__VA_ARGS__)); \
-    blockScopeLog.set(__LINE__, name, buffer); \
-    delete[] buffer; \
+    CAP::StateUpdaterFunc updaterFunc = updaterLambda; \
+    blockScopeLog.setState(__LINE__, address, name, updaterFunc); \
+  }
+
+#define CAP_LOG_PRINT_STATE_ON_ADDRESS(address, name) \
+  if (blockScopeLog.isEnabled()) { \
+    blockScopeLog.printState(__LINE__, address, name); \
+  }
+
+#define CAP_LOG_RELEASE_STATE_ON_ADDRESS(address, name) \
+  if (blockScopeLog.isEnabled()) { \
+    blockScopeLog.releaseState(__LINE__, address, name); \
+  }
+
+#define CAP_LOG_RELEASE_ALL_STATE_ON_ADDRESS(address) \
+  if (blockScopeLog.isEnabled()) { \
+    blockScopeLog.releaseAllState(__LINE__, address); \
+  }  
+
+#define CAP_LOG_SET_STATE(name, ...) CAP_LOG_SET_STATE_ON_ADDRESS(this, name, __VA_ARGS__)
+#define CAP_LOG_PRINT_STATE(name, ...) CAP_LOG_PRINT_STATE_ON_ADDRESS(this, name)
+#define CAP_LOG_RELEASE_STATE(name) CAP_LOG_RELEASE_STATE_ON_ADDRESS(this, name)
+#define CAP_LOG_RELEASE_ALL_STATE(name) CAP_LOG_RELEASE_ALL_STATE_ON_ADDRESS(this)
+
+#define CAP_LOG_EXECUTE_LAMBDA(function) \
+  if (blockScopeLog.isEnabled()) { \
+    function(); \
   }
 
 #else
@@ -125,25 +151,27 @@ a buffer at all
 #define CAP_LOG(...)
 #define CAP_LOG_ERROR(...)
 
-#define CAP_SET(...)
+#define CAP_LOG_SET_STATE_ON_ADDRESS(...)
+#define CAP_LOG_PRINT_STATE_ON_ADDRESS(...)
+#define CAP_LOG_RELEASE_STATE_ON_ADDRESS(...)
+#define CAP_LOG_RELEASE_ALL_STATE_ON_ADDRESS(...)
 
-// #define CAP_LOG_SET(...);
+#define CAP_LOG_CREATE_STATE(...)
+#define CAP_LOG_PRINT_STATE(...)
+#define CAP_LOG_RELEASE_STATE(...)
+#define CAP_LOG_RELEASE_ALL_STATE(...)
 
-// #define CAP_LOG_CREATE_STATE_ON_THIS()
-// #define CAP_LOG_CREATE_STATE_ON_ADDRESS(...)
+#define CAP_LOG_EXECUTE_LAMBDA(...)
 
-// #define CAP_LOG_RELEASE_STATE_ON_THIS(...)
-// #define CAP_LOG_RELEASE_STATE_ON_ADDRESS(...)
-
-// #define CAP_LOG_EXECUTE_IF_CHANNEL_ENABLED(...)
-
-// #define CAP_LOG_INLINE_EVALUATE_STATEMENT(...)
+#define CAP_LOG_INLINE_EVALUATE_STATEMENT(...)
 
 // #define CAP_LOG_INTEGRATION_TEST_REPORT(...)
 
 #endif
 
 namespace CAP {
+
+using StateUpdaterFunc = std::function<std::string(std::optional<std::string>)>;
 
 enum class CHANNEL {
   #define CAPTAINS_LOG_CHANNEL(name, ...) name,
@@ -180,7 +208,14 @@ public:
 
   void error(int line, std::string_view messageBuffer);
 
-  void set(int line, std::string_view name, std::string_view value);
+  void setState(int line, void* objectId, const std::string& stateName, 
+    std::function<std::string(std::optional<std::string>)>& stateUpdater);
+
+  void printCurrentState(int line, void* objectId, const std::string& stateName);
+
+  void releaseState(int line, void* objectId, const std::string& stateName);
+
+  void releaseAllState(int line, void* objectId);
 
   bool isEnabled();
 

@@ -4,6 +4,7 @@
 #include <array>
 #include <iomanip>
 
+
 namespace CAP {
 
 
@@ -87,6 +88,43 @@ struct BlockLoggerDataStore {
     --data.logDepth;
   }
 
+  const std::string& setState(void* objectId, const std::string& stateName, 
+      std::function<std::string(std::optional<std::string>)> stateUpdater) {
+    return (mCustomLogState[objectId][stateName] = stateUpdater(mCustomLogState[objectId][stateName])).value();
+  }
+
+  std::optional<std::string> getState(void* objectId, const std::string& stateName) const {
+    if (const auto& objectFind = mCustomLogState.find(objectId); objectFind != mCustomLogState.end()) {
+      const auto& objectStateMap = objectFind->second;
+      if (const auto& stateFind = objectStateMap.find(stateName); stateFind != objectStateMap.end()) {
+        return stateFind->second;
+      }
+    }
+    return std::nullopt;
+  }
+
+  std::optional<std::string> releaseState(void* objectId, const std::string& stateName) {
+    std::optional<std::string> deletedValueRet;
+    if (auto objectFind = mCustomLogState.find(objectId); objectFind != mCustomLogState.end()) {
+      auto& objectStateMap = objectFind->second;
+      if (auto stateFind = objectStateMap.find(stateName); stateFind != objectStateMap.end()) {
+        deletedValueRet = stateFind->second;
+        objectStateMap.erase(stateFind);
+      }
+    }
+    return deletedValueRet;
+  }
+
+  int releaseAllState(void* objectId) {
+    int stateDeletedCountRet = 0;
+    if (auto objectFind = mCustomLogState.find(objectId); objectFind != mCustomLogState.end()) {
+      auto& objectStateMap = objectFind->second;
+      stateDeletedCountRet = objectStateMap.size();
+      mCustomLogState.erase(objectFind);
+    }
+    return stateDeletedCountRet;
+  }
+
   BlockLoggerDataStore(const BlockLoggerDataStore&) = delete;
   void operator=(const BlockLoggerDataStore&) = delete;
 
@@ -103,6 +141,9 @@ private:
   unsigned int mUniqueThreadsSeen = 0;
   //special timestamp used as a key to identify this process from others.
   const unsigned int mProcessTimestamp = 0;
+
+  // for set/get/release commands
+  std::unordered_map<void*, std::unordered_map<std::string, std::optional<std::string>>> mCustomLogState;
 };
 
 /*static*/ BlockChannelTree& BlockChannelTree::getInstance() {
@@ -241,11 +282,71 @@ void BlockLogger::error(int line, std::string_view messageBuffer) {
   }
 }
 
-void BlockLogger::set(int line, std::string_view name, std::string_view value) {
+void BlockLogger::setState(int line, void* objectId, const std::string& stateName, 
+    std::function<std::string(std::optional<std::string>)>& stateUpdater) {
+  if(!mEnabled) {
+    return;
+  }
+
+  auto& loggerDataStore = BlockLoggerDataStore::getInstance();
+  const std::string& newState = loggerDataStore.setState(objectId, stateName, stateUpdater);
+
   std::stringstream ss;
   printTab(ss, mProcessId, mThreadId, mDepth, (size_t)mChannel);
   ss << COLOUR BOLD CAP_GREEN << ADD_LOG_DELIMITER << ADD_LOG_SECOND_DELIMITER << COLOUR BOLD CAP_YELLOW << " " << mId << " "
-  << COLOUR RESET << "[" << COLOUR BOLD CAP_GREEN << line << COLOUR RESET << "] " << COLOUR BOLD CAP_RED << "SET: " <<  name << " = " << value << COLOUR RESET;
+  << COLOUR RESET << "[" << COLOUR BOLD CAP_GREEN << line << COLOUR RESET << "] " << COLOUR BOLD CAP_RED << "SET STATE: " 
+  << "ObjectId=" << objectId << " : StateName='" << stateName << "' = " << newState << COLOUR RESET;
+  PRINT_TO_LOG("%s", ss.str().c_str());
+}
+
+void BlockLogger::printCurrentState(int line, void* objectId, const std::string& stateName) {
+  if(!mEnabled) {
+    return;
+  }
+
+  auto& loggerDataStore = BlockLoggerDataStore::getInstance();
+  std::optional<std::string> state = loggerDataStore.getState(objectId, stateName);
+
+  std::stringstream ss;
+  printTab(ss, mProcessId, mThreadId, mDepth, (size_t)mChannel);
+  ss << COLOUR BOLD CAP_GREEN << ADD_LOG_DELIMITER << ADD_LOG_SECOND_DELIMITER << COLOUR BOLD CAP_YELLOW << " " << mId << " "
+  << COLOUR RESET << "[" << COLOUR BOLD CAP_GREEN << line << COLOUR RESET << "] " << COLOUR BOLD CAP_RED << "PRINT STATE: " 
+  << "ObjectId=" << objectId << " : StateName='" << stateName << "' = " << (state ? state.value() : "NO STATE") 
+  << COLOUR RESET;
+  PRINT_TO_LOG("%s", ss.str().c_str());
+}
+
+void BlockLogger::releaseState(int line, void* objectId, const std::string& stateName) {
+  if(!mEnabled) {
+    return;
+  }
+
+  auto& loggerDataStore = BlockLoggerDataStore::getInstance();
+  std::optional<std::string> deletedState = loggerDataStore.releaseState(objectId, stateName);
+
+  std::stringstream ss;
+  printTab(ss, mProcessId, mThreadId, mDepth, (size_t)mChannel);
+  ss << COLOUR BOLD CAP_GREEN << ADD_LOG_DELIMITER << ADD_LOG_SECOND_DELIMITER << COLOUR BOLD CAP_YELLOW << " " << mId << " "
+  << COLOUR RESET << "[" << COLOUR BOLD CAP_GREEN << line << COLOUR RESET << "] " << COLOUR BOLD CAP_RED << "RELEASE STATE: " 
+  << "ObjectId=" << objectId << " : StateName='" << stateName << "' = " << (deletedState ? deletedState.value() : "NO STATE") 
+  << COLOUR RESET;
+  PRINT_TO_LOG("%s", ss.str().c_str());
+}
+
+void BlockLogger::releaseAllState(int line, void* objectId) {
+  if(!mEnabled) {
+    return;
+  }
+
+  auto& loggerDataStore = BlockLoggerDataStore::getInstance();
+  int deletedStateCount = loggerDataStore.releaseAllState(objectId);
+
+  std::stringstream ss;
+  printTab(ss, mProcessId, mThreadId, mDepth, (size_t)mChannel);
+  ss << COLOUR BOLD CAP_GREEN << ADD_LOG_DELIMITER << ADD_LOG_SECOND_DELIMITER << COLOUR BOLD CAP_YELLOW << " " << mId << " "
+  << COLOUR RESET << "[" << COLOUR BOLD CAP_GREEN << line << COLOUR RESET << "] " << COLOUR BOLD CAP_RED << "RELEASE ALL STATE: " 
+  << "ObjectId=" << objectId << " : Deleted State Count=" << deletedStateCount
+  << COLOUR RESET;
   PRINT_TO_LOG("%s", ss.str().c_str());
 }
 
