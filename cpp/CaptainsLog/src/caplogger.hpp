@@ -120,7 +120,7 @@ a buffer at all
 
 #define CAP_LOG_PRINT_STATE_ON_ADDRESS(address, name) \
   if (blockScopeLog.isEnabled()) { \
-    blockScopeLog.printState(__LINE__, address, name); \
+    blockScopeLog.printCurrentState(__LINE__, address, name); \
   }
 
 #define CAP_LOG_RELEASE_STATE_ON_ADDRESS(address, name) \
@@ -136,7 +136,28 @@ a buffer at all
 #define CAP_LOG_SET_STATE(name, ...) CAP_LOG_SET_STATE_ON_ADDRESS(this, name, __VA_ARGS__)
 #define CAP_LOG_PRINT_STATE(name, ...) CAP_LOG_PRINT_STATE_ON_ADDRESS(this, name)
 #define CAP_LOG_RELEASE_STATE(name) CAP_LOG_RELEASE_STATE_ON_ADDRESS(this, name)
-#define CAP_LOG_RELEASE_ALL_STATE(name) CAP_LOG_RELEASE_ALL_STATE_ON_ADDRESS(this)
+#define CAP_LOG_RELEASE_ALL_STATE() CAP_LOG_RELEASE_ALL_STATE_ON_ADDRESS(this)
+
+#define CAP_LOG_SET_STATE_ON_STORE_NAME(stateStoreName, name, updaterLambda) \
+  if (blockScopeLog.isEnabled()) { \
+    CAP::StateUpdaterFunc updaterFunc = updaterLambda; \
+    blockScopeLog.setStateOnStoreName(__LINE__, stateStoreName, name, updaterFunc); \
+  }
+
+#define CAP_LOG_PRINT_STATE_ON_STORE_NAME(stateStoreName, name) \
+  if (blockScopeLog.isEnabled()) { \
+    blockScopeLog.printCurrentStateOnStoreName(__LINE__, stateStoreName, name); \
+  }
+
+#define CAP_LOG_RELEASE_STATE_ON_STORE_NAME(stateStoreName, name) \
+  if (blockScopeLog.isEnabled()) { \
+    blockScopeLog.releaseStateOnStoreName(__LINE__, stateStoreName, name); \
+  }
+
+#define CAP_LOG_RELEASE_ALL_STATE_ON_STORE_NAME(stateStoreName) \
+  if (blockScopeLog.isEnabled()) { \
+    blockScopeLog.releaseAllStateOnStoreName(__LINE__, stateStoreName); \
+  }  
 
 #define CAP_LOG_EXECUTE_LAMBDA(function) \
   if (blockScopeLog.isEnabled()) { \
@@ -156,14 +177,17 @@ a buffer at all
 #define CAP_LOG_RELEASE_STATE_ON_ADDRESS(...)
 #define CAP_LOG_RELEASE_ALL_STATE_ON_ADDRESS(...)
 
-#define CAP_LOG_CREATE_STATE(...)
+#define CAP_LOG_SET_STATE(...)
 #define CAP_LOG_PRINT_STATE(...)
 #define CAP_LOG_RELEASE_STATE(...)
 #define CAP_LOG_RELEASE_ALL_STATE(...)
 
-#define CAP_LOG_EXECUTE_LAMBDA(...)
+#define CAP_LOG_SET_STATE_ON_STORE_NAME(...)
+#define CAP_LOG_PRINT_STATE_ON_STORE_NAME(...)
+#define CAP_LOG_RELEASE_STATE_ON_STORE_NAME(...)
+#define CAP_LOG_RELEASE_ALL_STATE_ON_STORE_NAME(...)
 
-#define CAP_LOG_INLINE_EVALUATE_STATEMENT(...)
+#define CAP_LOG_EXECUTE_LAMBDA(...)
 
 // #define CAP_LOG_INTEGRATION_TEST_REPORT(...)
 
@@ -171,6 +195,7 @@ a buffer at all
 
 namespace CAP {
 
+// input parameter is the previous value if it exists
 using StateUpdaterFunc = std::function<std::string(std::optional<std::string>)>;
 
 enum class CHANNEL {
@@ -208,14 +233,23 @@ public:
 
   void error(int line, std::string_view messageBuffer);
 
-  void setState(int line, void* objectId, const std::string& stateName, 
+  void setState(int line, void* address, const std::string& stateName, 
     std::function<std::string(std::optional<std::string>)>& stateUpdater);
 
-  void printCurrentState(int line, void* objectId, const std::string& stateName);
+  void printCurrentState(int line, void* address, const std::string& stateName);
 
-  void releaseState(int line, void* objectId, const std::string& stateName);
+  void releaseState(int line, void* address, const std::string& stateName);
 
-  void releaseAllState(int line, void* objectId);
+  void releaseAllState(int line, void* address);
+
+  void setStateOnStoreName(int line, const std::string& stateStoreName, const std::string& stateName, 
+    std::function<std::string(std::optional<std::string>)>& stateUpdater);
+
+  void printCurrentStateOnStoreName(int line, const std::string& stateStoreName, const std::string& stateName);
+
+  void releaseStateOnStoreName(int line, const std::string& stateStoreName, const std::string& stateName);
+
+  void releaseAllStateOnStoreName(int line, const std::string& stateStoreName);
 
   bool isEnabled();
 
