@@ -840,7 +840,7 @@ int main(int argc, char* argv[]) {
     output.outputFileStream << std::endl;
   }
 
-  //std::cout << outputText << std::endl;
+  std::cout << "Complete" << std::endl;
 
   return 0;
 }

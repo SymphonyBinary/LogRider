@@ -38,6 +38,32 @@ void addStateToExampleState(const ExampleStateWithThisPtr& example) {
 /// ----
 
 
+/// ---- demonstrates how set state can be used on objects with a string name.
+void addStateToStoreName(std::string storeName, std::string name) {
+  CAP_LOG_BLOCK_NO_THIS(CAP::CHANNEL::SET_STORE_NAME_EXAMPLE);
+  CAP_LOG_SET_STATE_ON_STORE_NAME(storeName, name, [&](std::optional<std::string>){return "default value";})
+}
+
+void changeStateToStoreName(std::string storeName, std::string name) {
+  CAP_LOG_BLOCK_NO_THIS(CAP::CHANNEL::SET_STORE_NAME_EXAMPLE);
+  CAP_LOG_SET_STATE_ON_STORE_NAME(storeName, name, [&](std::optional<std::string>){return "changed value";})
+}
+
+void printStore(std::string storeName, std::string name) {
+  CAP_LOG_BLOCK_NO_THIS(CAP::CHANNEL::SET_STORE_NAME_EXAMPLE);
+  CAP_LOG_PRINT_STATE_ON_STORE_NAME(storeName, name);
+}
+
+void printAllStore(std::string storeName) {
+  CAP_LOG_BLOCK_NO_THIS(CAP::CHANNEL::SET_STORE_NAME_EXAMPLE);
+  CAP_LOG_PRINT_ALL_STATE_ON_STORE_NAME(storeName);
+}
+
+void releaseAllStateOnStore(std::string storeName) {
+  CAP_LOG_BLOCK_NO_THIS(CAP::CHANNEL::SET_STORE_NAME_EXAMPLE);
+  CAP_LOG_RELEASE_ALL_STATE_ON_STORE_NAME(storeName);
+}
+/// ----
 
 class TestRender {
 public:
@@ -96,6 +122,8 @@ int main() {
   CAP_LOG_BLOCK_NO_THIS(CAP::CHANNEL::DEFAULT, "main");
 
   {
+    CAP_LOG_BLOCK_NO_THIS(CAP::CHANNEL::DEFAULT);
+    CAP_LOG("This demonstrates writing to the 'this' pointer, and writing to explicit addresses");
     something::ExampleStateWithThisPtr exampleState;
     exampleState.makeEntity(57, "Square thing");
     exampleState.makeEntity(42, "Triangle thing");
@@ -105,10 +133,36 @@ int main() {
     exampleState.connectEntities(18, 12);
     exampleState.connectEntities(42, 57);
 
-    addStateToExampleState(exampleState);
+    something::addStateToExampleState(exampleState);
+    CAP_LOG("printing all state");
+    CAP_LOG_PRINT_All_STATE_ON_ADDRESS(&exampleState);
+  }
+
+  {
+    CAP_LOG_BLOCK_NO_THIS(CAP::CHANNEL::DEFAULT);
+    CAP_LOG("This demonstrates writing writing to named stores");
+
+    something::addStateToStoreName("global state", "foo");
+    something::addStateToStoreName("global state", "bar");
+    something::addStateToStoreName("global state", "third");
+    something::changeStateToStoreName("global state", "bar");
+    something::printAllStore("global state");
+
+    CAP_LOG("Deleting state twice to show that second call has nothing left.")
+    something::releaseAllStateOnStore("global state");
+    something::releaseAllStateOnStore("global state");
+  }
+
+  CAP_LOG("Executing lambda if LAMBDA_EXAMPLE is enabled");
+  {
+    CAP_LOG_BLOCK_NO_THIS(CAP::CHANNEL::LAMBDA_EXAMPLE);
+    CAP_LOG_EXECUTE_LAMBDA([&](){
+      std::cout << "print out GARBAAAGE!!" << std::endl;
+    })
   }
 
 
+  // the following is basically chaos.  TODO: organize this.
 
   NestTest1 nestTest1;
   nestTest1.doSomething();

@@ -71,6 +71,14 @@ public:
     return std::nullopt;
   }
 
+  // intentionally returning by copy for threading reasons.  Be careful if this is too large.
+  std::unordered_map<std::string, std::optional<std::string>> getAllState(KeyType objectId) const {
+    if (const auto& objectFind = mStateStore.find(objectId); objectFind != mStateStore.end()) {
+      return objectFind->second;
+    }
+    return {};
+  }
+
   std::optional<std::string> releaseState(KeyType objectId, const std::string& stateName) {
     std::optional<std::string> deletedValueRet;
     if (auto objectFind = mStateStore.find(objectId); objectFind != mStateStore.end()) {
@@ -143,6 +151,11 @@ struct BlockLoggerDataStore {
     return mCustomLogStatePointers.getState(objectId, stateName);
   }
 
+  std::unordered_map<std::string, std::optional<std::string>> getAllState(const void* objectId) {
+    const std::lock_guard<std::mutex> guard(mMut);
+    return mCustomLogStatePointers.getAllState(objectId);
+  }
+
   std::optional<std::string> releaseState(const void* objectId, const std::string& stateName) {
     const std::lock_guard<std::mutex> guard(mMut);
     return mCustomLogStatePointers.releaseState(objectId, stateName);
@@ -162,6 +175,11 @@ struct BlockLoggerDataStore {
   std::optional<std::string> getStateStoreName(const std::string& storeName, const std::string& stateName) {
     const std::lock_guard<std::mutex> guard(mMut);
     return mCustomLogStateStoreNames.getState(storeName, stateName);
+  }
+
+  std::unordered_map<std::string, std::optional<std::string>> getAllStateStoreName(const std::string& storeName) {
+    const std::lock_guard<std::mutex> guard(mMut);
+    return mCustomLogStateStoreNames.getAllState(storeName);
   }
 
   std::optional<std::string> releaseStateStoreName(const std::string& storeName, const std::string& stateName) {
@@ -369,6 +387,25 @@ void BlockLogger::printCurrentState(int line, const void* address, const std::st
   PRINT_TO_LOG("%s", ss.str().c_str());
 }
 
+void BlockLogger::printAllCurrentState(int line, const void* address) {
+  if(!mEnabled) {
+    return;
+  }
+
+  auto& loggerDataStore = BlockLoggerDataStore::getInstance();
+  auto allState = loggerDataStore.getAllState(address);
+
+  for(const auto& row : allState) {
+    std::stringstream ss;
+    printTab(ss, mProcessId, mThreadId, mDepth, (size_t)mChannel);
+    ss << COLOUR BOLD CAP_GREEN << ADD_LOG_DELIMITER << ADD_LOG_SECOND_DELIMITER << COLOUR BOLD CAP_YELLOW << " " << mId << " "
+    << COLOUR RESET << "[" << COLOUR BOLD CAP_GREEN << line << COLOUR RESET << "] " << COLOUR BOLD CAP_RED << "PRINT STATE: " 
+    << "Address=" << address << " : StateName='" << row.first << "' : Value='" << (row.second ? row.second.value() : "NO STATE") << "'"
+    << COLOUR RESET;
+    PRINT_TO_LOG("%s", ss.str().c_str());
+  }
+}
+
 void BlockLogger::releaseState(int line, const void* address, const std::string& stateName) {
   if(!mEnabled) {
     return;
@@ -437,6 +474,25 @@ void BlockLogger::printCurrentStateOnStoreName(int line, const std::string& stat
   << "StoreName=" << stateStoreName << " : StateName='" << stateName << "' : Value='" << (state ? state.value() : "NO STATE") << "'"
   << COLOUR RESET;
   PRINT_TO_LOG("%s", ss.str().c_str());
+}
+
+void BlockLogger::printAllCurrentStateOnStoreName(int line, const std::string& stateStoreName) {
+  if(!mEnabled) {
+    return;
+  }
+
+  auto& loggerDataStore = BlockLoggerDataStore::getInstance();
+  auto allState = loggerDataStore.getAllStateStoreName(stateStoreName);
+
+  for(const auto& row : allState) {
+    std::stringstream ss;
+    printTab(ss, mProcessId, mThreadId, mDepth, (size_t)mChannel);
+    ss << COLOUR BOLD CAP_GREEN << ADD_LOG_DELIMITER << ADD_LOG_SECOND_DELIMITER << COLOUR BOLD CAP_YELLOW << " " << mId << " "
+    << COLOUR RESET << "[" << COLOUR BOLD CAP_GREEN << line << COLOUR RESET << "] " << COLOUR BOLD CAP_RED << "PRINT STATE: " 
+    << "StoreName=" << stateStoreName << " : StateName='" << row.first << "' : Value='" << (row.second ? row.second.value() : "NO STATE") << "'"
+    << COLOUR RESET;
+    PRINT_TO_LOG("%s", ss.str().c_str());
+  }
 }
 
 void BlockLogger::releaseStateOnStoreName(int line, const std::string& stateStoreName, const std::string& stateName) {

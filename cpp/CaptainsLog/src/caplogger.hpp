@@ -123,6 +123,11 @@ a buffer at all
     blockScopeLog.printCurrentState(__LINE__, address, name); \
   }
 
+#define CAP_LOG_PRINT_All_STATE_ON_ADDRESS(address) \
+  if (blockScopeLog.isEnabled()) { \
+    blockScopeLog.printAllCurrentState(__LINE__, address); \
+  }
+
 #define CAP_LOG_RELEASE_STATE_ON_ADDRESS(address, name) \
   if (blockScopeLog.isEnabled()) { \
     blockScopeLog.releaseState(__LINE__, address, name); \
@@ -134,7 +139,8 @@ a buffer at all
   }  
 
 #define CAP_LOG_SET_STATE(name, ...) CAP_LOG_SET_STATE_ON_ADDRESS(this, name, __VA_ARGS__)
-#define CAP_LOG_PRINT_STATE(name, ...) CAP_LOG_PRINT_STATE_ON_ADDRESS(this, name)
+#define CAP_LOG_PRINT_STATE(name) CAP_LOG_PRINT_STATE_ON_ADDRESS(this, name)
+#define CAP_LOG_PRINT_ALL_STATE(name) CAP_LOG_PRINT_All_STATE_ON_ADDRESS(this)
 #define CAP_LOG_RELEASE_STATE(name) CAP_LOG_RELEASE_STATE_ON_ADDRESS(this, name)
 #define CAP_LOG_RELEASE_ALL_STATE() CAP_LOG_RELEASE_ALL_STATE_ON_ADDRESS(this)
 
@@ -147,6 +153,11 @@ a buffer at all
 #define CAP_LOG_PRINT_STATE_ON_STORE_NAME(stateStoreName, name) \
   if (blockScopeLog.isEnabled()) { \
     blockScopeLog.printCurrentStateOnStoreName(__LINE__, stateStoreName, name); \
+  }
+
+#define CAP_LOG_PRINT_ALL_STATE_ON_STORE_NAME(stateStoreName) \
+  if (blockScopeLog.isEnabled()) { \
+    blockScopeLog.printAllCurrentStateOnStoreName(__LINE__, stateStoreName); \
   }
 
 #define CAP_LOG_RELEASE_STATE_ON_STORE_NAME(stateStoreName, name) \
@@ -174,16 +185,19 @@ a buffer at all
 
 #define CAP_LOG_SET_STATE_ON_ADDRESS(...)
 #define CAP_LOG_PRINT_STATE_ON_ADDRESS(...)
+#define CAP_LOG_PRINT_All_STATE_ON_ADDRESS(...)
 #define CAP_LOG_RELEASE_STATE_ON_ADDRESS(...)
 #define CAP_LOG_RELEASE_ALL_STATE_ON_ADDRESS(...)
 
 #define CAP_LOG_SET_STATE(...)
 #define CAP_LOG_PRINT_STATE(...)
+#define CAP_LOG_PRINT_All_STATE(...)
 #define CAP_LOG_RELEASE_STATE(...)
 #define CAP_LOG_RELEASE_ALL_STATE(...)
 
 #define CAP_LOG_SET_STATE_ON_STORE_NAME(...)
 #define CAP_LOG_PRINT_STATE_ON_STORE_NAME(...)
+#define CAP_LOG_PRINT_ALL_STATE_ON_STORE_NAME(...)
 #define CAP_LOG_RELEASE_STATE_ON_STORE_NAME(...)
 #define CAP_LOG_RELEASE_ALL_STATE_ON_STORE_NAME(...)
 
@@ -238,6 +252,8 @@ public:
 
   void printCurrentState(int line, const void* address, const std::string& stateName);
 
+  void printAllCurrentState(int line, const void* address);
+
   void releaseState(int line, const void* address, const std::string& stateName);
 
   void releaseAllState(int line, const void* address);
@@ -246,6 +262,8 @@ public:
     std::function<std::string(std::optional<std::string>)>& stateUpdater);
 
   void printCurrentStateOnStoreName(int line, const std::string& stateStoreName, const std::string& stateName);
+
+  void printAllCurrentStateOnStoreName(int line, const std::string& stateStoreName);
 
   void releaseStateOnStoreName(int line, const std::string& stateStoreName, const std::string& stateName);
 
