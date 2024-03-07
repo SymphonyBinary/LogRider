@@ -1,0 +1,5 @@
+cd `dirname "$0"`
+../CaptainsLog/buildTestGCC
+./buildProcessClogGCC
+out/processClog.out ../CaptainsLog/samples/testProc1.clog samples/testProc1processed.clog
+out/processClog.out ../CaptainsLog/samples/combinedAndInterleaved.clog samples/combinedAndInterleavedprocessed.clog

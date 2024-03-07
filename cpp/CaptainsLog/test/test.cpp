@@ -1,3 +1,7 @@
+#ifndef ENABLE_CAP_LOGGER
+#define ENABLE_CAP_LOGGER
+#endif
+
 #include "../src/caplogger.hpp"
 #include <vector>
 #include <sstream>
@@ -102,12 +106,12 @@ class NestTest1 {
 public:
   ~NestTest1(){
     CAP_LOG_BLOCK(CAP::CHANNEL::AUDIO_SUB_CHANNEL_Z);
-    CAP_LOG_RELEASE_STATE(static_cast<std::ostringstream&>(std::stringstream{} << "asdf " << 1).str().c_str());
+    CAP_LOG_RELEASE_STATE(static_cast<const std::ostringstream&>(std::ostringstream{} << "asdf " << 1).str().c_str());
   }
 
   void doIt() {
     CAP_LOG_BLOCK(CAP::CHANNEL::AUDIO_SUB_CHANNEL_OTHER);
-    CAP_LOG_SET_STATE(static_cast<std::ostringstream&>(std::stringstream{} << "asdf " << 1).str().c_str(), [&](std::optional<std::string>){return "asdfasdf";})
+    CAP_LOG_SET_STATE(static_cast<const std::ostringstream&>(std::ostringstream{} << "asdf " << 1).str().c_str(), [&](std::optional<std::string>){return "asdfasdf";})
   }
 
   void doSomething(){
@@ -122,7 +126,7 @@ int main() {
   CAP_LOG_BLOCK_NO_THIS(CAP::CHANNEL::DEFAULT, "main");
 
   {
-    CAP_LOG_BLOCK_NO_THIS(CAP::CHANNEL::DEFAULT);
+    CAP_LOG_BLOCK_NO_THIS(CAP::CHANNEL::SET_THIS_EXAMPLE);
     CAP_LOG("This demonstrates writing to the 'this' pointer, and writing to explicit addresses");
     something::ExampleStateWithThisPtr exampleState;
     exampleState.makeEntity(57, "Square thing");
@@ -138,8 +142,10 @@ int main() {
     CAP_LOG_PRINT_All_STATE_ON_ADDRESS(&exampleState);
   }
 
+  CAP_LOG("CAP::CHANNEL::SET_STORE_NAME_EXAMPLE is disabled for output but still works for setting state!");
+
   {
-    CAP_LOG_BLOCK_NO_THIS(CAP::CHANNEL::DEFAULT);
+    CAP_LOG_BLOCK_NO_THIS(CAP::CHANNEL::SET_STORE_NAME_EXAMPLE);
     CAP_LOG("This demonstrates writing writing to named stores");
 
     something::addStateToStoreName("global state", "foo");
@@ -147,7 +153,13 @@ int main() {
     something::addStateToStoreName("global state", "third");
     something::changeStateToStoreName("global state", "bar");
     something::printAllStore("global state");
+  }
 
+  CAP_LOG("printing all the state set in CAP::CHANNEL::SET_STORE_NAME_EXAMPLE");
+
+  CAP_LOG_PRINT_ALL_STATE_ON_STORE_NAME("global state");
+
+  {
     CAP_LOG("Deleting state twice to show that second call has nothing left.")
     something::releaseAllStateOnStore("global state");
     something::releaseAllStateOnStore("global state");

@@ -1,5 +1,7 @@
 #pragma once
 
+#ifdef ENABLE_CAP_LOGGER
+
 #include <cstdint>
 #include <cstdlib>
 #include <iostream>
@@ -11,7 +13,8 @@
 #include <unordered_map>
 #include <mutex>
 #include <functional>
-// #include <optional>
+#include <limits>
+#include <optional>
 
 #include <cstdint>
 
@@ -36,8 +39,6 @@
 
 //https://stackoverflow.com/questions/8487986/file-macro-shows-full-path
 #define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
-
-#ifdef ENABLE_CAP_LOGGER
 
 ///////
 //https://stackoverflow.com/questions/5588855/standard-alternative-to-gccs-va-args-trick/11172679#11172679
@@ -73,7 +74,7 @@ a buffer at all
 */
 #define CAP_LOG_INTERNAL(pointer, channel, ...) \
   CAP::BlockLogger blockScopeLog{pointer, channel}; \
-  if (blockScopeLog.isEnabled()) { \
+  if (blockScopeLog.getEnabledMode() & CAP::CAN_WRITE_TO_OUTPUT) { \
     std::stringstream ss; \
     ss << COLOUR RESET " [" COLOUR BOLD CAP_GREEN << __LINE__ <<  COLOUR RESET "]::[" \
       COLOUR BOLD CAP_CYAN << __FILENAME__ << COLOUR RESET "]::[" \
@@ -83,6 +84,8 @@ a buffer at all
     snprintf(buffer, needed, FIRST(__VA_ARGS__) " " REST(__VA_ARGS__)); \
     blockScopeLog.setPrimaryLog(__LINE__, ss.str(), buffer); \
     delete[] buffer; \
+  } else if (blockScopeLog.getEnabledMode() & CAP::CAN_WRITE_TO_STATE) { \
+    blockScopeLog.setPrimaryLog(__LINE__, "", ""); \
   }
 
 /// you may optionall provide an argument in the form of "(format, ...)"
@@ -93,7 +96,7 @@ a buffer at all
 #define CAP_LOG_CHANNEL_BLOCK_NO_THIS(...) CAP_LOG_INTERNAL(nullptr, __VA_ARGS__) 
 
 #define CAP_LOG(...) \
-  if (blockScopeLog.isEnabled()) { \
+  if (blockScopeLog.getEnabledMode() & CAP::CAN_WRITE_TO_OUTPUT) { \
     size_t needed = snprintf(NULL, 0, FIRST(__VA_ARGS__) " " REST(__VA_ARGS__)) + 1; \
     char* buffer = new char[needed]; \
     snprintf(buffer, needed, FIRST(__VA_ARGS__) " " REST(__VA_ARGS__)); \
@@ -102,7 +105,7 @@ a buffer at all
   }
 
 #define CAP_LOG_ERROR(...) \
-  if (blockScopeLog.isEnabled()) { \
+  if (blockScopeLog.getEnabledMode() & CAP::CAN_WRITE_TO_OUTPUT) { \
     size_t needed = snprintf(NULL, 0, FIRST(__VA_ARGS__) " " REST(__VA_ARGS__)) + 1; \
     char* buffer = new char[needed]; \
     snprintf(buffer, needed, FIRST(__VA_ARGS__) " " REST(__VA_ARGS__)); \
@@ -113,28 +116,28 @@ a buffer at all
 // https://stackoverflow.com/questions/36030589/i-cannot-pass-lambda-as-stdfunction
 // updaterLambda is of form CAP::StateUpdaterFunc
 #define CAP_LOG_SET_STATE_ON_ADDRESS(address, name, updaterLambda) \
-  if (blockScopeLog.isEnabled()) { \
+  if (blockScopeLog.getEnabledMode() & CAP::ALL_FLAGS) { \
     CAP::StateUpdaterFunc updaterFunc = updaterLambda; \
     blockScopeLog.setState(__LINE__, address, name, updaterFunc); \
   }
 
 #define CAP_LOG_PRINT_STATE_ON_ADDRESS(address, name) \
-  if (blockScopeLog.isEnabled()) { \
+  if (blockScopeLog.getEnabledMode() & CAP::ALL_FLAGS) { \
     blockScopeLog.printCurrentState(__LINE__, address, name); \
   }
 
 #define CAP_LOG_PRINT_All_STATE_ON_ADDRESS(address) \
-  if (blockScopeLog.isEnabled()) { \
+  if (blockScopeLog.getEnabledMode() & CAP::ALL_FLAGS) { \
     blockScopeLog.printAllCurrentState(__LINE__, address); \
   }
 
 #define CAP_LOG_RELEASE_STATE_ON_ADDRESS(address, name) \
-  if (blockScopeLog.isEnabled()) { \
+  if (blockScopeLog.getEnabledMode() & CAP::ALL_FLAGS) { \
     blockScopeLog.releaseState(__LINE__, address, name); \
   }
 
 #define CAP_LOG_RELEASE_ALL_STATE_ON_ADDRESS(address) \
-  if (blockScopeLog.isEnabled()) { \
+  if (blockScopeLog.getEnabledMode() & CAP::ALL_FLAGS) { \
     blockScopeLog.releaseAllState(__LINE__, address); \
   }  
 
@@ -145,67 +148,35 @@ a buffer at all
 #define CAP_LOG_RELEASE_ALL_STATE() CAP_LOG_RELEASE_ALL_STATE_ON_ADDRESS(this)
 
 #define CAP_LOG_SET_STATE_ON_STORE_NAME(stateStoreName, name, updaterLambda) \
-  if (blockScopeLog.isEnabled()) { \
+  if (blockScopeLog.getEnabledMode() & CAP::ALL_FLAGS) { \
     CAP::StateUpdaterFunc updaterFunc = updaterLambda; \
     blockScopeLog.setStateOnStoreName(__LINE__, stateStoreName, name, updaterFunc); \
   }
 
 #define CAP_LOG_PRINT_STATE_ON_STORE_NAME(stateStoreName, name) \
-  if (blockScopeLog.isEnabled()) { \
+  if (blockScopeLog.getEnabledMode() & CAP::ALL_FLAGS) { \
     blockScopeLog.printCurrentStateOnStoreName(__LINE__, stateStoreName, name); \
   }
 
 #define CAP_LOG_PRINT_ALL_STATE_ON_STORE_NAME(stateStoreName) \
-  if (blockScopeLog.isEnabled()) { \
+  if (blockScopeLog.getEnabledMode() & CAP::ALL_FLAGS) { \
     blockScopeLog.printAllCurrentStateOnStoreName(__LINE__, stateStoreName); \
   }
 
 #define CAP_LOG_RELEASE_STATE_ON_STORE_NAME(stateStoreName, name) \
-  if (blockScopeLog.isEnabled()) { \
+  if (blockScopeLog.getEnabledMode() & CAP::ALL_FLAGS) { \
     blockScopeLog.releaseStateOnStoreName(__LINE__, stateStoreName, name); \
   }
 
 #define CAP_LOG_RELEASE_ALL_STATE_ON_STORE_NAME(stateStoreName) \
-  if (blockScopeLog.isEnabled()) { \
+  if (blockScopeLog.getEnabledMode() & CAP::ALL_FLAGS) { \
     blockScopeLog.releaseAllStateOnStoreName(__LINE__, stateStoreName); \
   }  
 
 #define CAP_LOG_EXECUTE_LAMBDA(function) \
-  if (blockScopeLog.isEnabled()) { \
+  if (blockScopeLog.getEnabledMode() & CAP::ALL_FLAGS) { \
     function(); \
   }
-
-#else
-
-#define CAP_LOG_BLOCK(...)
-#define CAP_LOG_BLOCK_NO_THIS(...)
-
-#define CAP_LOG(...)
-#define CAP_LOG_ERROR(...)
-
-#define CAP_LOG_SET_STATE_ON_ADDRESS(...)
-#define CAP_LOG_PRINT_STATE_ON_ADDRESS(...)
-#define CAP_LOG_PRINT_All_STATE_ON_ADDRESS(...)
-#define CAP_LOG_RELEASE_STATE_ON_ADDRESS(...)
-#define CAP_LOG_RELEASE_ALL_STATE_ON_ADDRESS(...)
-
-#define CAP_LOG_SET_STATE(...)
-#define CAP_LOG_PRINT_STATE(...)
-#define CAP_LOG_PRINT_All_STATE(...)
-#define CAP_LOG_RELEASE_STATE(...)
-#define CAP_LOG_RELEASE_ALL_STATE(...)
-
-#define CAP_LOG_SET_STATE_ON_STORE_NAME(...)
-#define CAP_LOG_PRINT_STATE_ON_STORE_NAME(...)
-#define CAP_LOG_PRINT_ALL_STATE_ON_STORE_NAME(...)
-#define CAP_LOG_RELEASE_STATE_ON_STORE_NAME(...)
-#define CAP_LOG_RELEASE_ALL_STATE_ON_STORE_NAME(...)
-
-#define CAP_LOG_EXECUTE_LAMBDA(...)
-
-// #define CAP_LOG_INTEGRATION_TEST_REPORT(...)
-
-#endif
 
 namespace CAP {
 
@@ -235,6 +206,18 @@ inline std::string_view channelToString(CHANNEL channel) {
   };
   return strings[(size_t)channel];
 }
+
+enum ChannelEnabledFlags : uint32_t {
+  CAN_WRITE_TO_STATE = 1 << 1,
+  CAN_WRITE_TO_OUTPUT = 1 << 2,
+  ALL_FLAGS = std::numeric_limits<uint32_t>::max(),
+};
+
+enum ChannelEnabledMode : uint32_t {
+  FULLY_DISABLED = 0,
+  FULLY_ENABLED = ALL_FLAGS,
+  ENABLED_NO_OUTPUT = ALL_FLAGS ^ CAN_WRITE_TO_OUTPUT,
+};
 
 class BlockLogger {
 public:
@@ -269,10 +252,10 @@ public:
 
   void releaseAllStateOnStoreName(int line, const std::string& stateStoreName);
 
-  bool isEnabled();
+  uint32_t getEnabledMode() const;
 
 private:
-  bool mEnabled = false;
+  const uint32_t mEnabledMode = FULLY_DISABLED;
   std::string mlogInfoBuffer;
   std::string mcustomMessageBuffer;
   unsigned int mId;
@@ -286,11 +269,43 @@ private:
 class BlockChannelTree {
 public:
   static BlockChannelTree& getInstance();
-  bool isChannelEnabled(CAP::CHANNEL channel);
+  uint32_t getEnabledMode(CAP::CHANNEL channel);
 
 private:
   BlockChannelTree();
-  std::array<bool, (size_t)CAP::CHANNEL::COUNT> mEnabledChannelsById;
+  std::array<uint32_t, (size_t)CAP::CHANNEL::COUNT> mEnabledModeChannelsById;
 };
 
 } // namespace CAP
+
+#else
+
+#define CAP_LOG_BLOCK(...)
+#define CAP_LOG_BLOCK_NO_THIS(...)
+
+#define CAP_LOG(...)
+#define CAP_LOG_ERROR(...)
+
+#define CAP_LOG_SET_STATE_ON_ADDRESS(...)
+#define CAP_LOG_PRINT_STATE_ON_ADDRESS(...)
+#define CAP_LOG_PRINT_All_STATE_ON_ADDRESS(...)
+#define CAP_LOG_RELEASE_STATE_ON_ADDRESS(...)
+#define CAP_LOG_RELEASE_ALL_STATE_ON_ADDRESS(...)
+
+#define CAP_LOG_SET_STATE(...)
+#define CAP_LOG_PRINT_STATE(...)
+#define CAP_LOG_PRINT_All_STATE(...)
+#define CAP_LOG_RELEASE_STATE(...)
+#define CAP_LOG_RELEASE_ALL_STATE(...)
+
+#define CAP_LOG_SET_STATE_ON_STORE_NAME(...)
+#define CAP_LOG_PRINT_STATE_ON_STORE_NAME(...)
+#define CAP_LOG_PRINT_ALL_STATE_ON_STORE_NAME(...)
+#define CAP_LOG_RELEASE_STATE_ON_STORE_NAME(...)
+#define CAP_LOG_RELEASE_ALL_STATE_ON_STORE_NAME(...)
+
+#define CAP_LOG_EXECUTE_LAMBDA(...)
+
+// #define CAP_LOG_INTEGRATION_TEST_REPORT(...)
+
+#endif

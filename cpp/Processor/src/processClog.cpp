@@ -4,6 +4,7 @@
 #include <string>
 #include <fstream>
 #include <unordered_map>
+#include <map>
 #include <memory>
 #include <optional>
 #include <vector>
@@ -66,7 +67,7 @@ namespace {
  * 6 - ChannelName
  **/
 std::regex channelLineRegex(
-  ".*CAP_LOG : P=(.+?) T=(.+?) CHANNEL-ID=(.+?) : ENABLED=(.+?) : VERBOSITY=(.+?) : (.+?)",
+  ".*CAP_LOG : P=(.+?) T=(.+?) CHANNEL-ID=(.+?) : (.+?) : VERBOSITY=(.+?) : (.+?)",
   std::regex_constants::ECMAScript);
 
 
@@ -189,7 +190,7 @@ struct ChannelLine {
   size_t uniqueProcessId;
   size_t uniqueThreadId;
   std::string channelId;
-  std::string enabled;
+  std::string enabledMode;
   std::string verbosityLevel;
   std::string channelName;
 };
@@ -230,6 +231,7 @@ class WorldState {
 public:
   using StackNodeArray = std::vector<std::unique_ptr<StackNode>>;
   using ChannelArray = std::vector<std::unique_ptr<ChannelLine>>;
+  using UniqueProcessIdToChannelArray = std::map<size_t, ChannelArray>;
 
   // should use expected, but that's only in c++23
   // the objectId is address of the object for logs in c++
@@ -239,7 +241,7 @@ public:
       return nullptr;
     }
 
-    LoggedObject* retLoggedObject;
+    LoggedObject* retLoggedObject = nullptr;
     if (auto loggedObjMapIter = mLoggedObjects.find(objectId); loggedObjMapIter != mLoggedObjects.end()) {
       retLoggedObject = loggedObjMapIter->second.get();
     } else if (existsPolicy == ExistsPolicy::CreateIfNotExist) {
@@ -293,26 +295,27 @@ public:
   }
 
   ChannelLine& pushChannelLine(ChannelLine&& channelLine) {
-    mChannelArray.emplace_back(std::make_unique<ChannelLine>(std::move(channelLine)));
-    return *mChannelArray.back().get();
+    mUniqueProcessIdToChannelArray[channelLine.uniqueProcessId].emplace_back(std::make_unique<ChannelLine>(std::move(channelLine)));
+    return *mUniqueProcessIdToChannelArray[channelLine.uniqueProcessId].back().get();
   }
 
-  const ChannelArray& getChannelArray() const {
-    return mChannelArray;
+  const UniqueProcessIdToChannelArray& getChannelArrayMap() const {
+    return mUniqueProcessIdToChannelArray;
   }
 
 private:
   std::unordered_map<std::string, std::unique_ptr<LoggedObject>> mLoggedObjects;
   
   StackNodeArray mStackNodeArray;
-  ChannelArray mChannelArray;
 
-  using StackNodeIdxArray = std::vector<size_t>;
+  using IdxArray = std::vector<size_t>;
 
   // can probably replace these with 2d vectors.
-  using UniqueThreadIdToStackNodeIdxArray = std::unordered_map<size_t, StackNodeIdxArray>;
+  using UniqueThreadIdToStackNodeIdxArray = std::unordered_map<size_t, IdxArray>;
   using UniqueProcessIdToUniqueThreadIdToStackNodeIdxArray = std::unordered_map<size_t, UniqueThreadIdToStackNodeIdxArray>;
   UniqueProcessIdToUniqueThreadIdToStackNodeIdxArray mUniqueProcessIdToUniqueThreadIdToStackNodeIdxArray;
+
+  UniqueProcessIdToChannelArray mUniqueProcessIdToChannelArray;
 };
 
 
@@ -705,7 +708,7 @@ bool processChannelLine(
     channelLine.uniqueProcessId = workingData.getUniqueProcessIdForInputProcessId(pieces_match[1]);
     channelLine.uniqueThreadId = workingData.getUniqueThreadIdForInputThreadId(channelLine.uniqueProcessId, pieces_match[2]);
     channelLine.channelId = pieces_match[3];
-    channelLine.enabled = pieces_match[4];
+    channelLine.enabledMode = pieces_match[4];
     channelLine.verbosityLevel = pieces_match[5];
     channelLine.channelName = pieces_match[6];
 
@@ -792,20 +795,22 @@ int main(int argc, char* argv[]) {
   output.outputFileStream << "************************************************************************" << std::endl << std::endl;
   output.outputFileStream << "CAPTAINS LOG PROCESSED - VERSION 1" << std::endl << std::endl;
   output.outputFileStream << "************************************************************************" << std::endl << std::endl;
-  output.outputFileStream << "CHANNEL INFO" << std::endl << std::endl;
-  for (auto&& channelLinePtr : worldState.getChannelArray() ) {
-    auto& channelLine = *channelLinePtr.get();
-    output.outputFileStream
-      << "P=" << channelLine.uniqueProcessId
-      << " T=" << channelLine.uniqueThreadId
-      << " CHANNEL-ID=" << channelLine.channelId
-      << " : ENABLED=" << channelLine.enabled
-      << " : VERBOSITY=" << channelLine.verbosityLevel
-      << " : " << channelLine.channelName
-      << std::endl;
+  for (auto&& channelMapLine : worldState.getChannelArrayMap() ) {
+    output.outputFileStream << "CHANNEL INFO FOR PROCESS ID " << channelMapLine.first << std::endl;
+    for(auto&& channelLinePtr : channelMapLine.second) {
+      auto& channelLine = *channelLinePtr.get();
+      output.outputFileStream
+        << "P=" << channelLine.uniqueProcessId
+        << " T=" << channelLine.uniqueThreadId
+        << " CHANNEL-ID=" << channelLine.channelId
+        << " : " << channelLine.enabledMode
+        << " : VERBOSITY=" << channelLine.verbosityLevel
+        << " : " << channelLine.channelName
+        << std::endl;
+    }
+    output.outputFileStream << std::endl;
   }
 
-  output.outputFileStream << std::endl;
   output.outputFileStream << "************************************************************************" << std::endl << std::endl;
 
   for (auto&& nodePtr : worldState.getNodeArray() ) {
