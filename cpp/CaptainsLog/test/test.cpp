@@ -106,12 +106,13 @@ class NestTest1 {
 public:
   ~NestTest1(){
     CAP_LOG_BLOCK(CAP::CHANNEL::AUDIO_SUB_CHANNEL_Z);
-    CAP_LOG_RELEASE_STATE(static_cast<const std::ostringstream&>(std::ostringstream{} << "asdf " << 1).str().c_str());
+    // CAP_LOG_RELEASE_STATE(static_cast<const std::ostringstream&>(std::ostringstream{} << "asdf " << 1).str().c_str());
+    CAP_LOG_RELEASE_STATE("asdf " + std::to_string(1));
   }
 
   void doIt() {
     CAP_LOG_BLOCK(CAP::CHANNEL::AUDIO_SUB_CHANNEL_OTHER);
-    CAP_LOG_SET_STATE(static_cast<const std::ostringstream&>(std::ostringstream{} << "asdf " << 1).str().c_str(), [&](std::optional<std::string>){return "asdfasdf";})
+    CAP_LOG_SET_STATE("asdf " + std::to_string(1), [&](std::optional<std::string>){return "asdfasdf";})
   }
 
   void doSomething(){

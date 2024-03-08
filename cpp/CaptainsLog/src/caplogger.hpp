@@ -2,6 +2,10 @@
 
 #ifdef ENABLE_CAP_LOGGER
 
+#ifndef CHANNELS_PATH
+static_assert(false, "CHANNELS_PATH not defined");
+#endif
+
 #include <cstdint>
 #include <cstdlib>
 #include <iostream>
@@ -22,6 +26,9 @@
 
 #define LOG_LINE_CHARACTER_LIMIT 150
 #define LOG_INFO_BUFFER_LIMIT 100
+
+#define CAPTAINS_LOG_STRINGIFY2(X) #X
+#define CAPTAINS_LOG_STRINGIFY(X) CAPTAINS_LOG_STRINGIFY2(X)
 
 #ifdef SHOW_THREAD_ID
   #define INSERT_THREAD_ID COLOUR CAP_BLUE << std::this_thread::get_id() << COLOUR RESET
@@ -65,6 +72,16 @@
 #define SELECT_20TH(a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20, ...) a20
 ///////
 
+#define CAP_LOG_STRING_HELPER(...) \
+  []() -> std::string { \
+    size_t needed = snprintf(NULL, 0, FIRST(__VA_ARGS__) " " REST(__VA_ARGS__)) + 1; \
+    std::string buffer; \
+    buffer.resize(needed); \
+    snprintf(&buffer[0], needed, FIRST(__VA_ARGS__) " " REST(__VA_ARGS__)); \
+    delete[] buffer; \
+    return buffer; \
+  }();
+
 /*
 The " " here
 snprintf(blockScopeLogCustomBuffer, CAP_LOG_BUFFER_SIZE, FIRST(__VA_ARGS__) " " REST(__VA_ARGS__)); \
@@ -88,7 +105,7 @@ a buffer at all
     blockScopeLog.setPrimaryLog(__LINE__, "", ""); \
   }
 
-/// you may optionall provide an argument in the form of "(format, ...)"
+/// you may optionally provide an argument in the form of "(format, ...)"
 #define CAP_LOG_BLOCK(...) CAP_LOG_INTERNAL(this, __VA_ARGS__)
 #define CAP_LOG_BLOCK_NO_THIS(...) CAP_LOG_INTERNAL(nullptr, __VA_ARGS__) 
 
@@ -187,7 +204,7 @@ enum class CHANNEL {
   #define CAPTAINS_LOG_CHANNEL(name, ...) name,
   #define CAPTAINS_LOG_CHANNEL_BEGIN_CHILDREN(...)
   #define CAPTAINS_LOG_CHANNEL_END_CHILDREN(...)
-  #include "../channels/channeldefs.hpp"
+  #include CAPTAINS_LOG_STRINGIFY(CHANNELS_PATH)
   #undef CAPTAINS_LOG_CHANNEL
   #undef CAPTAINS_LOG_CHANNEL_BEGIN_CHILDREN
   #undef CAPTAINS_LOG_CHANNEL_END_CHILDREN
@@ -199,7 +216,7 @@ inline std::string_view channelToString(CHANNEL channel) {
     #define CAPTAINS_LOG_CHANNEL(name, ...) #name,
     #define CAPTAINS_LOG_CHANNEL_BEGIN_CHILDREN(...)
     #define CAPTAINS_LOG_CHANNEL_END_CHILDREN(...)
-    #include "../channels/channeldefs.hpp"
+    #include CAPTAINS_LOG_STRINGIFY(CHANNELS_PATH)
     #undef CAPTAINS_LOG_CHANNEL
     #undef CAPTAINS_LOG_CHANNEL_BEGIN_CHILDREN
     #undef CAPTAINS_LOG_CHANNEL_END_CHILDREN
@@ -218,6 +235,19 @@ enum ChannelEnabledMode : uint32_t {
   FULLY_ENABLED = ALL_FLAGS,
   ENABLED_NO_OUTPUT = ALL_FLAGS ^ CAN_WRITE_TO_OUTPUT,
 };
+
+inline uint32_t getChannelFlags(CHANNEL channel) {
+  static std::array<uint32_t, (size_t)CHANNEL::COUNT> flags = {
+    #define CAPTAINS_LOG_CHANNEL(name, verbosity, executionLevel) executionLevel,
+    #define CAPTAINS_LOG_CHANNEL_BEGIN_CHILDREN(...)
+    #define CAPTAINS_LOG_CHANNEL_END_CHILDREN(...)
+    #include CAPTAINS_LOG_STRINGIFY(CHANNELS_PATH)
+    #undef CAPTAINS_LOG_CHANNEL
+    #undef CAPTAINS_LOG_CHANNEL_BEGIN_CHILDREN
+    #undef CAPTAINS_LOG_CHANNEL_END_CHILDREN
+  };
+  return flags[(size_t)channel];
+}
 
 class BlockLogger {
 public:

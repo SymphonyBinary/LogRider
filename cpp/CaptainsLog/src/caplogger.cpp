@@ -255,7 +255,7 @@ BlockChannelTree::BlockChannelTree() {
   #define CAPTAINS_LOG_CHANNEL_END_CHILDREN(...) \
   enabledStack.pop_back();
 
-  #include "../channels/channeldefs.hpp"
+  #include CAPTAINS_LOG_STRINGIFY(CHANNELS_PATH)
 
   #undef CAPTAINS_LOG_CHANNEL
   #undef CAPTAINS_LOG_CHANNEL_BEGIN_CHILDREN
@@ -278,10 +278,11 @@ BlockChannelTree::BlockChannelTree() {
   #define CAPTAINS_LOG_CHANNEL_END_CHILDREN(...) \
   --channelDepth;
 
-  #include "../channels/channeldefs.hpp"
+  #include CAPTAINS_LOG_STRINGIFY(CHANNELS_PATH)
   #undef CAPTAINS_LOG_CHANNEL
   #undef CAPTAINS_LOG_CHANNEL_BEGIN_CHILDREN
   #undef CAPTAINS_LOG_CHANNEL_END_CHILDREN
+  
   BlockLoggerDataStore::getInstance().removeBlockLoggerInstance();
 }
 
