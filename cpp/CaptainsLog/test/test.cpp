@@ -21,13 +21,13 @@ public:
 
   void makeEntity(int id, std::string name) {
     CAP_LOG_BLOCK(CAP::CHANNEL::SET_THIS_EXAMPLE);
-    CAP_LOG_SET_STATE(std::to_string(id), [&](std::optional<std::string>){return name.c_str();})
+    CAP_LOG_SET_STATE(CAP::string(id), [&](std::optional<std::string>){return name.c_str();})
   }
 
   void connectEntities(int idA, int idB) {
     CAP_LOG_BLOCK(CAP::CHANNEL::SET_THIS_EXAMPLE, "Connecting %d and %d", idA, idB);
-    CAP_LOG_PRINT_STATE(std::to_string(idA));
-    CAP_LOG_PRINT_STATE(std::to_string(idB));
+    CAP_LOG_PRINT_STATE(CAP::string(idA));
+    CAP_LOG_PRINT_STATE(CAP::string(idB));
   }
 };
 /// ---- 
@@ -107,12 +107,12 @@ public:
   ~NestTest1(){
     CAP_LOG_BLOCK(CAP::CHANNEL::AUDIO_SUB_CHANNEL_Z);
     // CAP_LOG_RELEASE_STATE(static_cast<const std::ostringstream&>(std::ostringstream{} << "asdf " << 1).str().c_str());
-    CAP_LOG_RELEASE_STATE("asdf " + std::to_string(1));
+    CAP_LOG_RELEASE_STATE(CAP::string("asdf ", 1));
   }
 
   void doIt() {
     CAP_LOG_BLOCK(CAP::CHANNEL::AUDIO_SUB_CHANNEL_OTHER);
-    CAP_LOG_SET_STATE("asdf " + std::to_string(1), [&](std::optional<std::string>){return "asdfasdf";})
+    CAP_LOG_SET_STATE(CAP::string("asdf ", 1), [&](std::optional<std::string>){return "asdfasdf";})
   }
 
   void doSomething(){

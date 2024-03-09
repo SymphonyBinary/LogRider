@@ -72,7 +72,8 @@ static_assert(false, "CHANNELS_PATH not defined");
 #define SELECT_20TH(a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20, ...) a20
 ///////
 
-#define CAP_LOG_STRING_HELPER(...) \
+// Note, prefer to use CAP::string(...) instead. eg. CAP::string("VarBase", 1);
+#define CAP_LOG_FSTRING_HELPER(...) \
   []() -> std::string { \
     size_t needed = snprintf(NULL, 0, FIRST(__VA_ARGS__) " " REST(__VA_ARGS__)) + 1; \
     std::string buffer; \
@@ -81,7 +82,6 @@ static_assert(false, "CHANNELS_PATH not defined");
     delete[] buffer; \
     return buffer; \
   }();
-
 /*
 The " " here
 snprintf(blockScopeLogCustomBuffer, CAP_LOG_BUFFER_SIZE, FIRST(__VA_ARGS__) " " REST(__VA_ARGS__)); \
@@ -248,6 +248,22 @@ inline uint32_t getChannelFlags(CHANNEL channel) {
   };
   return flags[(size_t)channel];
 }
+
+template<class T>
+std::string stringify(T&& t) {
+    //if std::string or literal string, just return it (with implicit conversion for literal string)
+    if constexpr (std::is_same_v<std::decay_t<T>, std::string> || std::is_same_v<std::decay_t<T>, const char*>){
+        return t;
+    } else {
+        return std::to_string(t);
+    }
+}
+
+template<class... Args>
+std::string string(Args... args) {
+  return (stringify(args) + ...);
+}
+
 
 class BlockLogger {
 public:
