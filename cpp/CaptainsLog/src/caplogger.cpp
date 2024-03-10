@@ -58,7 +58,60 @@ namespace {
       ss << TAB_DELIMITER;
     }
   }
-}
+
+
+  /////////
+  /// Expand an array into a parameter pack
+  /// From: https://stackoverflow.com/questions/60434033/how-do-i-expand-a-compile-time-stdarray-into-a-parameter-pack
+  template <auto arr, template <typename X, X...> typename Consumer,
+            typename IS = decltype(std::make_index_sequence<arr.size()>())> struct Generator;
+
+  //... specialized by this, which gets the index sequence from the previous line
+  template <auto arr, template <typename X, X...> typename Consumer, std::size_t... I>
+  struct Generator<arr, Consumer, std::index_sequence<I...>> {
+    using type = Consumer<typename decltype(arr)::value_type, arr[I]...>;
+  };
+
+  /// Helper typename
+  template <auto arr, template <typename T, T...> typename Consumer>
+  using Generator_t = typename Generator<arr, Consumer>::type;
+
+  /* Example
+  
+  /// Structure which wants to consume the array via a parameter pack.
+  template <typename StructuralType, StructuralType... s> struct ConsumerStruct {
+    constexpr auto operator()() const { return std::array{s...}; }
+  };
+
+  // Usage
+  int main() {
+    constexpr auto tup = std::array<int, 3>{{1, 5, 42}};
+    constexpr Generator_t<tup, ConsumerStruct> tt;
+    static_assert(tt() == tup);
+    return 0;
+  }
+  */
+
+  /////////
+
+  template<unsigned int I>
+  constexpr unsigned int templateConstant() {
+      return I;
+  }
+
+
+  // template<typename... Args>
+  // ArrayN<DataStoreMutableState, sizeof...(Args)> mutableStates(const Args&... args) {
+  //   return ArrayN<DataStoreMutableState, sizeof...(Args)>({args...});
+  // }
+
+  template<class... Ts>
+  struct overloaded : Ts... { using Ts::operator()...; };
+  // explicit deduction guide (not needed as of C++20)
+  template<class... Ts>
+  overloaded(Ts...) -> overloaded<Ts...>;
+
+} // namespace
 
 struct LoggerData {
   unsigned int logDepth = 0;
@@ -66,6 +119,131 @@ struct LoggerData {
   unsigned int relativeThreadIdx = 0;
   unsigned int processTimestamp = 0;
 };
+
+class DataStore {
+public: 
+  // template<unsigned int DATA_COUNT>
+  // using DataStoreMutableStateArrayN = ArrayN<DataStoreMutableState, DATA_COUNT>;
+
+
+// should be able to use regular arrays, because I can get the size with templateConstant
+// then I need to take these three arrays, explode them into parameter pack (g)
+
+// WAIT
+// this function works by value, not reference!
+// it grabs these values and returns them.  so returning optional values is fine.
+// the higher level (blocklogger) is responsible for taking these values, and then using the same params,
+// call WRITE!!!
+
+/// therefore, we need
+/// getStates (returns by value)
+/// write states (takes by value)
+/// the blockLogger thing will first
+/// 1 - call get states with the params to build the input array
+/// 2 - call the user lambda with the input array passed by output reference.  The user can then
+/// write directly to it. (again, all std::optionals)
+/// 3 - call the states with the same addresing params by with write this time
+/// 3b - interpret setting an optional to a nullopt as equivalent to deleting that member? shouldn't ignore explicit 
+/// attempt to set nullopt.
+/// 4 - (optionally) log the values.
+/// 
+/// if we instead used pointers instead of by value so that we can skip the write part, that will make this much faster.
+/// However, it will require a mutex to be held the entire time.  not good.  Better to just do the mutex, address into the arrays
+/// get teh value, stop the mutex, run the lambda, then start the mutex again to write.
+
+
+//... all this work just to use refs to unique_ptrs instead of pointrs to unique_ptrs (because pointer
+// version can be build incrementally but refs can't.)
+// actually, this work is pointless since you can't make a std::array of references anyways!
+// actually X2, I can use a reference wrapper
+// https://stackoverflow.com/questions/62253972/is-it-safe-to-reference-a-value-in-unordered-map
+// unordered_maps should not affect the address of memory (so that references keep working.)
+
+  template<size_t DATA_COUNT>
+  DataStoreStateArray<DATA_COUNT> getStates(
+      const DataStoreKeysArray<DATA_COUNT>& storeKeys, 
+      const DataStoreMemberVariableNamesArray<DATA_COUNT>& stateNames) {
+    auto ret = DataStoreStateArray<DATA_COUNT>();
+    for (size_t i = 0; i < DATA_COUNT; ++i){
+      std::visit(overloaded{
+        [&](const std::string& storeKey) {ret[i] = mDataStoreStrings[storeKey][stateNames[i]];},
+        [&](const char* storeKey) {ret[i] = mDataStoreStrings[std::string(storeKey)][stateNames[i]];},
+        [&](const void* storeKey) {ret[i] = mDataStorePointer[storeKey][stateNames[i]];},
+      }, storeKeys[i]);
+    }
+
+
+// basically need to create an array of pointers, fill it up, then convert it to an 
+// array of refs
+
+        return DataStoreStateArray<DATA_COUNT>{{}};
+
+    // std::array<
+
+    // return (mStateStore[objectId][stateName] = stateUpdater(mStateStore[objectId][stateName])).value();
+
+    // if (const auto& objectFind = mStateStore.find(objectId); objectFind != mStateStore.end()) {
+    //   const auto& objectStateMap = objectFind->second;
+    //   if (const auto& stateFind = objectStateMap.find(stateName); stateFind != objectStateMap.end()) {
+    //     return stateFind->second;
+    //   }
+    // }
+    // return std::nullopt;
+  }
+
+
+  // const std::string& setState(KeyType objectId, const std::string& stateName, 
+  //     std::function<std::string(std::optional<std::string>)>& stateUpdater) {
+  //   return (mStateStore[objectId][stateName] = stateUpdater(mStateStore[objectId][stateName])).value();
+  // }
+
+  // std::optional<std::string> getState(KeyType objectId, const std::string& stateName) const {
+  //   if (const auto& objectFind = mStateStore.find(objectId); objectFind != mStateStore.end()) {
+  //     const auto& objectStateMap = objectFind->second;
+  //     if (const auto& stateFind = objectStateMap.find(stateName); stateFind != objectStateMap.end()) {
+  //       return stateFind->second;
+  //     }
+  //   }
+  //   return std::nullopt;
+  // }
+
+  // // intentionally returning by copy for threading reasons.  Be careful if this is too large.
+  // std::unordered_map<std::string, std::optional<std::string>> getAllState(KeyType objectId) const {
+  //   if (const auto& objectFind = mStateStore.find(objectId); objectFind != mStateStore.end()) {
+  //     return objectFind->second;
+  //   }
+  //   return {};
+  // }
+
+  // std::optional<std::string> releaseState(KeyType objectId, const std::string& stateName) {
+  //   std::optional<std::string> deletedValueRet;
+  //   if (auto objectFind = mStateStore.find(objectId); objectFind != mStateStore.end()) {
+  //     auto& objectStateMap = objectFind->second;
+  //     if (auto stateFind = objectStateMap.find(stateName); stateFind != objectStateMap.end()) {
+  //       deletedValueRet = stateFind->second;
+  //       objectStateMap.erase(stateFind);
+  //     }
+  //   }
+  //   return deletedValueRet;
+  // }
+
+  // int releaseAllState(KeyType objectId) {
+  //   int stateDeletedCountRet = 0;
+  //   if (auto objectFind = mStateStore.find(objectId); objectFind != mStateStore.end()) {
+  //     auto& objectStateMap = objectFind->second;
+  //     stateDeletedCountRet = objectStateMap.size();
+  //     mStateStore.erase(objectFind);
+  //   }
+  //   return stateDeletedCountRet;
+  // }
+
+private:
+  // storage for pointers
+  std::unordered_map<const void*, std::unordered_map<std::string, std::optional<std::string>>> mDataStorePointer;
+  // storage for strings & const chars (implicitly cast to string).
+  std::unordered_map<std::string, std::unordered_map<std::string, std::optional<std::string>>> mDataStoreStrings;
+};
+
 
 template<class KeyType>
 class StateStore {
@@ -294,6 +472,40 @@ BlockLogger::BlockLogger(const void* thisPointer, CAP::CHANNEL channel)
     return;
   }
 
+  auto test1 = storeKeyList("asdf", this, "ewfwefwef");
+  (void)test1;
+
+  auto test2 = variableNames("asdf", "asdf", "qwer");
+  (void)test2;
+
+  DataStore test;
+  auto rets = test.getStates(
+    storeKeyList(this, "test123", std::string("weoifj")),
+    variableNames("foo", "bar", "duper")
+  );
+  (void)rets;
+  auto rets2 = test.getStates(
+    test1, test2
+  );
+  (void)rets2;
+
+  updateStateTest1(1, test1, test2);
+
+  updateStateTest2<3>([](DataStoreStateArray<3>& statesInOut) {
+    statesInOut[0] = "hello";
+    statesInOut[1] = std::nullopt;
+    statesInOut[2] = "bye";
+  });
+
+  updateState(1, test1, test2
+  , [](DataStoreStateArray<3>& statesInOut){
+    statesInOut[0] = "hello";
+    statesInOut[1] = std::nullopt;
+    statesInOut[2] = "bye";
+  });
+
+
+
   auto& loggerDataStore = BlockLoggerDataStore::getInstance();
   auto logData = loggerDataStore.newBlockLoggerInstance();
 
@@ -366,6 +578,75 @@ void BlockLogger::error(int line, std::string_view messageBuffer) {
 }
 
 //-------- State Addresses
+
+template<size_t DATA_COUNT>
+void BlockLogger::updateStateTest1(
+    int line, 
+    const DataStoreKeysArray<DATA_COUNT>& keys, 
+    const DataStoreMemberVariableNamesArray<DATA_COUNT>& varNames) {
+  if(!mEnabledMode) {
+    return;
+  }
+
+  auto& loggerDataStore = BlockLoggerDataStore::getInstance();
+  (void) loggerDataStore;
+  (void)line;
+
+  DataStore test;
+  // auto rets = test.getStates(
+  //   storeKeyList(this, "test123", std::string("weoifj")),
+  //   variableNames("foo", "bar", "duper")
+  // );
+
+  auto rets = test.getStates(keys, varNames);
+
+}
+
+template<size_t DATA_COUNT>
+void BlockLogger::updateStateTest2(
+    const DataStoreValuesArrayUpdater<DATA_COUNT>& stateUpdater) {
+  if(!mEnabledMode) {
+    return;
+  }
+
+  
+
+}
+
+template<class Func>
+void BlockLogger::updateStateTest3(
+    const Func& stateUpdator) {
+  if(!mEnabledMode) {
+    return;
+  }
+
+  
+
+}
+
+template<size_t DATA_COUNT, class UpdaterFunc>
+void BlockLogger::updateState(
+    int line, 
+    const DataStoreKeysArray<DATA_COUNT>& keys, 
+    const DataStoreMemberVariableNamesArray<DATA_COUNT>& varNames,
+    const UpdaterFunc& stateUpdater) {
+  if(!mEnabledMode) {
+    return;
+  }
+
+  auto& loggerDataStore = BlockLoggerDataStore::getInstance();
+
+
+  DataStore test;
+  // auto rets = test.getStates(
+  //   storeKeyList(this, "test123", std::string("weoifj")),
+  //   variableNames("foo", "bar", "duper")
+  // );
+
+  auto rets = test.getStates(keys, varNames);
+
+}
+
 
 void BlockLogger::setState(int line, const void* address, const std::string& stateName, 
     std::function<std::string(std::optional<std::string>)>& stateUpdater) {
