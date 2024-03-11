@@ -120,11 +120,20 @@ BlockChannelTree::BlockChannelTree() {
 
 
 BlockLogger::BlockLogger(const void* thisPointer, CAP::CHANNEL channel)
-  : mEnabledMode(BlockChannelTree::getInstance().getEnabledMode(channel)) 
-  , mChannel(channel) {
-  if(!mEnabledMode) {
+  : mEnabledMode(BlockChannelTree::getInstance().getEnabledMode(channel))
+  , mlogInfoBuffer()
+  , mcustomMessageBuffer()
+  , mId(0)
+  , mDepth(0)
+  , mThreadId(0)
+  , mProcessId(0)
+  , mChannel(channel)
+  , mThisPointer(thisPointer) {
+  if(!(mEnabledMode & CAN_WRITE_TO_OUTPUT)) {
+    //If this block is silent and can't write to output, no need to record 
+    //depth, id, etc which are used for printing to the log.
     return;
-  }
+  } 
 
   auto& loggerDataStore = BlockLoggerDataStore::getInstance();
   auto logData = loggerDataStore.newBlockLoggerInstance();
@@ -133,7 +142,6 @@ BlockLogger::BlockLogger(const void* thisPointer, CAP::CHANNEL channel)
   mId = logData.perThreadUniqueFunctionIdx;
   mThreadId = logData.relativeThreadIdx;
   mProcessId = logData.processTimestamp;
-  mThisPointer = thisPointer;
 }
 
 void BlockLogger::setPrimaryLog(int line, std::string_view logInfoBuffer, std::string_view customMessageBuffer) {
@@ -265,19 +273,18 @@ void BlockLogger::printStateImpl(int line, const std::string& logCommand, const 
 }
 
 BlockLogger::~BlockLogger() {
-  if(!mEnabledMode) {
+  if(!(mEnabledMode & CAN_WRITE_TO_OUTPUT)) {
+    // block logger instance is only created when logging/output mode enabled.
     return;
   }
 
   BlockLoggerDataStore::getInstance().removeBlockLoggerInstance();
 
-  if(mEnabledMode & CAN_WRITE_TO_OUTPUT) {
-    std::stringstream ss;
-    printTab(ss, mProcessId, mThreadId, mDepth, (size_t)mChannel);
-    ss << COLOUR BOLD CAP_GREEN << PRIMARY_LOG_END_DELIMITER << COLOUR BOLD CAP_YELLOW << " " << mId << mlogInfoBuffer
-    << colourArray[reinterpret_cast<std::uintptr_t>(mThisPointer) % colourArraySize] << mThisPointer << COLOUR RESET;
-    PRINT_TO_LOG("%s", ss.str().c_str());
-  }
+  std::stringstream ss;
+  printTab(ss, mProcessId, mThreadId, mDepth, (size_t)mChannel);
+  ss << COLOUR BOLD CAP_GREEN << PRIMARY_LOG_END_DELIMITER << COLOUR BOLD CAP_YELLOW << " " << mId << mlogInfoBuffer
+  << colourArray[reinterpret_cast<std::uintptr_t>(mThisPointer) % colourArraySize] << mThisPointer << COLOUR RESET;
+  PRINT_TO_LOG("%s", ss.str().c_str());
 }
 
 uint32_t BlockLogger::getEnabledMode() const {

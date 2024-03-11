@@ -127,7 +127,28 @@ public:
   }
 };
 
+class TestNestedDisabledOutput {
+public:
+  TestNestedDisabledOutput(){
+    CAP_LOG_BLOCK(CAP::CHANNEL::ENABLED_CHANNEL);
+    disabledChannel();
+  }
 
+private:
+  void disabledChannel() {
+    CAP_LOG_BLOCK(CAP::CHANNEL::DISABLED_CHANNEL);
+    noOutputChannel();
+  }
+
+  void noOutputChannel() {
+    CAP_LOG_BLOCK(CAP::CHANNEL::NO_OUTPUT_CHANNEL);
+    enabledChannel();
+  }
+
+  void enabledChannel() {
+    CAP_LOG_BLOCK(CAP::CHANNEL::ENABLED_CHANNEL);
+  }
+};
 
 int main() {
   CAP_LOG_BLOCK_NO_THIS(CAP::CHANNEL::DEFAULT, "main");
@@ -192,6 +213,8 @@ int main() {
     t.testBlockOutput();
     CAP_LOG("this is a log");
   }
+
+  TestNestedDisabledOutput t;
 
   CAP_LOG_ERROR("this is an error");
   something::TestNetwork two;
