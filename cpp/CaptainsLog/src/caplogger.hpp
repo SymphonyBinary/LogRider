@@ -136,7 +136,7 @@ a buffer at all
 // updaterLambda is of form CAP::StateUpdaterFunc
 #define CAP_LOG_UPDATE_STATE_ON(storeKeys, variableNames, updaterLambda) \
   if (blockScopeLog.getEnabledMode() & CAP::ALL_FLAGS) { \
-    CAP::DataStoreValuesArrayUpdater<1> updaterFunc = updaterLambda; \
+    CAP::DataStoreValuesArrayUpdater<decltype(storeKeys)::Size> updaterFunc = updaterLambda; \
     blockScopeLog.updateState(__LINE__, storeKeys, variableNames, updaterFunc); \
   }
 
