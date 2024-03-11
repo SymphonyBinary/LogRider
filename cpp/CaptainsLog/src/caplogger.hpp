@@ -135,9 +135,8 @@ a buffer at all
 // updaterLambda is of form CAP::StateUpdaterFunc
 #define CAP_LOG_UPDATE_STATE_ON(storeKeys, variableNames, updaterLambda) \
   if (blockScopeLog.getEnabledMode() & CAP::ALL_FLAGS) { \
-    constexpr size_t N = CAP::extractConstant<storeKeys.size()>(); \
-    CAP::DataStoreValuesArrayUpdater<N> updaterFunc = updaterLambda; \
-    blockScopeLog.updateState(__LINE__, storeKeys, variableNames, updaterLambda); \
+    CAP::DataStoreValuesArrayUpdater<1> updaterFunc = updaterLambda; \
+    blockScopeLog.updateState(__LINE__, storeKeys, variableNames, updaterFunc); \
   }
 
 #define CAP_LOG_PRINT_STATE_ON(storeKey, name) \
@@ -294,23 +293,36 @@ std::string string(Args... args) {
   return (stringify(args) + ...);
 }
 
+template<class T, size_t N>
+struct ArrayN {
+  ArrayN(std::array<T, N> array)
+      : v(std::move(array)){}
+
+  const T& operator[] (int index) const {
+    return v[index];
+  }
+  
+  constexpr static size_t Size = N;
+  std::array<T, N> v;
+};
+
 using DataStoreKey = std::variant<const void*, const char*, std::string>;
 template<size_t DATA_COUNT>
-using DataStoreKeysArray = std::array<DataStoreKey, DATA_COUNT>;
+using DataStoreKeysArrayN = ArrayN<DataStoreKey, DATA_COUNT>;
 
 template<typename... Args>
-DataStoreKeysArray<sizeof...(Args)> storeKeyList(const Args&... args) {
-  return DataStoreKeysArray<sizeof...(Args)>{{args...}};
+DataStoreKeysArrayN<sizeof...(Args)> storeKeyList(const Args&... args) {
+  return DataStoreKeysArrayN<sizeof...(Args)>{{args...}};
 }
 
 // DataStoreMemberVariableName are analagous to member variables of objects
 using DataStoreMemberVariableName = std::string;
 template<size_t DATA_COUNT>
-using DataStoreMemberVariableNamesArray = std::array<DataStoreMemberVariableName, DATA_COUNT>;
+using DataStoreMemberVariableNamesArrayN = ArrayN<DataStoreMemberVariableName, DATA_COUNT>;
 
 template<typename... Args>
-DataStoreMemberVariableNamesArray<sizeof...(Args)> variableNames(const Args&... args) {
-  return DataStoreMemberVariableNamesArray<sizeof...(Args)>{{args...}};
+DataStoreMemberVariableNamesArrayN<sizeof...(Args)> variableNames(const Args&... args) {
+  return DataStoreMemberVariableNamesArrayN<sizeof...(Args)>{{args...}};
 }
 
 using DataStoreState = std::optional<std::string>;
@@ -358,9 +370,11 @@ public:
   template<size_t DATA_COUNT, class UpdaterFunc>
   void updateState(
     int line, 
-    const DataStoreKeysArray<DATA_COUNT>& keys, 
-    const DataStoreMemberVariableNamesArray<DATA_COUNT>& varNames,
-    const UpdaterFunc& stateUpdater);
+    const DataStoreKeysArrayN<DATA_COUNT>& keys, 
+    const DataStoreMemberVariableNamesArrayN<DATA_COUNT>& varNames,
+    const UpdaterFunc& stateUpdater) {
+      
+    }
 
   void setState(int line, const void* address, const std::string& stateName, 
     std::function<std::string(std::optional<std::string>)>& stateUpdater);

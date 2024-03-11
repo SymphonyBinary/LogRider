@@ -88,8 +88,8 @@ public:
  
   template<size_t DATA_COUNT>
   DataStoreStateArray<DATA_COUNT> getStates(
-      const DataStoreKeysArray<DATA_COUNT>& storeKeys, 
-      const DataStoreMemberVariableNamesArray<DATA_COUNT>& stateNames) {
+      const DataStoreKeysArrayN<DATA_COUNT>& storeKeys, 
+      const DataStoreMemberVariableNamesArrayN<DATA_COUNT>& stateNames) {
     auto ret = DataStoreStateArray<DATA_COUNT>();
     for (size_t i = 0; i < DATA_COUNT; ++i){
       std::visit(overloaded{
@@ -104,8 +104,8 @@ public:
 
   template<size_t DATA_COUNT>
   void setStates(
-      const DataStoreKeysArray<DATA_COUNT>& storeKeys, 
-      const DataStoreMemberVariableNamesArray<DATA_COUNT>& stateNames,
+      const DataStoreKeysArrayN<DATA_COUNT>& storeKeys, 
+      const DataStoreMemberVariableNamesArrayN<DATA_COUNT>& stateNames,
       DataStoreStateArray<DATA_COUNT>&& newStates) {
     for (size_t i = 0; i < DATA_COUNT; ++i) {
       std::visit(overloaded{
@@ -286,16 +286,16 @@ struct BlockLoggerDataStore {
 
   template<size_t DATA_COUNT>
   DataStoreStateArray<DATA_COUNT> getStates(
-      const DataStoreKeysArray<DATA_COUNT>& storeKeys, 
-      const DataStoreMemberVariableNamesArray<DATA_COUNT>& stateNames) {
+      const DataStoreKeysArrayN<DATA_COUNT>& storeKeys, 
+      const DataStoreMemberVariableNamesArrayN<DATA_COUNT>& stateNames) {
     const std::lock_guard<std::mutex> guard(mMut);
     return mCustomLogStateStores.getStates(storeKeys, stateNames);
   }
 
   template<size_t DATA_COUNT>
   void setStates(
-      const DataStoreKeysArray<DATA_COUNT>& storeKeys, 
-      const DataStoreMemberVariableNamesArray<DATA_COUNT>& stateNames,
+      const DataStoreKeysArrayN<DATA_COUNT>& storeKeys, 
+      const DataStoreMemberVariableNamesArrayN<DATA_COUNT>& stateNames,
       DataStoreStateArray<DATA_COUNT>&& newStates) {
     const std::lock_guard<std::mutex> guard(mMut);
     return mCustomLogStateStores.setStates(storeKeys, stateNames, std::move(newStates));
@@ -530,8 +530,8 @@ void BlockLogger::error(int line, std::string_view messageBuffer) {
 template<size_t DATA_COUNT, class UpdaterFunc>
 void BlockLogger::updateState(
     int line, 
-    const DataStoreKeysArray<DATA_COUNT>& keys, 
-    const DataStoreMemberVariableNamesArray<DATA_COUNT>& varNames,
+    const DataStoreKeysArrayN<DATA_COUNT>& keys, 
+    const DataStoreMemberVariableNamesArrayN<DATA_COUNT>& varNames,
     const UpdaterFunc& stateUpdater) {
   if(!mEnabledMode) {
     return;
