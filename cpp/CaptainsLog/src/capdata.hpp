@@ -205,7 +205,7 @@ struct BlockLoggerDataStore {
     return instance;
   }
   
-  LoggerData newBlockLoggerInstance(bool ) {
+  LoggerData newBlockLoggerInstance() {
     const std::lock_guard<std::mutex> guard(mMut);
 
     auto threadId = std::this_thread::get_id();
@@ -287,4 +287,3 @@ private:
 } // namespace CAP
 
 #endif
-
