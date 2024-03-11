@@ -59,52 +59,6 @@ namespace {
     }
   }
 
-
-  /////////
-  /// Expand an array into a parameter pack
-  /// From: https://stackoverflow.com/questions/60434033/how-do-i-expand-a-compile-time-stdarray-into-a-parameter-pack
-  template <auto arr, template <typename X, X...> typename Consumer,
-            typename IS = decltype(std::make_index_sequence<arr.size()>())> struct Generator;
-
-  //... specialized by this, which gets the index sequence from the previous line
-  template <auto arr, template <typename X, X...> typename Consumer, std::size_t... I>
-  struct Generator<arr, Consumer, std::index_sequence<I...>> {
-    using type = Consumer<typename decltype(arr)::value_type, arr[I]...>;
-  };
-
-  /// Helper typename
-  template <auto arr, template <typename T, T...> typename Consumer>
-  using Generator_t = typename Generator<arr, Consumer>::type;
-
-  /* Example
-  
-  /// Structure which wants to consume the array via a parameter pack.
-  template <typename StructuralType, StructuralType... s> struct ConsumerStruct {
-    constexpr auto operator()() const { return std::array{s...}; }
-  };
-
-  // Usage
-  int main() {
-    constexpr auto tup = std::array<int, 3>{{1, 5, 42}};
-    constexpr Generator_t<tup, ConsumerStruct> tt;
-    static_assert(tt() == tup);
-    return 0;
-  }
-  */
-
-  /////////
-
-  template<unsigned int I>
-  constexpr unsigned int templateConstant() {
-      return I;
-  }
-
-
-  // template<typename... Args>
-  // ArrayN<DataStoreMutableState, sizeof...(Args)> mutableStates(const Args&... args) {
-  //   return ArrayN<DataStoreMutableState, sizeof...(Args)>({args...});
-  // }
-
   template<class... Ts>
   struct overloaded : Ts... { using Ts::operator()...; };
   // explicit deduction guide (not needed as of C++20)
@@ -131,43 +85,7 @@ struct LoggerData {
 
 class DataStore {
 public: 
-  // template<unsigned int DATA_COUNT>
-  // using DataStoreMutableStateArrayN = ArrayN<DataStoreMutableState, DATA_COUNT>;
-
-
-// should be able to use regular arrays, because I can get the size with templateConstant
-// then I need to take these three arrays, explode them into parameter pack (g)
-
-// WAIT
-// this function works by value, not reference!
-// it grabs these values and returns them.  so returning optional values is fine.
-// the higher level (blocklogger) is responsible for taking these values, and then using the same params,
-// call WRITE!!!
-
-/// therefore, we need
-/// getStates (returns by value)
-/// write states (takes by value)
-/// the blockLogger thing will first
-/// 1 - call get states with the params to build the input array
-/// 2 - call the user lambda with the input array passed by output reference.  The user can then
-/// write directly to it. (again, all std::optionals)
-/// 3 - call the states with the same addresing params by with write this time
-/// 3b - interpret setting an optional to a nullopt as equivalent to deleting that member? shouldn't ignore explicit 
-/// attempt to set nullopt.
-/// 4 - (optionally) log the values.
-/// 
-/// if we instead used pointers instead of by value so that we can skip the write part, that will make this much faster.
-/// However, it will require a mutex to be held the entire time.  not good.  Better to just do the mutex, address into the arrays
-/// get teh value, stop the mutex, run the lambda, then start the mutex again to write.
-
-
-//... all this work just to use refs to unique_ptrs instead of pointrs to unique_ptrs (because pointer
-// version can be build incrementally but refs can't.)
-// actually, this work is pointless since you can't make a std::array of references anyways!
-// actually X2, I can use a reference wrapper
-// https://stackoverflow.com/questions/62253972/is-it-safe-to-reference-a-value-in-unordered-map
-// unordered_maps should not affect the address of memory (so that references keep working.)
-
+ 
   template<size_t DATA_COUNT>
   DataStoreStateArray<DATA_COUNT> getStates(
       const DataStoreKeysArray<DATA_COUNT>& storeKeys, 
@@ -409,7 +327,7 @@ struct BlockLoggerDataStore {
     const std::lock_guard<std::mutex> guard(mMut);
     return mCustomLogStatePointers.releaseAllState(objectId);
   }
- 
+
   const std::string& setStateStoreName(const std::string& storeName, const std::string& stateName, 
       std::function<std::string(std::optional<std::string>)>& stateUpdater) {
     const std::lock_guard<std::mutex> guard(mMut);

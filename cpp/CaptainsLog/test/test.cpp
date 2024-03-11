@@ -36,8 +36,14 @@ public:
 /// ---- demonstrates how set state can target other addresses too
 void addStateToExampleState(const ExampleStateWithThisPtr& example) {
   CAP_LOG_BLOCK_NO_THIS(CAP::CHANNEL::SET_ADDRESS_EXAMPLE);
-  CAP_LOG_SET_STATE_ON_ADDRESS(&example, "SomeStateInsertedOutside", [&](std::optional<std::string>){return "outside state!";});
-  CAP_LOG_SET_STATE_ON_ADDRESS(&example, "Variable Name Can Have Spaces", [&](std::optional<std::string>){return "more outside state!";});
+  CAP_LOG_UPDATE_STATE_ON(
+    CAP::storeKeyList(&example), 
+    CAP::variableNames("SomeStateInsertedOutside"), 
+    [&](CAP::DataStoreStateArray<1>& state){state[0] = "outside state!";});
+  CAP_LOG_UPDATE_STATE_ON(
+    CAP::storeKeyList(&example), 
+    CAP::variableNames("Variable Name Can Have Spaces"), 
+    [&](CAP::DataStoreStateArray<1>& state){state[0] = "more outside state!";});
 }
 /// ----
 

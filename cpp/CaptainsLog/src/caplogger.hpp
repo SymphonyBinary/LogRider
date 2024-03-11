@@ -133,10 +133,11 @@ a buffer at all
 
 // https://stackoverflow.com/questions/36030589/i-cannot-pass-lambda-as-stdfunction
 // updaterLambda is of form CAP::StateUpdaterFunc
-#define CAP_LOG_UPDATE_STATE_ON(storeKey, name, updaterLambda) \
+#define CAP_LOG_UPDATE_STATE_ON(storeKeys, variableNames, updaterLambda) \
   if (blockScopeLog.getEnabledMode() & CAP::ALL_FLAGS) { \
-    CAP::StateUpdaterFunc updaterFunc = updaterLambda; \
-    blockScopeLog.setState(__LINE__, address, name, updaterFunc); \
+    constexpr size_t N = CAP::extractConstant<storeKeys.size()>(); \
+    CAP::DataStoreValuesArrayUpdater<N> updaterFunc = updaterLambda; \
+    blockScopeLog.updateState(__LINE__, storeKeys, variableNames, updaterLambda); \
   }
 
 #define CAP_LOG_PRINT_STATE_ON(storeKey, name) \
@@ -293,47 +294,6 @@ std::string string(Args... args) {
   return (stringify(args) + ...);
 }
 
-
-// template<class T, unsigned int N>
-// struct ArrayN {
-//   ArrayN(std::array<T, N> array)
-//       : v(std::move(array)){}
-//   constexpr static unsigned int Size = N;
-//   std::array<T, N> v;
-// };
-
-// the method helpers (like storeKeyList) exist because macros
-// don't like comma separated values in aggregate initializers, like
-// std::array{1,2,3} and will treat them like macro arguments.
-
-// DataStores are "contexts" for variables.  They are analagous to objects,
-// this is why there's an easy path to create them from the "this" pointer.
-// using DataStoreKey = std::variant<const void*, const char*, std::string>;
-// template<unsigned int DATA_COUNT>
-// using DataStoreKeysArrayN = ArrayN<DataStoreKey, DATA_COUNT>;
-
-// template<typename... Args>
-// DataStoreKeysArrayN<sizeof...(Args)> storeKeyList(const Args&... args) {
-//   return ArrayN<DataStoreKey, sizeof...(Args)>({args...});
-// }
-
-// // DataStoreMemberVariableName are analagous to member variables of objects
-// using DataStoreMemberVariableName = std::string;
-// template<unsigned int DATA_COUNT>
-// using DataStoreMemberVariableNamesArrayN = ArrayN<DataStoreMemberVariableName, DATA_COUNT>;
-
-// template<typename... Args>
-// DataStoreMemberVariableNamesArrayN<sizeof...(Args)> variableNames(const Args&... args) {
-//   return ArrayN<DataStoreMemberVariableName, sizeof...(Args)>({args...});
-// }
-
-// using DataStoreMutableState = std::optional<std::string>*;
-// template<unsigned int DATA_COUNT>
-// using DataStoreMutableStateArray = std::array<DataStoreMutableState, DATA_COUNT>;
-// template<unsigned int DATA_COUNT>
-// using DataStoreValuesArrayUpdater = std::function<void(DataStoreMutableStateArray<DATA_COUNT>&)>;
-
-
 using DataStoreKey = std::variant<const void*, const char*, std::string>;
 template<size_t DATA_COUNT>
 using DataStoreKeysArray = std::array<DataStoreKey, DATA_COUNT>;
@@ -376,6 +336,11 @@ using DataStoreValuesArrayUpdater = std::function<void(DataStoreStateArray<DATA_
 // template<unsigned int DATA_COUNT>
 // using DataStoreValuesArrayUpdater = std::function<DataStoreValueArray<DATA_COUNT>(DataStoreValueArray<DATA_COUNT>)>;
 
+
+template<size_t I>
+constexpr size_t extractConstant() {
+  return I;
+}
 
 class BlockLogger {
 public:
