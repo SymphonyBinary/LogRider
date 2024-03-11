@@ -23,6 +23,7 @@ static_assert(false, "CHANNELS_PATH not defined");
 
 #include <cstdint>
 
+#include "capdata.hpp"
 #include "colors.hpp"
 
 #define LOG_LINE_CHARACTER_LIMIT 150
@@ -293,62 +294,6 @@ std::string string(Args... args) {
   return (stringify(args) + ...);
 }
 
-template<class T, size_t N>
-struct ArrayN {
-  ArrayN(std::array<T, N> array)
-      : v(std::move(array)){}
-
-  const T& operator[] (int index) const {
-    return v[index];
-  }
-  
-  constexpr static size_t Size = N;
-  std::array<T, N> v;
-};
-
-using DataStoreKey = std::variant<const void*, const char*, std::string>;
-template<size_t DATA_COUNT>
-using DataStoreKeysArrayN = ArrayN<DataStoreKey, DATA_COUNT>;
-
-template<typename... Args>
-DataStoreKeysArrayN<sizeof...(Args)> storeKeyList(const Args&... args) {
-  return DataStoreKeysArrayN<sizeof...(Args)>{{args...}};
-}
-
-// DataStoreMemberVariableName are analagous to member variables of objects
-using DataStoreMemberVariableName = std::string;
-template<size_t DATA_COUNT>
-using DataStoreMemberVariableNamesArrayN = ArrayN<DataStoreMemberVariableName, DATA_COUNT>;
-
-template<typename... Args>
-DataStoreMemberVariableNamesArrayN<sizeof...(Args)> variableNames(const Args&... args) {
-  return DataStoreMemberVariableNamesArrayN<sizeof...(Args)>{{args...}};
-}
-
-using DataStoreState = std::optional<std::string>;
-template<size_t DATA_COUNT>
-using DataStoreStateArray = std::array<DataStoreState, DATA_COUNT>;
-template<size_t DATA_COUNT>
-using DataStoreValuesArrayUpdater = std::function<void(DataStoreStateArray<DATA_COUNT>&)>;
-
-// // DataStores are "contexts" for variables.  They are analagous to objects,
-// // this is why there's an easy path to create them from the "this" pointer.
-// using DataStoreKey = std::variant<const void*, const char*, std::string>;
-// template<unsigned int DATA_COUNT>
-// using DataStoreKeysArray = std::array<DataStoreKey, DATA_COUNT>;
-
-// // DataStoreMemberVariableName are analagous to member variables of objects
-// using DataStoreMemberVariableName = const std::string&;
-// template<unsigned int DATA_COUNT>
-// using DataStoreMemberVariableNamesArray = std::array<DataStoreMemberVariableName, DATA_COUNT>;
-
-// using DataStoreValue = std::optional<std::string>;
-// template<unsigned int DATA_COUNT>
-// using DataStoreValueArray = std::array<DataStoreValue, DATA_COUNT>;
-// template<unsigned int DATA_COUNT>
-// using DataStoreValuesArrayUpdater = std::function<DataStoreValueArray<DATA_COUNT>(DataStoreValueArray<DATA_COUNT>)>;
-
-
 template<size_t I>
 constexpr size_t extractConstant() {
   return I;
@@ -369,12 +314,26 @@ public:
   // as its only input parameter.  Return is unused/ignored.
   template<size_t DATA_COUNT, class UpdaterFunc>
   void updateState(
-    int line, 
-    const DataStoreKeysArrayN<DATA_COUNT>& keys, 
-    const DataStoreMemberVariableNamesArrayN<DATA_COUNT>& varNames,
-    const UpdaterFunc& stateUpdater) {
-      
+      int line, 
+      const DataStoreKeysArrayN<DATA_COUNT>& keys, 
+      const DataStoreMemberVariableNamesArrayN<DATA_COUNT>& varNames,
+      const UpdaterFunc& stateUpdater) {
+    if(!mEnabledMode) {
+      return;
     }
+
+    auto& loggerDataStore = BlockLoggerDataStore::getInstance();
+    auto states = loggerDataStore.getStates(keys, varNames);
+    stateUpdater(states);
+
+    if (mEnabledMode & CAN_WRITE_TO_OUTPUT) {
+      for (size_t i = 0; i < DATA_COUNT; ++i) {
+        printUpdateState(line, to_string(keys[i]), varNames[i], states[i]);
+      }
+    }
+
+    loggerDataStore.setStates(keys, varNames, std::move(states));
+  }
 
   void setState(int line, const void* address, const std::string& stateName, 
     std::function<std::string(std::optional<std::string>)>& stateUpdater);
@@ -401,6 +360,8 @@ public:
   uint32_t getEnabledMode() const;
 
 private:
+  void printUpdateState(int line, const std::string& storeKey, const std::string& varName, std::optional<std::string>& value);
+
   const uint32_t mEnabledMode = FULLY_DISABLED;
   std::string mlogInfoBuffer;
   std::string mcustomMessageBuffer;
