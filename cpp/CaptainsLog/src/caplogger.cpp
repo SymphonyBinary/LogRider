@@ -224,8 +224,6 @@ void BlockLogger::printAllStateOfStore(int line, const DataStoreKey& key) {
   }
 }
 
-void printAllState(int line){}
-
 void BlockLogger::releaseState(int line, const DataStoreKey& key, const DataStoreMemberVariableName& varName) {
   if(!(mEnabledMode)) {
     return;
@@ -256,8 +254,6 @@ void BlockLogger::releaseAllStateOfStore(int line, const DataStoreKey& key) {
     PRINT_TO_LOG("%s", ss.str().c_str());
   }
 }
-
-void releaseAllState(int line){}
 
 void BlockLogger::printStateImpl(int line, const std::string& logCommand, const std::string& storeKey, const std::string& varName, const std::optional<std::string>& value) {
   std::stringstream ss;

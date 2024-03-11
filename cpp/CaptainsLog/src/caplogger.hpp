@@ -278,11 +278,9 @@ public:
 
   void printState(int line, const DataStoreKey& key, const DataStoreMemberVariableName& varName);
   void printAllStateOfStore(int line, const DataStoreKey& key);
-  void printAllState(int line);
 
   void releaseState(int line, const DataStoreKey& keys, const std::string& stateName);
   void releaseAllStateOfStore(int line, const DataStoreKey& key);
-  void releaseAllState(int line);
 
   uint32_t getEnabledMode() const;
 
