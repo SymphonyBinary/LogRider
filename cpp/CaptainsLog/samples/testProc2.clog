@@ -1,205 +1,361 @@
 CAPTAIN'S LOG - VERSION 1.1
-CAP_LOG : P=549749000 T=0 CHANNEL-ID=000 : FULLY ENABLED         : VERBOSITY=0 : ALL
-CAP_LOG : P=549749000 T=0 CHANNEL-ID=001 : FULLY ENABLED         : VERBOSITY=0 : >  RENDER
-CAP_LOG : P=549749000 T=0 CHANNEL-ID=002 : FULLY ENABLED         : VERBOSITY=0 : >  >  RENDER_SUB_CHANNEL_A
-CAP_LOG : P=549749000 T=0 CHANNEL-ID=003 : FULLY ENABLED         : VERBOSITY=5 : >  >  RENDER_SUB_CHANNEL_A_VERBOSE
-CAP_LOG : P=549749000 T=0 CHANNEL-ID=004 : FULLY ENABLED         : VERBOSITY=2 : >  >  RENDER_SUB_CHANNEL_B
-CAP_LOG : P=549749000 T=0 CHANNEL-ID=005 : FULLY ENABLED         : VERBOSITY=0 : >  NETWORK
-CAP_LOG : P=549749000 T=0 CHANNEL-ID=006 : FULLY ENABLED         : VERBOSITY=0 : >  AUDIO
-CAP_LOG : P=549749000 T=0 CHANNEL-ID=007 : FULLY ENABLED         : VERBOSITY=0 : >  >  AUDIO_SUB_CHANNEL_Z
-CAP_LOG : P=549749000 T=0 CHANNEL-ID=008 : FULLY ENABLED         : VERBOSITY=2 : >  >  AUDIO_SUB_CHANNEL_OTHER
-CAP_LOG : P=549749000 T=0 CHANNEL-ID=009 : FULLY ENABLED         : VERBOSITY=3 : >  >  AUDIO_IO
-CAP_LOG : P=549749000 T=0 CHANNEL-ID=010 : FULLY ENABLED         : VERBOSITY=0 : >  MISC
-CAP_LOG : P=549749000 T=0 CHANNEL-ID=011 : FULLY ENABLED         : VERBOSITY=0 : >  SET_THIS_EXAMPLE
-CAP_LOG : P=549749000 T=0 CHANNEL-ID=012 : FULLY ENABLED         : VERBOSITY=0 : >  SET_ADDRESS_EXAMPLE
-CAP_LOG : P=549749000 T=0 CHANNEL-ID=013 : ENABLED BUT NO OUTPUT : VERBOSITY=0 : >  SET_STORE_NAME_EXAMPLE
-CAP_LOG : P=549749000 T=0 CHANNEL-ID=014 : FULLY ENABLED         : VERBOSITY=0 : >  LAMBDA_EXAMPLE
-CAP_LOG : P=549749000 T=0 CHANNEL-ID=015 : FULLY ENABLED         : VERBOSITY=0 : >  DEFAULT
-CAP_LOG : P=549749000 T=0 C=015 F 1 [127]::[test.cpp]::[int main()] 0
-CAP_LOG : P=549749000 T=0 C=015 -> 1 [127] LOG: main 
-CAP_LOG : P=549749000 T=0 C=011 :F 2 [130]::[test.cpp]::[int main()] 0
-CAP_LOG : P=549749000 T=0 C=011 :-> 2 [131] LOG: This demonstrates writing to the 'this' pointer, and writing to explicit addresses 
-CAP_LOG : P=549749000 T=0 C=011 ::F 3 [23]::[test.cpp]::[void something::ExampleStateWithThisPtr::makeEntity(int, std::string)] 0x7ffee05c9070
-CAP_LOG : P=549749000 T=0 C=011 ::-> 3 [24] SET STATE: Address=0x7ffee05c9070 : StateName='57' : Value='Square thing'
-CAP_LOG : P=549749000 T=0 C=011 ::L 3 [23]::[test.cpp]::[void something::ExampleStateWithThisPtr::makeEntity(int, std::string)] 0x7ffee05c9070
-CAP_LOG : P=549749000 T=0 C=011 ::F 4 [23]::[test.cpp]::[void something::ExampleStateWithThisPtr::makeEntity(int, std::string)] 0x7ffee05c9070
-CAP_LOG : P=549749000 T=0 C=011 ::-> 4 [24] SET STATE: Address=0x7ffee05c9070 : StateName='42' : Value='Triangle thing'
-CAP_LOG : P=549749000 T=0 C=011 ::L 4 [23]::[test.cpp]::[void something::ExampleStateWithThisPtr::makeEntity(int, std::string)] 0x7ffee05c9070
-CAP_LOG : P=549749000 T=0 C=011 ::F 5 [23]::[test.cpp]::[void something::ExampleStateWithThisPtr::makeEntity(int, std::string)] 0x7ffee05c9070
-CAP_LOG : P=549749000 T=0 C=011 ::-> 5 [24] SET STATE: Address=0x7ffee05c9070 : StateName='12' : Value='Airplane'
-CAP_LOG : P=549749000 T=0 C=011 ::L 5 [23]::[test.cpp]::[void something::ExampleStateWithThisPtr::makeEntity(int, std::string)] 0x7ffee05c9070
-CAP_LOG : P=549749000 T=0 C=011 ::F 6 [23]::[test.cpp]::[void something::ExampleStateWithThisPtr::makeEntity(int, std::string)] 0x7ffee05c9070
-CAP_LOG : P=549749000 T=0 C=011 ::-> 6 [24] SET STATE: Address=0x7ffee05c9070 : StateName='18' : Value='Zig'
-CAP_LOG : P=549749000 T=0 C=011 ::L 6 [23]::[test.cpp]::[void something::ExampleStateWithThisPtr::makeEntity(int, std::string)] 0x7ffee05c9070
-CAP_LOG : P=549749000 T=0 C=011 ::F 7 [28]::[test.cpp]::[void something::ExampleStateWithThisPtr::connectEntities(int, int)] 0x7ffee05c9070
-CAP_LOG : P=549749000 T=0 C=011 ::-> 7 [28] LOG: Connecting 57 and 12 
-CAP_LOG : P=549749000 T=0 C=011 ::-> 7 [29] PRINT STATE: Address=0x7ffee05c9070 : StateName='57' : Value='Square thing'
-CAP_LOG : P=549749000 T=0 C=011 ::-> 7 [30] PRINT STATE: Address=0x7ffee05c9070 : StateName='12' : Value='Airplane'
-CAP_LOG : P=549749000 T=0 C=011 ::L 7 [28]::[test.cpp]::[void something::ExampleStateWithThisPtr::connectEntities(int, int)] 0x7ffee05c9070
-CAP_LOG : P=549749000 T=0 C=011 ::F 8 [28]::[test.cpp]::[void something::ExampleStateWithThisPtr::connectEntities(int, int)] 0x7ffee05c9070
-CAP_LOG : P=549749000 T=0 C=011 ::-> 8 [28] LOG: Connecting 18 and 12 
-CAP_LOG : P=549749000 T=0 C=011 ::-> 8 [29] PRINT STATE: Address=0x7ffee05c9070 : StateName='18' : Value='Zig'
-CAP_LOG : P=549749000 T=0 C=011 ::-> 8 [30] PRINT STATE: Address=0x7ffee05c9070 : StateName='12' : Value='Airplane'
-CAP_LOG : P=549749000 T=0 C=011 ::L 8 [28]::[test.cpp]::[void something::ExampleStateWithThisPtr::connectEntities(int, int)] 0x7ffee05c9070
-CAP_LOG : P=549749000 T=0 C=011 ::F 9 [28]::[test.cpp]::[void something::ExampleStateWithThisPtr::connectEntities(int, int)] 0x7ffee05c9070
-CAP_LOG : P=549749000 T=0 C=011 ::-> 9 [28] LOG: Connecting 42 and 57 
-CAP_LOG : P=549749000 T=0 C=011 ::-> 9 [29] PRINT STATE: Address=0x7ffee05c9070 : StateName='42' : Value='Triangle thing'
-CAP_LOG : P=549749000 T=0 C=011 ::-> 9 [30] PRINT STATE: Address=0x7ffee05c9070 : StateName='57' : Value='Square thing'
-CAP_LOG : P=549749000 T=0 C=011 ::L 9 [28]::[test.cpp]::[void something::ExampleStateWithThisPtr::connectEntities(int, int)] 0x7ffee05c9070
-CAP_LOG : P=549749000 T=0 C=012 ::F 10 [38]::[test.cpp]::[void something::addStateToExampleState(const something::ExampleStateWithThisPtr&...] 0
-CAP_LOG : P=549749000 T=0 C=012 ::-> 10 [39] SET STATE: Address=0x7ffee05c9070 : StateName='SomeStateInsertedOutside' : Value='outside state!'
-CAP_LOG : P=549749000 T=0 C=012 ::-> 10 [40] SET STATE: Address=0x7ffee05c9070 : StateName='Variable Name Can Have Spaces' : Value='more outside state!'
-CAP_LOG : P=549749000 T=0 C=012 ::L 10 [38]::[test.cpp]::[void something::addStateToExampleState(const something::ExampleStateWithThisPtr&...] 0
-CAP_LOG : P=549749000 T=0 C=011 :-> 2 [142] LOG: printing all state 
-CAP_LOG : P=549749000 T=0 C=011 :-> 2 [143] PRINT STATE: Address=0x7ffee05c9070 : StateName='Variable Name Can Have Spaces' : Value='more outside state!'
-CAP_LOG : P=549749000 T=0 C=011 :-> 2 [143] PRINT STATE: Address=0x7ffee05c9070 : StateName='SomeStateInsertedOutside' : Value='outside state!'
-CAP_LOG : P=549749000 T=0 C=011 :-> 2 [143] PRINT STATE: Address=0x7ffee05c9070 : StateName='18' : Value='Zig'
-CAP_LOG : P=549749000 T=0 C=011 :-> 2 [143] PRINT STATE: Address=0x7ffee05c9070 : StateName='12' : Value='Airplane'
-CAP_LOG : P=549749000 T=0 C=011 :-> 2 [143] PRINT STATE: Address=0x7ffee05c9070 : StateName='42' : Value='Triangle thing'
-CAP_LOG : P=549749000 T=0 C=011 :-> 2 [143] PRINT STATE: Address=0x7ffee05c9070 : StateName='57' : Value='Square thing'
-CAP_LOG : P=549749000 T=0 C=011 ::F 11 [18]::[test.cpp]::[something::ExampleStateWithThisPtr::~ExampleStateWithThisPtr()] 0x7ffee05c9070
-CAP_LOG : P=549749000 T=0 C=011 ::-> 11 [19] RELEASE ALL STATE: Address=0x7ffee05c9070 : Deleted State Count=6
-CAP_LOG : P=549749000 T=0 C=011 ::L 11 [18]::[test.cpp]::[something::ExampleStateWithThisPtr::~ExampleStateWithThisPtr()] 0x7ffee05c9070
-CAP_LOG : P=549749000 T=0 C=011 :L 2 [130]::[test.cpp]::[int main()] 0
-CAP_LOG : P=549749000 T=0 C=015 -> 1 [146] LOG: CAP::CHANNEL::SET_STORE_NAME_EXAMPLE is disabled for output but still works for setting state! 
-CAP_LOG : P=549749000 T=0 C=015 -> 1 [159] LOG: printing all the state set in CAP::CHANNEL::SET_STORE_NAME_EXAMPLE 
-CAP_LOG : P=549749000 T=0 C=015 -> 1 [161] PRINT STATE: StoreName=global state : StateName='third' : Value='default value'
-CAP_LOG : P=549749000 T=0 C=015 -> 1 [161] PRINT STATE: StoreName=global state : StateName='bar' : Value='changed value'
-CAP_LOG : P=549749000 T=0 C=015 -> 1 [161] PRINT STATE: StoreName=global state : StateName='foo' : Value='default value'
-CAP_LOG : P=549749000 T=0 C=015 -> 1 [164] LOG: Deleting state twice to show that second call has nothing left. 
-CAP_LOG : P=549749000 T=0 C=015 -> 1 [169] LOG: Executing lambda if LAMBDA_EXAMPLE is enabled 
-CAP_LOG : P=549749000 T=0 C=014 :F 20 [171]::[test.cpp]::[int main()] 0
+CAP_LOG : P=722704500 T=0 CHANNEL-ID=000 : FULLY ENABLED         : VERBOSITY=0 : ALL
+CAP_LOG : P=722704500 T=0 CHANNEL-ID=001 : FULLY ENABLED         : VERBOSITY=0 : >  RENDER
+CAP_LOG : P=722704500 T=0 CHANNEL-ID=002 : FULLY ENABLED         : VERBOSITY=0 : >  >  RENDER_SUB_CHANNEL_A
+CAP_LOG : P=722704500 T=0 CHANNEL-ID=003 : FULLY ENABLED         : VERBOSITY=5 : >  >  RENDER_SUB_CHANNEL_A_VERBOSE
+CAP_LOG : P=722704500 T=0 CHANNEL-ID=004 : FULLY ENABLED         : VERBOSITY=2 : >  >  RENDER_SUB_CHANNEL_B
+CAP_LOG : P=722704500 T=0 CHANNEL-ID=005 : FULLY ENABLED         : VERBOSITY=0 : >  NETWORK
+CAP_LOG : P=722704500 T=0 CHANNEL-ID=006 : FULLY ENABLED         : VERBOSITY=0 : >  AUDIO
+CAP_LOG : P=722704500 T=0 CHANNEL-ID=007 : FULLY ENABLED         : VERBOSITY=0 : >  >  AUDIO_SUB_CHANNEL_Z
+CAP_LOG : P=722704500 T=0 CHANNEL-ID=008 : FULLY ENABLED         : VERBOSITY=2 : >  >  AUDIO_SUB_CHANNEL_OTHER
+CAP_LOG : P=722704500 T=0 CHANNEL-ID=009 : FULLY ENABLED         : VERBOSITY=3 : >  >  AUDIO_IO
+CAP_LOG : P=722704500 T=0 CHANNEL-ID=010 : FULLY ENABLED         : VERBOSITY=0 : >  MISC
+CAP_LOG : P=722704500 T=0 CHANNEL-ID=011 : FULLY ENABLED         : VERBOSITY=0 : >  SET_THIS_EXAMPLE
+CAP_LOG : P=722704500 T=0 CHANNEL-ID=012 : FULLY ENABLED         : VERBOSITY=0 : >  SET_ADDRESS_EXAMPLE
+CAP_LOG : P=722704500 T=0 CHANNEL-ID=013 : ENABLED BUT NO OUTPUT : VERBOSITY=0 : >  SET_STORE_NAME_EXAMPLE
+CAP_LOG : P=722704500 T=0 CHANNEL-ID=014 : FULLY ENABLED         : VERBOSITY=0 : >  LAMBDA_EXAMPLE
+CAP_LOG : P=722704500 T=0 CHANNEL-ID=015 : FULLY ENABLED         : VERBOSITY=0 : >  DEFAULT
+CAP_LOG : P=722704500 T=0 C=015 -> 1 [1] UPDATE STATE: StoreKey='Flintstones' : StateName='Fred' : Value='Barney'
+CAP_LOG : P=722704500 T=0 C=015 -> 1 [1] UPDATE STATE: StoreKey='140728481889936' : StateName='Foo' : Value='N/A'
+CAP_LOG : P=722704500 T=0 C=015 -> 1 [1] UPDATE STATE: StoreKey='Jetsons' : StateName='Wilma' : Value='I'm Home'
+CAP_LOG : P=722704500 T=0 C=015 F 1 [127]::[test.cpp]::[int main()] 0
+CAP_LOG : P=722704500 T=0 C=015 -> 1 [127] LOG: main 
+CAP_LOG : P=722704500 T=0 C=011 :-> 2 [1] UPDATE STATE: StoreKey='Flintstones' : StateName='Fred' : Value='Barney'
+CAP_LOG : P=722704500 T=0 C=011 :-> 2 [1] UPDATE STATE: StoreKey='140728481890048' : StateName='Foo' : Value='N/A'
+CAP_LOG : P=722704500 T=0 C=011 :-> 2 [1] UPDATE STATE: StoreKey='Jetsons' : StateName='Wilma' : Value='I'm Home'
+CAP_LOG : P=722704500 T=0 C=011 :F 2 [130]::[test.cpp]::[int main()] 0
+CAP_LOG : P=722704500 T=0 C=011 :-> 2 [131] LOG: This demonstrates writing to the 'this' pointer, and writing to explicit addresses 
+CAP_LOG : P=722704500 T=0 C=011 ::-> 3 [1] UPDATE STATE: StoreKey='Flintstones' : StateName='Fred' : Value='Barney'
+CAP_LOG : P=722704500 T=0 C=011 ::-> 3 [1] UPDATE STATE: StoreKey='140728481888960' : StateName='Foo' : Value='N/A'
+CAP_LOG : P=722704500 T=0 C=011 ::-> 3 [1] UPDATE STATE: StoreKey='Jetsons' : StateName='Wilma' : Value='I'm Home'
+CAP_LOG : P=722704500 T=0 C=011 ::F 3 [23]::[test.cpp]::[void something::ExampleStateWithThisPtr::makeEntity(int, std::string)] 0x7ffde72c3e20
+CAP_LOG : P=722704500 T=0 C=011 ::-> 3 [24] SET STATE: Address=0x7ffde72c3e20 : StateName='57' : Value='Square thing'
+CAP_LOG : P=722704500 T=0 C=011 ::L 3 [23]::[test.cpp]::[void something::ExampleStateWithThisPtr::makeEntity(int, std::string)] 0x7ffde72c3e20
+CAP_LOG : P=722704500 T=0 C=011 ::-> 4 [1] UPDATE STATE: StoreKey='Flintstones' : StateName='Fred' : Value='Barney'
+CAP_LOG : P=722704500 T=0 C=011 ::-> 4 [1] UPDATE STATE: StoreKey='140728481888960' : StateName='Foo' : Value='N/A'
+CAP_LOG : P=722704500 T=0 C=011 ::-> 4 [1] UPDATE STATE: StoreKey='Jetsons' : StateName='Wilma' : Value='I'm Home'
+CAP_LOG : P=722704500 T=0 C=011 ::F 4 [23]::[test.cpp]::[void something::ExampleStateWithThisPtr::makeEntity(int, std::string)] 0x7ffde72c3e20
+CAP_LOG : P=722704500 T=0 C=011 ::-> 4 [24] SET STATE: Address=0x7ffde72c3e20 : StateName='42' : Value='Triangle thing'
+CAP_LOG : P=722704500 T=0 C=011 ::L 4 [23]::[test.cpp]::[void something::ExampleStateWithThisPtr::makeEntity(int, std::string)] 0x7ffde72c3e20
+CAP_LOG : P=722704500 T=0 C=011 ::-> 5 [1] UPDATE STATE: StoreKey='Flintstones' : StateName='Fred' : Value='Barney'
+CAP_LOG : P=722704500 T=0 C=011 ::-> 5 [1] UPDATE STATE: StoreKey='140728481888960' : StateName='Foo' : Value='N/A'
+CAP_LOG : P=722704500 T=0 C=011 ::-> 5 [1] UPDATE STATE: StoreKey='Jetsons' : StateName='Wilma' : Value='I'm Home'
+CAP_LOG : P=722704500 T=0 C=011 ::F 5 [23]::[test.cpp]::[void something::ExampleStateWithThisPtr::makeEntity(int, std::string)] 0x7ffde72c3e20
+CAP_LOG : P=722704500 T=0 C=011 ::-> 5 [24] SET STATE: Address=0x7ffde72c3e20 : StateName='12' : Value='Airplane'
+CAP_LOG : P=722704500 T=0 C=011 ::L 5 [23]::[test.cpp]::[void something::ExampleStateWithThisPtr::makeEntity(int, std::string)] 0x7ffde72c3e20
+CAP_LOG : P=722704500 T=0 C=011 ::-> 6 [1] UPDATE STATE: StoreKey='Flintstones' : StateName='Fred' : Value='Barney'
+CAP_LOG : P=722704500 T=0 C=011 ::-> 6 [1] UPDATE STATE: StoreKey='140728481888960' : StateName='Foo' : Value='N/A'
+CAP_LOG : P=722704500 T=0 C=011 ::-> 6 [1] UPDATE STATE: StoreKey='Jetsons' : StateName='Wilma' : Value='I'm Home'
+CAP_LOG : P=722704500 T=0 C=011 ::F 6 [23]::[test.cpp]::[void something::ExampleStateWithThisPtr::makeEntity(int, std::string)] 0x7ffde72c3e20
+CAP_LOG : P=722704500 T=0 C=011 ::-> 6 [24] SET STATE: Address=0x7ffde72c3e20 : StateName='18' : Value='Zig'
+CAP_LOG : P=722704500 T=0 C=011 ::L 6 [23]::[test.cpp]::[void something::ExampleStateWithThisPtr::makeEntity(int, std::string)] 0x7ffde72c3e20
+CAP_LOG : P=722704500 T=0 C=011 ::-> 7 [1] UPDATE STATE: StoreKey='Flintstones' : StateName='Fred' : Value='Barney'
+CAP_LOG : P=722704500 T=0 C=011 ::-> 7 [1] UPDATE STATE: StoreKey='140728481888960' : StateName='Foo' : Value='N/A'
+CAP_LOG : P=722704500 T=0 C=011 ::-> 7 [1] UPDATE STATE: StoreKey='Jetsons' : StateName='Wilma' : Value='I'm Home'
+CAP_LOG : P=722704500 T=0 C=011 ::F 7 [28]::[test.cpp]::[void something::ExampleStateWithThisPtr::connectEntities(int, int)] 0x7ffde72c3e20
+CAP_LOG : P=722704500 T=0 C=011 ::-> 7 [28] LOG: Connecting 57 and 12 
+CAP_LOG : P=722704500 T=0 C=011 ::-> 7 [29] PRINT STATE: Address=0x7ffde72c3e20 : StateName='57' : Value='Square thing'
+CAP_LOG : P=722704500 T=0 C=011 ::-> 7 [30] PRINT STATE: Address=0x7ffde72c3e20 : StateName='12' : Value='Airplane'
+CAP_LOG : P=722704500 T=0 C=011 ::L 7 [28]::[test.cpp]::[void something::ExampleStateWithThisPtr::connectEntities(int, int)] 0x7ffde72c3e20
+CAP_LOG : P=722704500 T=0 C=011 ::-> 8 [1] UPDATE STATE: StoreKey='Flintstones' : StateName='Fred' : Value='Barney'
+CAP_LOG : P=722704500 T=0 C=011 ::-> 8 [1] UPDATE STATE: StoreKey='140728481888960' : StateName='Foo' : Value='N/A'
+CAP_LOG : P=722704500 T=0 C=011 ::-> 8 [1] UPDATE STATE: StoreKey='Jetsons' : StateName='Wilma' : Value='I'm Home'
+CAP_LOG : P=722704500 T=0 C=011 ::F 8 [28]::[test.cpp]::[void something::ExampleStateWithThisPtr::connectEntities(int, int)] 0x7ffde72c3e20
+CAP_LOG : P=722704500 T=0 C=011 ::-> 8 [28] LOG: Connecting 18 and 12 
+CAP_LOG : P=722704500 T=0 C=011 ::-> 8 [29] PRINT STATE: Address=0x7ffde72c3e20 : StateName='18' : Value='Zig'
+CAP_LOG : P=722704500 T=0 C=011 ::-> 8 [30] PRINT STATE: Address=0x7ffde72c3e20 : StateName='12' : Value='Airplane'
+CAP_LOG : P=722704500 T=0 C=011 ::L 8 [28]::[test.cpp]::[void something::ExampleStateWithThisPtr::connectEntities(int, int)] 0x7ffde72c3e20
+CAP_LOG : P=722704500 T=0 C=011 ::-> 9 [1] UPDATE STATE: StoreKey='Flintstones' : StateName='Fred' : Value='Barney'
+CAP_LOG : P=722704500 T=0 C=011 ::-> 9 [1] UPDATE STATE: StoreKey='140728481888960' : StateName='Foo' : Value='N/A'
+CAP_LOG : P=722704500 T=0 C=011 ::-> 9 [1] UPDATE STATE: StoreKey='Jetsons' : StateName='Wilma' : Value='I'm Home'
+CAP_LOG : P=722704500 T=0 C=011 ::F 9 [28]::[test.cpp]::[void something::ExampleStateWithThisPtr::connectEntities(int, int)] 0x7ffde72c3e20
+CAP_LOG : P=722704500 T=0 C=011 ::-> 9 [28] LOG: Connecting 42 and 57 
+CAP_LOG : P=722704500 T=0 C=011 ::-> 9 [29] PRINT STATE: Address=0x7ffde72c3e20 : StateName='42' : Value='Triangle thing'
+CAP_LOG : P=722704500 T=0 C=011 ::-> 9 [30] PRINT STATE: Address=0x7ffde72c3e20 : StateName='57' : Value='Square thing'
+CAP_LOG : P=722704500 T=0 C=011 ::L 9 [28]::[test.cpp]::[void something::ExampleStateWithThisPtr::connectEntities(int, int)] 0x7ffde72c3e20
+CAP_LOG : P=722704500 T=0 C=012 ::-> 10 [1] UPDATE STATE: StoreKey='Flintstones' : StateName='Fred' : Value='Barney'
+CAP_LOG : P=722704500 T=0 C=012 ::-> 10 [1] UPDATE STATE: StoreKey='140728481888960' : StateName='Foo' : Value='N/A'
+CAP_LOG : P=722704500 T=0 C=012 ::-> 10 [1] UPDATE STATE: StoreKey='Jetsons' : StateName='Wilma' : Value='I'm Home'
+CAP_LOG : P=722704500 T=0 C=012 ::F 10 [38]::[test.cpp]::[void something::addStateToExampleState(const something::ExampleStateWithThisPtr&...] 0
+CAP_LOG : P=722704500 T=0 C=012 ::-> 10 [39] SET STATE: Address=0x7ffde72c3e20 : StateName='SomeStateInsertedOutside' : Value='outside state!'
+CAP_LOG : P=722704500 T=0 C=012 ::-> 10 [40] SET STATE: Address=0x7ffde72c3e20 : StateName='Variable Name Can Have Spaces' : Value='more outside state!'
+CAP_LOG : P=722704500 T=0 C=012 ::L 10 [38]::[test.cpp]::[void something::addStateToExampleState(const something::ExampleStateWithThisPtr&...] 0
+CAP_LOG : P=722704500 T=0 C=011 :-> 2 [142] LOG: printing all state 
+CAP_LOG : P=722704500 T=0 C=011 :-> 2 [143] PRINT STATE: Address=0x7ffde72c3e20 : StateName='Variable Name Can Have Spaces' : Value='more outside state!'
+CAP_LOG : P=722704500 T=0 C=011 :-> 2 [143] PRINT STATE: Address=0x7ffde72c3e20 : StateName='SomeStateInsertedOutside' : Value='outside state!'
+CAP_LOG : P=722704500 T=0 C=011 :-> 2 [143] PRINT STATE: Address=0x7ffde72c3e20 : StateName='18' : Value='Zig'
+CAP_LOG : P=722704500 T=0 C=011 :-> 2 [143] PRINT STATE: Address=0x7ffde72c3e20 : StateName='12' : Value='Airplane'
+CAP_LOG : P=722704500 T=0 C=011 :-> 2 [143] PRINT STATE: Address=0x7ffde72c3e20 : StateName='42' : Value='Triangle thing'
+CAP_LOG : P=722704500 T=0 C=011 :-> 2 [143] PRINT STATE: Address=0x7ffde72c3e20 : StateName='57' : Value='Square thing'
+CAP_LOG : P=722704500 T=0 C=011 ::-> 11 [1] UPDATE STATE: StoreKey='Flintstones' : StateName='Fred' : Value='Barney'
+CAP_LOG : P=722704500 T=0 C=011 ::-> 11 [1] UPDATE STATE: StoreKey='140728481888960' : StateName='Foo' : Value='N/A'
+CAP_LOG : P=722704500 T=0 C=011 ::-> 11 [1] UPDATE STATE: StoreKey='Jetsons' : StateName='Wilma' : Value='I'm Home'
+CAP_LOG : P=722704500 T=0 C=011 ::F 11 [18]::[test.cpp]::[something::ExampleStateWithThisPtr::~ExampleStateWithThisPtr()] 0x7ffde72c3e20
+CAP_LOG : P=722704500 T=0 C=011 ::-> 11 [19] RELEASE ALL STATE: Address=0x7ffde72c3e20 : Deleted State Count=6
+CAP_LOG : P=722704500 T=0 C=011 ::L 11 [18]::[test.cpp]::[something::ExampleStateWithThisPtr::~ExampleStateWithThisPtr()] 0x7ffde72c3e20
+CAP_LOG : P=722704500 T=0 C=011 :L 2 [130]::[test.cpp]::[int main()] 0
+CAP_LOG : P=722704500 T=0 C=015 -> 1 [146] LOG: CAP::CHANNEL::SET_STORE_NAME_EXAMPLE is disabled for output but still works for setting state! 
+CAP_LOG : P=722704500 T=0 C=015 -> 1 [159] LOG: printing all the state set in CAP::CHANNEL::SET_STORE_NAME_EXAMPLE 
+CAP_LOG : P=722704500 T=0 C=015 -> 1 [161] PRINT STATE: StoreName=global state : StateName='third' : Value='default value'
+CAP_LOG : P=722704500 T=0 C=015 -> 1 [161] PRINT STATE: StoreName=global state : StateName='bar' : Value='changed value'
+CAP_LOG : P=722704500 T=0 C=015 -> 1 [161] PRINT STATE: StoreName=global state : StateName='foo' : Value='default value'
+CAP_LOG : P=722704500 T=0 C=015 -> 1 [164] LOG: Deleting state twice to show that second call has nothing left. 
+CAP_LOG : P=722704500 T=0 C=015 -> 1 [169] LOG: Executing lambda if LAMBDA_EXAMPLE is enabled 
+CAP_LOG : P=722704500 T=0 C=014 :-> 20 [1] UPDATE STATE: StoreKey='Flintstones' : StateName='Fred' : Value='Barney'
+CAP_LOG : P=722704500 T=0 C=014 :-> 20 [1] UPDATE STATE: StoreKey='140728481890048' : StateName='Foo' : Value='N/A'
+CAP_LOG : P=722704500 T=0 C=014 :-> 20 [1] UPDATE STATE: StoreKey='Jetsons' : StateName='Wilma' : Value='I'm Home'
+CAP_LOG : P=722704500 T=0 C=014 :F 20 [171]::[test.cpp]::[int main()] 0
 print out GARBAAAGE!!
-CAP_LOG : P=549749000 T=0 C=014 :L 20 [171]::[test.cpp]::[int main()] 0
-CAP_LOG : P=549749000 T=0 C=007 :F 21 [119]::[test.cpp]::[void NestTest1::doSomething()] 0x7ffee05c8f35
-CAP_LOG : P=549749000 T=0 C=008 ::F 22 [114]::[test.cpp]::[void NestTest1::doIt()] 0x7ffee05c8f35
-CAP_LOG : P=549749000 T=0 C=008 ::-> 22 [115] SET STATE: Address=0x7ffee05c8f35 : StateName='asdf 1' : Value='asdfasdf'
-CAP_LOG : P=549749000 T=0 C=008 ::L 22 [114]::[test.cpp]::[void NestTest1::doIt()] 0x7ffee05c8f35
-CAP_LOG : P=549749000 T=0 C=007 :L 21 [119]::[test.cpp]::[void NestTest1::doSomething()] 0x7ffee05c8f35
-CAP_LOG : P=549749000 T=0 C=010 :F 23 [184]::[test.cpp]::[int main()] 0
-CAP_LOG : P=549749000 T=0 C=001 ::F 24 [75]::[test.cpp]::[something::TestRender::TestRender(std::string)] 0x7ffee05c9070
-CAP_LOG : P=549749000 T=0 C=001 ::-> 24 [76] SET STATE: Address=0x7ffee05c9070 : StateName='Current Name' : Value='first'
-CAP_LOG : P=549749000 T=0 C=001 ::L 24 [75]::[test.cpp]::[something::TestRender::TestRender(std::string)] 0x7ffee05c9070
-CAP_LOG : P=549749000 T=0 C=001 ::F 25 [85]::[test.cpp]::[void something::TestRender::testBlockOutput()] 0x7ffee05c9070
-CAP_LOG : P=549749000 T=0 C=001 ::-> 25 [86] SET STATE: Address=0x7ffee05c9070 : StateName='Current Name' : Value='first APPENDED SOME STUFF'
-CAP_LOG : P=549749000 T=0 C=001 ::L 25 [85]::[test.cpp]::[void something::TestRender::testBlockOutput()] 0x7ffee05c9070
-CAP_LOG : P=549749000 T=0 C=010 :-> 23 [187] LOG: this is a log 
-CAP_LOG : P=549749000 T=0 C=001 ::F 26 [80]::[test.cpp]::[something::TestRender::~TestRender()] 0x7ffee05c9070
-CAP_LOG : P=549749000 T=0 C=001 ::-> 26 [81] RELEASE ALL STATE: Address=0x7ffee05c9070 : Deleted State Count=1
-CAP_LOG : P=549749000 T=0 C=001 ::L 26 [80]::[test.cpp]::[something::TestRender::~TestRender()] 0x7ffee05c9070
-CAP_LOG : P=549749000 T=0 C=010 :L 23 [184]::[test.cpp]::[int main()] 0
-CAP_LOG : P=549749000 T=0 C=015 -> 1 [190] ERROR: this is an error 
-CAP_LOG : P=549749000 T=0 C=005 :F 27 [96]::[test.cpp]::[something::TestNetwork::TestNetwork()] 0x7ffee05c9080
-CAP_LOG : P=549749000 T=0 C=005 :-> 27 [96] LOG: Testing format = hello 
-CAP_LOG : P=549749000 T=0 C=001 ::F 28 [75]::[test.cpp]::[something::TestRender::TestRender(std::string)] 0x5595f812bec0
-CAP_LOG : P=549749000 T=0 C=001 ::-> 28 [76] SET STATE: Address=0x5595f812bec0 : StateName='Current Name' : Value='In Two 0'
-CAP_LOG : P=549749000 T=0 C=001 ::L 28 [75]::[test.cpp]::[something::TestRender::TestRender(std::string)] 0x5595f812bec0
-CAP_LOG : P=549749000 T=0 C=001 ::F 29 [85]::[test.cpp]::[void something::TestRender::testBlockOutput()] 0x5595f812bec0
-CAP_LOG : P=549749000 T=0 C=001 ::-> 29 [86] SET STATE: Address=0x5595f812bec0 : StateName='Current Name' : Value='In Two 0 APPENDED SOME STUFF'
-CAP_LOG : P=549749000 T=0 C=001 ::L 29 [85]::[test.cpp]::[void something::TestRender::testBlockOutput()] 0x5595f812bec0
-CAP_LOG : P=549749000 T=0 C=001 ::F 30 [75]::[test.cpp]::[something::TestRender::TestRender(std::string)] 0x5595f812bee1
-CAP_LOG : P=549749000 T=0 C=001 ::-> 30 [76] SET STATE: Address=0x5595f812bee1 : StateName='Current Name' : Value='In Two 1'
-CAP_LOG : P=549749000 T=0 C=001 ::L 30 [75]::[test.cpp]::[something::TestRender::TestRender(std::string)] 0x5595f812bee1
-CAP_LOG : P=549749000 T=0 C=001 ::F 31 [80]::[test.cpp]::[something::TestRender::~TestRender()] 0x5595f812bec0
-CAP_LOG : P=549749000 T=0 C=001 ::-> 31 [81] RELEASE ALL STATE: Address=0x5595f812bec0 : Deleted State Count=1
-CAP_LOG : P=549749000 T=0 C=001 ::L 31 [80]::[test.cpp]::[something::TestRender::~TestRender()] 0x5595f812bec0
-CAP_LOG : P=549749000 T=0 C=001 ::F 32 [85]::[test.cpp]::[void something::TestRender::testBlockOutput()] 0x5595f812bee1
-CAP_LOG : P=549749000 T=0 C=001 ::-> 32 [86] SET STATE: Address=0x5595f812bee1 : StateName='Current Name' : Value='In Two 1 APPENDED SOME STUFF'
-CAP_LOG : P=549749000 T=0 C=001 ::L 32 [85]::[test.cpp]::[void something::TestRender::testBlockOutput()] 0x5595f812bee1
-CAP_LOG : P=549749000 T=0 C=001 ::F 33 [75]::[test.cpp]::[something::TestRender::TestRender(std::string)] 0x5595f812bec2
-CAP_LOG : P=549749000 T=0 C=001 ::-> 33 [76] SET STATE: Address=0x5595f812bec2 : StateName='Current Name' : Value='In Two 2'
-CAP_LOG : P=549749000 T=0 C=001 ::L 33 [75]::[test.cpp]::[something::TestRender::TestRender(std::string)] 0x5595f812bec2
-CAP_LOG : P=549749000 T=0 C=001 ::F 34 [80]::[test.cpp]::[something::TestRender::~TestRender()] 0x5595f812bee0
-CAP_LOG : P=549749000 T=0 C=001 ::-> 34 [81] RELEASE ALL STATE: Address=0x5595f812bee0 : Deleted State Count=0
-CAP_LOG : P=549749000 T=0 C=001 ::L 34 [80]::[test.cpp]::[something::TestRender::~TestRender()] 0x5595f812bee0
-CAP_LOG : P=549749000 T=0 C=001 ::F 35 [80]::[test.cpp]::[something::TestRender::~TestRender()] 0x5595f812bee1
-CAP_LOG : P=549749000 T=0 C=001 ::-> 35 [81] RELEASE ALL STATE: Address=0x5595f812bee1 : Deleted State Count=1
-CAP_LOG : P=549749000 T=0 C=001 ::L 35 [80]::[test.cpp]::[something::TestRender::~TestRender()] 0x5595f812bee1
-CAP_LOG : P=549749000 T=0 C=001 ::F 36 [85]::[test.cpp]::[void something::TestRender::testBlockOutput()] 0x5595f812bec2
-CAP_LOG : P=549749000 T=0 C=001 ::-> 36 [86] SET STATE: Address=0x5595f812bec2 : StateName='Current Name' : Value='In Two 2 APPENDED SOME STUFF'
-CAP_LOG : P=549749000 T=0 C=001 ::L 36 [85]::[test.cpp]::[void something::TestRender::testBlockOutput()] 0x5595f812bec2
-CAP_LOG : P=549749000 T=0 C=001 ::F 37 [75]::[test.cpp]::[something::TestRender::TestRender(std::string)] 0x5595f812bec3
-CAP_LOG : P=549749000 T=0 C=001 ::-> 37 [76] SET STATE: Address=0x5595f812bec3 : StateName='Current Name' : Value='In Two 3'
-CAP_LOG : P=549749000 T=0 C=001 ::L 37 [75]::[test.cpp]::[something::TestRender::TestRender(std::string)] 0x5595f812bec3
-CAP_LOG : P=549749000 T=0 C=001 ::F 38 [85]::[test.cpp]::[void something::TestRender::testBlockOutput()] 0x5595f812bec3
-CAP_LOG : P=549749000 T=0 C=001 ::-> 38 [86] SET STATE: Address=0x5595f812bec3 : StateName='Current Name' : Value='In Two 3 APPENDED SOME STUFF'
-CAP_LOG : P=549749000 T=0 C=001 ::L 38 [85]::[test.cpp]::[void something::TestRender::testBlockOutput()] 0x5595f812bec3
-CAP_LOG : P=549749000 T=0 C=001 ::F 39 [75]::[test.cpp]::[something::TestRender::TestRender(std::string)] 0x5595f812bee4
-CAP_LOG : P=549749000 T=0 C=001 ::-> 39 [76] SET STATE: Address=0x5595f812bee4 : StateName='Current Name' : Value='In Two 4'
-CAP_LOG : P=549749000 T=0 C=001 ::L 39 [75]::[test.cpp]::[something::TestRender::TestRender(std::string)] 0x5595f812bee4
-CAP_LOG : P=549749000 T=0 C=001 ::F 40 [80]::[test.cpp]::[something::TestRender::~TestRender()] 0x5595f812bec0
-CAP_LOG : P=549749000 T=0 C=001 ::-> 40 [81] RELEASE ALL STATE: Address=0x5595f812bec0 : Deleted State Count=0
-CAP_LOG : P=549749000 T=0 C=001 ::L 40 [80]::[test.cpp]::[something::TestRender::~TestRender()] 0x5595f812bec0
-CAP_LOG : P=549749000 T=0 C=001 ::F 41 [80]::[test.cpp]::[something::TestRender::~TestRender()] 0x5595f812bec1
-CAP_LOG : P=549749000 T=0 C=001 ::-> 41 [81] RELEASE ALL STATE: Address=0x5595f812bec1 : Deleted State Count=0
-CAP_LOG : P=549749000 T=0 C=001 ::L 41 [80]::[test.cpp]::[something::TestRender::~TestRender()] 0x5595f812bec1
-CAP_LOG : P=549749000 T=0 C=001 ::F 42 [80]::[test.cpp]::[something::TestRender::~TestRender()] 0x5595f812bec2
-CAP_LOG : P=549749000 T=0 C=001 ::-> 42 [81] RELEASE ALL STATE: Address=0x5595f812bec2 : Deleted State Count=1
-CAP_LOG : P=549749000 T=0 C=001 ::L 42 [80]::[test.cpp]::[something::TestRender::~TestRender()] 0x5595f812bec2
-CAP_LOG : P=549749000 T=0 C=001 ::F 43 [80]::[test.cpp]::[something::TestRender::~TestRender()] 0x5595f812bec3
-CAP_LOG : P=549749000 T=0 C=001 ::-> 43 [81] RELEASE ALL STATE: Address=0x5595f812bec3 : Deleted State Count=1
-CAP_LOG : P=549749000 T=0 C=001 ::L 43 [80]::[test.cpp]::[something::TestRender::~TestRender()] 0x5595f812bec3
-CAP_LOG : P=549749000 T=0 C=001 ::F 44 [85]::[test.cpp]::[void something::TestRender::testBlockOutput()] 0x5595f812bee4
-CAP_LOG : P=549749000 T=0 C=001 ::-> 44 [86] SET STATE: Address=0x5595f812bee4 : StateName='Current Name' : Value='In Two 4 APPENDED SOME STUFF'
-CAP_LOG : P=549749000 T=0 C=001 ::L 44 [85]::[test.cpp]::[void something::TestRender::testBlockOutput()] 0x5595f812bee4
-CAP_LOG : P=549749000 T=0 C=005 :L 27 [96]::[test.cpp]::[something::TestNetwork::TestNetwork()] 0x7ffee05c9080
-CAP_LOG : P=549749000 T=0 C=015 -> 1 [193] LOG: this is a log with formatting FORMAT  
-CAP_LOG : P=549749000 T=0 C=001 :F 45 [75]::[test.cpp]::[something::TestRender::TestRender(std::string)] 0x7ffee05c8f36
-CAP_LOG : P=549749000 T=0 C=001 :-> 45 [76] SET STATE: Address=0x7ffee05c8f36 : StateName='Current Name' : Value='t1'
-CAP_LOG : P=549749000 T=0 C=001 :L 45 [75]::[test.cpp]::[something::TestRender::TestRender(std::string)] 0x7ffee05c8f36
-CAP_LOG : P=549749000 T=0 C=001 :F 46 [75]::[test.cpp]::[something::TestRender::TestRender(std::string)] 0x7ffee05c8f37
-CAP_LOG : P=549749000 T=0 C=001 :-> 46 [76] SET STATE: Address=0x7ffee05c8f37 : StateName='Current Name' : Value='t2'
-CAP_LOG : P=549749000 T=0 C=001 :L 46 [75]::[test.cpp]::[something::TestRender::TestRender(std::string)] 0x7ffee05c8f37
-CAP_LOG : P=549749000 T=0 C=003 :F 47 [205]::[test.cpp]::[int main()] 0
-CAP_LOG : P=549749000 T=0 C=003 :-> 47 [206] LOG: superlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong 
-CAP_LOG : P=549749000 T=0 C=003 :-> 47 [206] LOG: long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longl
-CAP_LOG : P=549749000 T=0 C=003 :-> 47 [206] LOG: ong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long l
-CAP_LOG : P=549749000 T=0 C=003 :-> 47 [206] LOG: onglong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong lo
-CAP_LOG : P=549749000 T=0 C=003 :-> 47 [206] LOG: ng longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlon
-CAP_LOG : P=549749000 T=0 C=003 :-> 47 [206] LOG: g long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long lon
-CAP_LOG : P=549749000 T=0 C=003 :-> 47 [206] LOG: glong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long
-CAP_LOG : P=549749000 T=0 C=003 :-> 47 [206] LOG:  longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong 
-CAP_LOG : P=549749000 T=0 C=003 :-> 47 [206] LOG: long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longl
-CAP_LOG : P=549749000 T=0 C=003 :-> 47 [206] LOG: ong long longlong long longlong long longlong long longstring 
-CAP_LOG : P=549749000 T=0 C=003 :L 47 [205]::[test.cpp]::[int main()] 0
-CAP_LOG : P=549749000 T=0 C=001 :F 48 [75]::[test.cpp]::[something::TestRender::TestRender(std::string)] 0x7ffee05c9060
-CAP_LOG : P=549749000 T=0 C=001 :-> 48 [76] SET STATE: Address=0x7ffee05c9060 : StateName='Current Name' : Value='t3'
-CAP_LOG : P=549749000 T=0 C=001 :L 48 [75]::[test.cpp]::[something::TestRender::TestRender(std::string)] 0x7ffee05c9060
-CAP_LOG : P=549749000 T=0 C=015 -> 1 [212] LOG: last line before a bunch of testBlockOutput 
-CAP_LOG : P=549749000 T=0 C=001 :F 49 [85]::[test.cpp]::[void something::TestRender::testBlockOutput()] 0x7ffee05c9060
-CAP_LOG : P=549749000 T=0 C=001 :-> 49 [86] SET STATE: Address=0x7ffee05c9060 : StateName='Current Name' : Value='t3 APPENDED SOME STUFF'
-CAP_LOG : P=549749000 T=0 C=001 :L 49 [85]::[test.cpp]::[void something::TestRender::testBlockOutput()] 0x7ffee05c9060
-CAP_LOG : P=549749000 T=0 C=001 :F 50 [85]::[test.cpp]::[void something::TestRender::testBlockOutput()] 0x7ffee05c8f37
-CAP_LOG : P=549749000 T=0 C=001 :-> 50 [86] SET STATE: Address=0x7ffee05c8f37 : StateName='Current Name' : Value='t2 APPENDED SOME STUFF'
-CAP_LOG : P=549749000 T=0 C=001 :L 50 [85]::[test.cpp]::[void something::TestRender::testBlockOutput()] 0x7ffee05c8f37
-CAP_LOG : P=549749000 T=0 C=001 :F 51 [85]::[test.cpp]::[void something::TestRender::testBlockOutput()] 0x7ffee05c8f36
-CAP_LOG : P=549749000 T=0 C=001 :-> 51 [86] SET STATE: Address=0x7ffee05c8f36 : StateName='Current Name' : Value='t1 APPENDED SOME STUFF'
-CAP_LOG : P=549749000 T=0 C=001 :L 51 [85]::[test.cpp]::[void something::TestRender::testBlockOutput()] 0x7ffee05c8f36
-CAP_LOG : P=549749000 T=0 C=001 :F 52 [80]::[test.cpp]::[something::TestRender::~TestRender()] 0x7ffee05c9060
-CAP_LOG : P=549749000 T=0 C=001 :-> 52 [81] RELEASE ALL STATE: Address=0x7ffee05c9060 : Deleted State Count=1
-CAP_LOG : P=549749000 T=0 C=001 :L 52 [80]::[test.cpp]::[something::TestRender::~TestRender()] 0x7ffee05c9060
-CAP_LOG : P=549749000 T=0 C=001 :F 53 [80]::[test.cpp]::[something::TestRender::~TestRender()] 0x7ffee05c8f37
-CAP_LOG : P=549749000 T=0 C=001 :-> 53 [81] RELEASE ALL STATE: Address=0x7ffee05c8f37 : Deleted State Count=1
-CAP_LOG : P=549749000 T=0 C=001 :L 53 [80]::[test.cpp]::[something::TestRender::~TestRender()] 0x7ffee05c8f37
-CAP_LOG : P=549749000 T=0 C=001 :F 54 [80]::[test.cpp]::[something::TestRender::~TestRender()] 0x7ffee05c8f36
-CAP_LOG : P=549749000 T=0 C=001 :-> 54 [81] RELEASE ALL STATE: Address=0x7ffee05c8f36 : Deleted State Count=1
-CAP_LOG : P=549749000 T=0 C=001 :L 54 [80]::[test.cpp]::[something::TestRender::~TestRender()] 0x7ffee05c8f36
-CAP_LOG : P=549749000 T=0 C=001 :F 55 [80]::[test.cpp]::[something::TestRender::~TestRender()] 0x5595f812bee0
-CAP_LOG : P=549749000 T=0 C=001 :-> 55 [81] RELEASE ALL STATE: Address=0x5595f812bee0 : Deleted State Count=0
-CAP_LOG : P=549749000 T=0 C=001 :L 55 [80]::[test.cpp]::[something::TestRender::~TestRender()] 0x5595f812bee0
-CAP_LOG : P=549749000 T=0 C=001 :F 56 [80]::[test.cpp]::[something::TestRender::~TestRender()] 0x5595f812bee1
-CAP_LOG : P=549749000 T=0 C=001 :-> 56 [81] RELEASE ALL STATE: Address=0x5595f812bee1 : Deleted State Count=0
-CAP_LOG : P=549749000 T=0 C=001 :L 56 [80]::[test.cpp]::[something::TestRender::~TestRender()] 0x5595f812bee1
-CAP_LOG : P=549749000 T=0 C=001 :F 57 [80]::[test.cpp]::[something::TestRender::~TestRender()] 0x5595f812bee2
-CAP_LOG : P=549749000 T=0 C=001 :-> 57 [81] RELEASE ALL STATE: Address=0x5595f812bee2 : Deleted State Count=0
-CAP_LOG : P=549749000 T=0 C=001 :L 57 [80]::[test.cpp]::[something::TestRender::~TestRender()] 0x5595f812bee2
-CAP_LOG : P=549749000 T=0 C=001 :F 58 [80]::[test.cpp]::[something::TestRender::~TestRender()] 0x5595f812bee3
-CAP_LOG : P=549749000 T=0 C=001 :-> 58 [81] RELEASE ALL STATE: Address=0x5595f812bee3 : Deleted State Count=0
-CAP_LOG : P=549749000 T=0 C=001 :L 58 [80]::[test.cpp]::[something::TestRender::~TestRender()] 0x5595f812bee3
-CAP_LOG : P=549749000 T=0 C=001 :F 59 [80]::[test.cpp]::[something::TestRender::~TestRender()] 0x5595f812bee4
-CAP_LOG : P=549749000 T=0 C=001 :-> 59 [81] RELEASE ALL STATE: Address=0x5595f812bee4 : Deleted State Count=1
-CAP_LOG : P=549749000 T=0 C=001 :L 59 [80]::[test.cpp]::[something::TestRender::~TestRender()] 0x5595f812bee4
-CAP_LOG : P=549749000 T=0 C=007 :F 60 [108]::[test.cpp]::[NestTest1::~NestTest1()] 0x7ffee05c8f35
-CAP_LOG : P=549749000 T=0 C=007 :-> 60 [110] RELEASE STATE: Address=0x7ffee05c8f35 : StateName='asdf 1' : Value='asdfasdf'
-CAP_LOG : P=549749000 T=0 C=007 :L 60 [108]::[test.cpp]::[NestTest1::~NestTest1()] 0x7ffee05c8f35
-CAP_LOG : P=549749000 T=0 C=015 L 1 [127]::[test.cpp]::[int main()] 0
+CAP_LOG : P=722704500 T=0 C=014 :L 20 [171]::[test.cpp]::[int main()] 0
+CAP_LOG : P=722704500 T=0 C=007 :-> 21 [1] UPDATE STATE: StoreKey='Flintstones' : StateName='Fred' : Value='Barney'
+CAP_LOG : P=722704500 T=0 C=007 :-> 21 [1] UPDATE STATE: StoreKey='140728481888960' : StateName='Foo' : Value='N/A'
+CAP_LOG : P=722704500 T=0 C=007 :-> 21 [1] UPDATE STATE: StoreKey='Jetsons' : StateName='Wilma' : Value='I'm Home'
+CAP_LOG : P=722704500 T=0 C=007 :F 21 [119]::[test.cpp]::[void NestTest1::doSomething()] 0x7ffde72c3ce5
+CAP_LOG : P=722704500 T=0 C=008 ::-> 22 [1] UPDATE STATE: StoreKey='Flintstones' : StateName='Fred' : Value='Barney'
+CAP_LOG : P=722704500 T=0 C=008 ::-> 22 [1] UPDATE STATE: StoreKey='140728481888320' : StateName='Foo' : Value='N/A'
+CAP_LOG : P=722704500 T=0 C=008 ::-> 22 [1] UPDATE STATE: StoreKey='Jetsons' : StateName='Wilma' : Value='I'm Home'
+CAP_LOG : P=722704500 T=0 C=008 ::F 22 [114]::[test.cpp]::[void NestTest1::doIt()] 0x7ffde72c3ce5
+CAP_LOG : P=722704500 T=0 C=008 ::-> 22 [115] SET STATE: Address=0x7ffde72c3ce5 : StateName='asdf 1' : Value='asdfasdf'
+CAP_LOG : P=722704500 T=0 C=008 ::L 22 [114]::[test.cpp]::[void NestTest1::doIt()] 0x7ffde72c3ce5
+CAP_LOG : P=722704500 T=0 C=007 :L 21 [119]::[test.cpp]::[void NestTest1::doSomething()] 0x7ffde72c3ce5
+CAP_LOG : P=722704500 T=0 C=010 :-> 23 [1] UPDATE STATE: StoreKey='Flintstones' : StateName='Fred' : Value='Barney'
+CAP_LOG : P=722704500 T=0 C=010 :-> 23 [1] UPDATE STATE: StoreKey='140728481890048' : StateName='Foo' : Value='N/A'
+CAP_LOG : P=722704500 T=0 C=010 :-> 23 [1] UPDATE STATE: StoreKey='Jetsons' : StateName='Wilma' : Value='I'm Home'
+CAP_LOG : P=722704500 T=0 C=010 :F 23 [184]::[test.cpp]::[int main()] 0
+CAP_LOG : P=722704500 T=0 C=001 ::-> 24 [1] UPDATE STATE: StoreKey='Flintstones' : StateName='Fred' : Value='Barney'
+CAP_LOG : P=722704500 T=0 C=001 ::-> 24 [1] UPDATE STATE: StoreKey='140728481888960' : StateName='Foo' : Value='N/A'
+CAP_LOG : P=722704500 T=0 C=001 ::-> 24 [1] UPDATE STATE: StoreKey='Jetsons' : StateName='Wilma' : Value='I'm Home'
+CAP_LOG : P=722704500 T=0 C=001 ::F 24 [75]::[test.cpp]::[something::TestRender::TestRender(std::string)] 0x7ffde72c3e20
+CAP_LOG : P=722704500 T=0 C=001 ::-> 24 [76] SET STATE: Address=0x7ffde72c3e20 : StateName='Current Name' : Value='first'
+CAP_LOG : P=722704500 T=0 C=001 ::L 24 [75]::[test.cpp]::[something::TestRender::TestRender(std::string)] 0x7ffde72c3e20
+CAP_LOG : P=722704500 T=0 C=001 ::-> 25 [1] UPDATE STATE: StoreKey='Flintstones' : StateName='Fred' : Value='Barney'
+CAP_LOG : P=722704500 T=0 C=001 ::-> 25 [1] UPDATE STATE: StoreKey='140728481888960' : StateName='Foo' : Value='N/A'
+CAP_LOG : P=722704500 T=0 C=001 ::-> 25 [1] UPDATE STATE: StoreKey='Jetsons' : StateName='Wilma' : Value='I'm Home'
+CAP_LOG : P=722704500 T=0 C=001 ::F 25 [85]::[test.cpp]::[void something::TestRender::testBlockOutput()] 0x7ffde72c3e20
+CAP_LOG : P=722704500 T=0 C=001 ::-> 25 [86] SET STATE: Address=0x7ffde72c3e20 : StateName='Current Name' : Value='first APPENDED SOME STUFF'
+CAP_LOG : P=722704500 T=0 C=001 ::L 25 [85]::[test.cpp]::[void something::TestRender::testBlockOutput()] 0x7ffde72c3e20
+CAP_LOG : P=722704500 T=0 C=010 :-> 23 [187] LOG: this is a log 
+CAP_LOG : P=722704500 T=0 C=001 ::-> 26 [1] UPDATE STATE: StoreKey='Flintstones' : StateName='Fred' : Value='Barney'
+CAP_LOG : P=722704500 T=0 C=001 ::-> 26 [1] UPDATE STATE: StoreKey='140728481888960' : StateName='Foo' : Value='N/A'
+CAP_LOG : P=722704500 T=0 C=001 ::-> 26 [1] UPDATE STATE: StoreKey='Jetsons' : StateName='Wilma' : Value='I'm Home'
+CAP_LOG : P=722704500 T=0 C=001 ::F 26 [80]::[test.cpp]::[something::TestRender::~TestRender()] 0x7ffde72c3e20
+CAP_LOG : P=722704500 T=0 C=001 ::-> 26 [81] RELEASE ALL STATE: Address=0x7ffde72c3e20 : Deleted State Count=1
+CAP_LOG : P=722704500 T=0 C=001 ::L 26 [80]::[test.cpp]::[something::TestRender::~TestRender()] 0x7ffde72c3e20
+CAP_LOG : P=722704500 T=0 C=010 :L 23 [184]::[test.cpp]::[int main()] 0
+CAP_LOG : P=722704500 T=0 C=015 -> 1 [190] ERROR: this is an error 
+CAP_LOG : P=722704500 T=0 C=005 :-> 27 [1] UPDATE STATE: StoreKey='Flintstones' : StateName='Fred' : Value='Barney'
+CAP_LOG : P=722704500 T=0 C=005 :-> 27 [1] UPDATE STATE: StoreKey='140728481888960' : StateName='Foo' : Value='N/A'
+CAP_LOG : P=722704500 T=0 C=005 :-> 27 [1] UPDATE STATE: StoreKey='Jetsons' : StateName='Wilma' : Value='I'm Home'
+CAP_LOG : P=722704500 T=0 C=005 :F 27 [96]::[test.cpp]::[something::TestNetwork::TestNetwork()] 0x7ffde72c3e30
+CAP_LOG : P=722704500 T=0 C=005 :-> 27 [96] LOG: Testing format = hello 
+CAP_LOG : P=722704500 T=0 C=001 ::-> 28 [1] UPDATE STATE: StoreKey='Flintstones' : StateName='Fred' : Value='Barney'
+CAP_LOG : P=722704500 T=0 C=001 ::-> 28 [1] UPDATE STATE: StoreKey='140728481887952' : StateName='Foo' : Value='N/A'
+CAP_LOG : P=722704500 T=0 C=001 ::-> 28 [1] UPDATE STATE: StoreKey='Jetsons' : StateName='Wilma' : Value='I'm Home'
+CAP_LOG : P=722704500 T=0 C=001 ::F 28 [75]::[test.cpp]::[something::TestRender::TestRender(std::string)] 0x562e33823ec0
+CAP_LOG : P=722704500 T=0 C=001 ::-> 28 [76] SET STATE: Address=0x562e33823ec0 : StateName='Current Name' : Value='In Two 0'
+CAP_LOG : P=722704500 T=0 C=001 ::L 28 [75]::[test.cpp]::[something::TestRender::TestRender(std::string)] 0x562e33823ec0
+CAP_LOG : P=722704500 T=0 C=001 ::-> 29 [1] UPDATE STATE: StoreKey='Flintstones' : StateName='Fred' : Value='Barney'
+CAP_LOG : P=722704500 T=0 C=001 ::-> 29 [1] UPDATE STATE: StoreKey='140728481888304' : StateName='Foo' : Value='N/A'
+CAP_LOG : P=722704500 T=0 C=001 ::-> 29 [1] UPDATE STATE: StoreKey='Jetsons' : StateName='Wilma' : Value='I'm Home'
+CAP_LOG : P=722704500 T=0 C=001 ::F 29 [85]::[test.cpp]::[void something::TestRender::testBlockOutput()] 0x562e33823ec0
+CAP_LOG : P=722704500 T=0 C=001 ::-> 29 [86] SET STATE: Address=0x562e33823ec0 : StateName='Current Name' : Value='In Two 0 APPENDED SOME STUFF'
+CAP_LOG : P=722704500 T=0 C=001 ::L 29 [85]::[test.cpp]::[void something::TestRender::testBlockOutput()] 0x562e33823ec0
+CAP_LOG : P=722704500 T=0 C=001 ::-> 30 [1] UPDATE STATE: StoreKey='Flintstones' : StateName='Fred' : Value='Barney'
+CAP_LOG : P=722704500 T=0 C=001 ::-> 30 [1] UPDATE STATE: StoreKey='140728481887952' : StateName='Foo' : Value='N/A'
+CAP_LOG : P=722704500 T=0 C=001 ::-> 30 [1] UPDATE STATE: StoreKey='Jetsons' : StateName='Wilma' : Value='I'm Home'
+CAP_LOG : P=722704500 T=0 C=001 ::F 30 [75]::[test.cpp]::[something::TestRender::TestRender(std::string)] 0x562e33823ee1
+CAP_LOG : P=722704500 T=0 C=001 ::-> 30 [76] SET STATE: Address=0x562e33823ee1 : StateName='Current Name' : Value='In Two 1'
+CAP_LOG : P=722704500 T=0 C=001 ::L 30 [75]::[test.cpp]::[something::TestRender::TestRender(std::string)] 0x562e33823ee1
+CAP_LOG : P=722704500 T=0 C=001 ::-> 31 [1] UPDATE STATE: StoreKey='Flintstones' : StateName='Fred' : Value='Barney'
+CAP_LOG : P=722704500 T=0 C=001 ::-> 31 [1] UPDATE STATE: StoreKey='140728481887760' : StateName='Foo' : Value='N/A'
+CAP_LOG : P=722704500 T=0 C=001 ::-> 31 [1] UPDATE STATE: StoreKey='Jetsons' : StateName='Wilma' : Value='I'm Home'
+CAP_LOG : P=722704500 T=0 C=001 ::F 31 [80]::[test.cpp]::[something::TestRender::~TestRender()] 0x562e33823ec0
+CAP_LOG : P=722704500 T=0 C=001 ::-> 31 [81] RELEASE ALL STATE: Address=0x562e33823ec0 : Deleted State Count=1
+CAP_LOG : P=722704500 T=0 C=001 ::L 31 [80]::[test.cpp]::[something::TestRender::~TestRender()] 0x562e33823ec0
+CAP_LOG : P=722704500 T=0 C=001 ::-> 32 [1] UPDATE STATE: StoreKey='Flintstones' : StateName='Fred' : Value='Barney'
+CAP_LOG : P=722704500 T=0 C=001 ::-> 32 [1] UPDATE STATE: StoreKey='140728481888304' : StateName='Foo' : Value='N/A'
+CAP_LOG : P=722704500 T=0 C=001 ::-> 32 [1] UPDATE STATE: StoreKey='Jetsons' : StateName='Wilma' : Value='I'm Home'
+CAP_LOG : P=722704500 T=0 C=001 ::F 32 [85]::[test.cpp]::[void something::TestRender::testBlockOutput()] 0x562e33823ee1
+CAP_LOG : P=722704500 T=0 C=001 ::-> 32 [86] SET STATE: Address=0x562e33823ee1 : StateName='Current Name' : Value='In Two 1 APPENDED SOME STUFF'
+CAP_LOG : P=722704500 T=0 C=001 ::L 32 [85]::[test.cpp]::[void something::TestRender::testBlockOutput()] 0x562e33823ee1
+CAP_LOG : P=722704500 T=0 C=001 ::-> 33 [1] UPDATE STATE: StoreKey='Flintstones' : StateName='Fred' : Value='Barney'
+CAP_LOG : P=722704500 T=0 C=001 ::-> 33 [1] UPDATE STATE: StoreKey='140728481887952' : StateName='Foo' : Value='N/A'
+CAP_LOG : P=722704500 T=0 C=001 ::-> 33 [1] UPDATE STATE: StoreKey='Jetsons' : StateName='Wilma' : Value='I'm Home'
+CAP_LOG : P=722704500 T=0 C=001 ::F 33 [75]::[test.cpp]::[something::TestRender::TestRender(std::string)] 0x562e33823ec2
+CAP_LOG : P=722704500 T=0 C=001 ::-> 33 [76] SET STATE: Address=0x562e33823ec2 : StateName='Current Name' : Value='In Two 2'
+CAP_LOG : P=722704500 T=0 C=001 ::L 33 [75]::[test.cpp]::[something::TestRender::TestRender(std::string)] 0x562e33823ec2
+CAP_LOG : P=722704500 T=0 C=001 ::-> 34 [1] UPDATE STATE: StoreKey='Flintstones' : StateName='Fred' : Value='Barney'
+CAP_LOG : P=722704500 T=0 C=001 ::-> 34 [1] UPDATE STATE: StoreKey='140728481887760' : StateName='Foo' : Value='N/A'
+CAP_LOG : P=722704500 T=0 C=001 ::-> 34 [1] UPDATE STATE: StoreKey='Jetsons' : StateName='Wilma' : Value='I'm Home'
+CAP_LOG : P=722704500 T=0 C=001 ::F 34 [80]::[test.cpp]::[something::TestRender::~TestRender()] 0x562e33823ee0
+CAP_LOG : P=722704500 T=0 C=001 ::-> 34 [81] RELEASE ALL STATE: Address=0x562e33823ee0 : Deleted State Count=0
+CAP_LOG : P=722704500 T=0 C=001 ::L 34 [80]::[test.cpp]::[something::TestRender::~TestRender()] 0x562e33823ee0
+CAP_LOG : P=722704500 T=0 C=001 ::-> 35 [1] UPDATE STATE: StoreKey='Flintstones' : StateName='Fred' : Value='Barney'
+CAP_LOG : P=722704500 T=0 C=001 ::-> 35 [1] UPDATE STATE: StoreKey='140728481887760' : StateName='Foo' : Value='N/A'
+CAP_LOG : P=722704500 T=0 C=001 ::-> 35 [1] UPDATE STATE: StoreKey='Jetsons' : StateName='Wilma' : Value='I'm Home'
+CAP_LOG : P=722704500 T=0 C=001 ::F 35 [80]::[test.cpp]::[something::TestRender::~TestRender()] 0x562e33823ee1
+CAP_LOG : P=722704500 T=0 C=001 ::-> 35 [81] RELEASE ALL STATE: Address=0x562e33823ee1 : Deleted State Count=1
+CAP_LOG : P=722704500 T=0 C=001 ::L 35 [80]::[test.cpp]::[something::TestRender::~TestRender()] 0x562e33823ee1
+CAP_LOG : P=722704500 T=0 C=001 ::-> 36 [1] UPDATE STATE: StoreKey='Flintstones' : StateName='Fred' : Value='Barney'
+CAP_LOG : P=722704500 T=0 C=001 ::-> 36 [1] UPDATE STATE: StoreKey='140728481888304' : StateName='Foo' : Value='N/A'
+CAP_LOG : P=722704500 T=0 C=001 ::-> 36 [1] UPDATE STATE: StoreKey='Jetsons' : StateName='Wilma' : Value='I'm Home'
+CAP_LOG : P=722704500 T=0 C=001 ::F 36 [85]::[test.cpp]::[void something::TestRender::testBlockOutput()] 0x562e33823ec2
+CAP_LOG : P=722704500 T=0 C=001 ::-> 36 [86] SET STATE: Address=0x562e33823ec2 : StateName='Current Name' : Value='In Two 2 APPENDED SOME STUFF'
+CAP_LOG : P=722704500 T=0 C=001 ::L 36 [85]::[test.cpp]::[void something::TestRender::testBlockOutput()] 0x562e33823ec2
+CAP_LOG : P=722704500 T=0 C=001 ::-> 37 [1] UPDATE STATE: StoreKey='Flintstones' : StateName='Fred' : Value='Barney'
+CAP_LOG : P=722704500 T=0 C=001 ::-> 37 [1] UPDATE STATE: StoreKey='140728481888080' : StateName='Foo' : Value='N/A'
+CAP_LOG : P=722704500 T=0 C=001 ::-> 37 [1] UPDATE STATE: StoreKey='Jetsons' : StateName='Wilma' : Value='I'm Home'
+CAP_LOG : P=722704500 T=0 C=001 ::F 37 [75]::[test.cpp]::[something::TestRender::TestRender(std::string)] 0x562e33823ec3
+CAP_LOG : P=722704500 T=0 C=001 ::-> 37 [76] SET STATE: Address=0x562e33823ec3 : StateName='Current Name' : Value='In Two 3'
+CAP_LOG : P=722704500 T=0 C=001 ::L 37 [75]::[test.cpp]::[something::TestRender::TestRender(std::string)] 0x562e33823ec3
+CAP_LOG : P=722704500 T=0 C=001 ::-> 38 [1] UPDATE STATE: StoreKey='Flintstones' : StateName='Fred' : Value='Barney'
+CAP_LOG : P=722704500 T=0 C=001 ::-> 38 [1] UPDATE STATE: StoreKey='140728481888304' : StateName='Foo' : Value='N/A'
+CAP_LOG : P=722704500 T=0 C=001 ::-> 38 [1] UPDATE STATE: StoreKey='Jetsons' : StateName='Wilma' : Value='I'm Home'
+CAP_LOG : P=722704500 T=0 C=001 ::F 38 [85]::[test.cpp]::[void something::TestRender::testBlockOutput()] 0x562e33823ec3
+CAP_LOG : P=722704500 T=0 C=001 ::-> 38 [86] SET STATE: Address=0x562e33823ec3 : StateName='Current Name' : Value='In Two 3 APPENDED SOME STUFF'
+CAP_LOG : P=722704500 T=0 C=001 ::L 38 [85]::[test.cpp]::[void something::TestRender::testBlockOutput()] 0x562e33823ec3
+CAP_LOG : P=722704500 T=0 C=001 ::-> 39 [1] UPDATE STATE: StoreKey='Flintstones' : StateName='Fred' : Value='Barney'
+CAP_LOG : P=722704500 T=0 C=001 ::-> 39 [1] UPDATE STATE: StoreKey='140728481887952' : StateName='Foo' : Value='N/A'
+CAP_LOG : P=722704500 T=0 C=001 ::-> 39 [1] UPDATE STATE: StoreKey='Jetsons' : StateName='Wilma' : Value='I'm Home'
+CAP_LOG : P=722704500 T=0 C=001 ::F 39 [75]::[test.cpp]::[something::TestRender::TestRender(std::string)] 0x562e33823ee4
+CAP_LOG : P=722704500 T=0 C=001 ::-> 39 [76] SET STATE: Address=0x562e33823ee4 : StateName='Current Name' : Value='In Two 4'
+CAP_LOG : P=722704500 T=0 C=001 ::L 39 [75]::[test.cpp]::[something::TestRender::TestRender(std::string)] 0x562e33823ee4
+CAP_LOG : P=722704500 T=0 C=001 ::-> 40 [1] UPDATE STATE: StoreKey='Flintstones' : StateName='Fred' : Value='Barney'
+CAP_LOG : P=722704500 T=0 C=001 ::-> 40 [1] UPDATE STATE: StoreKey='140728481887760' : StateName='Foo' : Value='N/A'
+CAP_LOG : P=722704500 T=0 C=001 ::-> 40 [1] UPDATE STATE: StoreKey='Jetsons' : StateName='Wilma' : Value='I'm Home'
+CAP_LOG : P=722704500 T=0 C=001 ::F 40 [80]::[test.cpp]::[something::TestRender::~TestRender()] 0x562e33823ec0
+CAP_LOG : P=722704500 T=0 C=001 ::-> 40 [81] RELEASE ALL STATE: Address=0x562e33823ec0 : Deleted State Count=0
+CAP_LOG : P=722704500 T=0 C=001 ::L 40 [80]::[test.cpp]::[something::TestRender::~TestRender()] 0x562e33823ec0
+CAP_LOG : P=722704500 T=0 C=001 ::-> 41 [1] UPDATE STATE: StoreKey='Flintstones' : StateName='Fred' : Value='Barney'
+CAP_LOG : P=722704500 T=0 C=001 ::-> 41 [1] UPDATE STATE: StoreKey='140728481887760' : StateName='Foo' : Value='N/A'
+CAP_LOG : P=722704500 T=0 C=001 ::-> 41 [1] UPDATE STATE: StoreKey='Jetsons' : StateName='Wilma' : Value='I'm Home'
+CAP_LOG : P=722704500 T=0 C=001 ::F 41 [80]::[test.cpp]::[something::TestRender::~TestRender()] 0x562e33823ec1
+CAP_LOG : P=722704500 T=0 C=001 ::-> 41 [81] RELEASE ALL STATE: Address=0x562e33823ec1 : Deleted State Count=0
+CAP_LOG : P=722704500 T=0 C=001 ::L 41 [80]::[test.cpp]::[something::TestRender::~TestRender()] 0x562e33823ec1
+CAP_LOG : P=722704500 T=0 C=001 ::-> 42 [1] UPDATE STATE: StoreKey='Flintstones' : StateName='Fred' : Value='Barney'
+CAP_LOG : P=722704500 T=0 C=001 ::-> 42 [1] UPDATE STATE: StoreKey='140728481887760' : StateName='Foo' : Value='N/A'
+CAP_LOG : P=722704500 T=0 C=001 ::-> 42 [1] UPDATE STATE: StoreKey='Jetsons' : StateName='Wilma' : Value='I'm Home'
+CAP_LOG : P=722704500 T=0 C=001 ::F 42 [80]::[test.cpp]::[something::TestRender::~TestRender()] 0x562e33823ec2
+CAP_LOG : P=722704500 T=0 C=001 ::-> 42 [81] RELEASE ALL STATE: Address=0x562e33823ec2 : Deleted State Count=1
+CAP_LOG : P=722704500 T=0 C=001 ::L 42 [80]::[test.cpp]::[something::TestRender::~TestRender()] 0x562e33823ec2
+CAP_LOG : P=722704500 T=0 C=001 ::-> 43 [1] UPDATE STATE: StoreKey='Flintstones' : StateName='Fred' : Value='Barney'
+CAP_LOG : P=722704500 T=0 C=001 ::-> 43 [1] UPDATE STATE: StoreKey='140728481887760' : StateName='Foo' : Value='N/A'
+CAP_LOG : P=722704500 T=0 C=001 ::-> 43 [1] UPDATE STATE: StoreKey='Jetsons' : StateName='Wilma' : Value='I'm Home'
+CAP_LOG : P=722704500 T=0 C=001 ::F 43 [80]::[test.cpp]::[something::TestRender::~TestRender()] 0x562e33823ec3
+CAP_LOG : P=722704500 T=0 C=001 ::-> 43 [81] RELEASE ALL STATE: Address=0x562e33823ec3 : Deleted State Count=1
+CAP_LOG : P=722704500 T=0 C=001 ::L 43 [80]::[test.cpp]::[something::TestRender::~TestRender()] 0x562e33823ec3
+CAP_LOG : P=722704500 T=0 C=001 ::-> 44 [1] UPDATE STATE: StoreKey='Flintstones' : StateName='Fred' : Value='Barney'
+CAP_LOG : P=722704500 T=0 C=001 ::-> 44 [1] UPDATE STATE: StoreKey='140728481888304' : StateName='Foo' : Value='N/A'
+CAP_LOG : P=722704500 T=0 C=001 ::-> 44 [1] UPDATE STATE: StoreKey='Jetsons' : StateName='Wilma' : Value='I'm Home'
+CAP_LOG : P=722704500 T=0 C=001 ::F 44 [85]::[test.cpp]::[void something::TestRender::testBlockOutput()] 0x562e33823ee4
+CAP_LOG : P=722704500 T=0 C=001 ::-> 44 [86] SET STATE: Address=0x562e33823ee4 : StateName='Current Name' : Value='In Two 4 APPENDED SOME STUFF'
+CAP_LOG : P=722704500 T=0 C=001 ::L 44 [85]::[test.cpp]::[void something::TestRender::testBlockOutput()] 0x562e33823ee4
+CAP_LOG : P=722704500 T=0 C=005 :L 27 [96]::[test.cpp]::[something::TestNetwork::TestNetwork()] 0x7ffde72c3e30
+CAP_LOG : P=722704500 T=0 C=015 -> 1 [193] LOG: this is a log with formatting FORMAT  
+CAP_LOG : P=722704500 T=0 C=001 :-> 45 [1] UPDATE STATE: StoreKey='Flintstones' : StateName='Fred' : Value='Barney'
+CAP_LOG : P=722704500 T=0 C=001 :-> 45 [1] UPDATE STATE: StoreKey='140728481888960' : StateName='Foo' : Value='N/A'
+CAP_LOG : P=722704500 T=0 C=001 :-> 45 [1] UPDATE STATE: StoreKey='Jetsons' : StateName='Wilma' : Value='I'm Home'
+CAP_LOG : P=722704500 T=0 C=001 :F 45 [75]::[test.cpp]::[something::TestRender::TestRender(std::string)] 0x7ffde72c3ce6
+CAP_LOG : P=722704500 T=0 C=001 :-> 45 [76] SET STATE: Address=0x7ffde72c3ce6 : StateName='Current Name' : Value='t1'
+CAP_LOG : P=722704500 T=0 C=001 :L 45 [75]::[test.cpp]::[something::TestRender::TestRender(std::string)] 0x7ffde72c3ce6
+CAP_LOG : P=722704500 T=0 C=001 :-> 46 [1] UPDATE STATE: StoreKey='Flintstones' : StateName='Fred' : Value='Barney'
+CAP_LOG : P=722704500 T=0 C=001 :-> 46 [1] UPDATE STATE: StoreKey='140728481888960' : StateName='Foo' : Value='N/A'
+CAP_LOG : P=722704500 T=0 C=001 :-> 46 [1] UPDATE STATE: StoreKey='Jetsons' : StateName='Wilma' : Value='I'm Home'
+CAP_LOG : P=722704500 T=0 C=001 :F 46 [75]::[test.cpp]::[something::TestRender::TestRender(std::string)] 0x7ffde72c3ce7
+CAP_LOG : P=722704500 T=0 C=001 :-> 46 [76] SET STATE: Address=0x7ffde72c3ce7 : StateName='Current Name' : Value='t2'
+CAP_LOG : P=722704500 T=0 C=001 :L 46 [75]::[test.cpp]::[something::TestRender::TestRender(std::string)] 0x7ffde72c3ce7
+CAP_LOG : P=722704500 T=0 C=003 :-> 47 [1] UPDATE STATE: StoreKey='Flintstones' : StateName='Fred' : Value='Barney'
+CAP_LOG : P=722704500 T=0 C=003 :-> 47 [1] UPDATE STATE: StoreKey='140728481890048' : StateName='Foo' : Value='N/A'
+CAP_LOG : P=722704500 T=0 C=003 :-> 47 [1] UPDATE STATE: StoreKey='Jetsons' : StateName='Wilma' : Value='I'm Home'
+CAP_LOG : P=722704500 T=0 C=003 :F 47 [205]::[test.cpp]::[int main()] 0
+CAP_LOG : P=722704500 T=0 C=003 :-> 47 [206] LOG: superlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong 
+CAP_LOG : P=722704500 T=0 C=003 :-> 47 [206] LOG: long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longl
+CAP_LOG : P=722704500 T=0 C=003 :-> 47 [206] LOG: ong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long l
+CAP_LOG : P=722704500 T=0 C=003 :-> 47 [206] LOG: onglong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong lo
+CAP_LOG : P=722704500 T=0 C=003 :-> 47 [206] LOG: ng longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlon
+CAP_LOG : P=722704500 T=0 C=003 :-> 47 [206] LOG: g long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long lon
+CAP_LOG : P=722704500 T=0 C=003 :-> 47 [206] LOG: glong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long
+CAP_LOG : P=722704500 T=0 C=003 :-> 47 [206] LOG:  longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong 
+CAP_LOG : P=722704500 T=0 C=003 :-> 47 [206] LOG: long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longl
+CAP_LOG : P=722704500 T=0 C=003 :-> 47 [206] LOG: ong long longlong long longlong long longlong long longstring 
+CAP_LOG : P=722704500 T=0 C=003 :L 47 [205]::[test.cpp]::[int main()] 0
+CAP_LOG : P=722704500 T=0 C=001 :-> 48 [1] UPDATE STATE: StoreKey='Flintstones' : StateName='Fred' : Value='Barney'
+CAP_LOG : P=722704500 T=0 C=001 :-> 48 [1] UPDATE STATE: StoreKey='140728481888960' : StateName='Foo' : Value='N/A'
+CAP_LOG : P=722704500 T=0 C=001 :-> 48 [1] UPDATE STATE: StoreKey='Jetsons' : StateName='Wilma' : Value='I'm Home'
+CAP_LOG : P=722704500 T=0 C=001 :F 48 [75]::[test.cpp]::[something::TestRender::TestRender(std::string)] 0x7ffde72c3e10
+CAP_LOG : P=722704500 T=0 C=001 :-> 48 [76] SET STATE: Address=0x7ffde72c3e10 : StateName='Current Name' : Value='t3'
+CAP_LOG : P=722704500 T=0 C=001 :L 48 [75]::[test.cpp]::[something::TestRender::TestRender(std::string)] 0x7ffde72c3e10
+CAP_LOG : P=722704500 T=0 C=015 -> 1 [212] LOG: last line before a bunch of testBlockOutput 
+CAP_LOG : P=722704500 T=0 C=001 :-> 49 [1] UPDATE STATE: StoreKey='Flintstones' : StateName='Fred' : Value='Barney'
+CAP_LOG : P=722704500 T=0 C=001 :-> 49 [1] UPDATE STATE: StoreKey='140728481888960' : StateName='Foo' : Value='N/A'
+CAP_LOG : P=722704500 T=0 C=001 :-> 49 [1] UPDATE STATE: StoreKey='Jetsons' : StateName='Wilma' : Value='I'm Home'
+CAP_LOG : P=722704500 T=0 C=001 :F 49 [85]::[test.cpp]::[void something::TestRender::testBlockOutput()] 0x7ffde72c3e10
+CAP_LOG : P=722704500 T=0 C=001 :-> 49 [86] SET STATE: Address=0x7ffde72c3e10 : StateName='Current Name' : Value='t3 APPENDED SOME STUFF'
+CAP_LOG : P=722704500 T=0 C=001 :L 49 [85]::[test.cpp]::[void something::TestRender::testBlockOutput()] 0x7ffde72c3e10
+CAP_LOG : P=722704500 T=0 C=001 :-> 50 [1] UPDATE STATE: StoreKey='Flintstones' : StateName='Fred' : Value='Barney'
+CAP_LOG : P=722704500 T=0 C=001 :-> 50 [1] UPDATE STATE: StoreKey='140728481888960' : StateName='Foo' : Value='N/A'
+CAP_LOG : P=722704500 T=0 C=001 :-> 50 [1] UPDATE STATE: StoreKey='Jetsons' : StateName='Wilma' : Value='I'm Home'
+CAP_LOG : P=722704500 T=0 C=001 :F 50 [85]::[test.cpp]::[void something::TestRender::testBlockOutput()] 0x7ffde72c3ce7
+CAP_LOG : P=722704500 T=0 C=001 :-> 50 [86] SET STATE: Address=0x7ffde72c3ce7 : StateName='Current Name' : Value='t2 APPENDED SOME STUFF'
+CAP_LOG : P=722704500 T=0 C=001 :L 50 [85]::[test.cpp]::[void something::TestRender::testBlockOutput()] 0x7ffde72c3ce7
+CAP_LOG : P=722704500 T=0 C=001 :-> 51 [1] UPDATE STATE: StoreKey='Flintstones' : StateName='Fred' : Value='Barney'
+CAP_LOG : P=722704500 T=0 C=001 :-> 51 [1] UPDATE STATE: StoreKey='140728481888960' : StateName='Foo' : Value='N/A'
+CAP_LOG : P=722704500 T=0 C=001 :-> 51 [1] UPDATE STATE: StoreKey='Jetsons' : StateName='Wilma' : Value='I'm Home'
+CAP_LOG : P=722704500 T=0 C=001 :F 51 [85]::[test.cpp]::[void something::TestRender::testBlockOutput()] 0x7ffde72c3ce6
+CAP_LOG : P=722704500 T=0 C=001 :-> 51 [86] SET STATE: Address=0x7ffde72c3ce6 : StateName='Current Name' : Value='t1 APPENDED SOME STUFF'
+CAP_LOG : P=722704500 T=0 C=001 :L 51 [85]::[test.cpp]::[void something::TestRender::testBlockOutput()] 0x7ffde72c3ce6
+CAP_LOG : P=722704500 T=0 C=001 :-> 52 [1] UPDATE STATE: StoreKey='Flintstones' : StateName='Fred' : Value='Barney'
+CAP_LOG : P=722704500 T=0 C=001 :-> 52 [1] UPDATE STATE: StoreKey='140728481888960' : StateName='Foo' : Value='N/A'
+CAP_LOG : P=722704500 T=0 C=001 :-> 52 [1] UPDATE STATE: StoreKey='Jetsons' : StateName='Wilma' : Value='I'm Home'
+CAP_LOG : P=722704500 T=0 C=001 :F 52 [80]::[test.cpp]::[something::TestRender::~TestRender()] 0x7ffde72c3e10
+CAP_LOG : P=722704500 T=0 C=001 :-> 52 [81] RELEASE ALL STATE: Address=0x7ffde72c3e10 : Deleted State Count=1
+CAP_LOG : P=722704500 T=0 C=001 :L 52 [80]::[test.cpp]::[something::TestRender::~TestRender()] 0x7ffde72c3e10
+CAP_LOG : P=722704500 T=0 C=001 :-> 53 [1] UPDATE STATE: StoreKey='Flintstones' : StateName='Fred' : Value='Barney'
+CAP_LOG : P=722704500 T=0 C=001 :-> 53 [1] UPDATE STATE: StoreKey='140728481888960' : StateName='Foo' : Value='N/A'
+CAP_LOG : P=722704500 T=0 C=001 :-> 53 [1] UPDATE STATE: StoreKey='Jetsons' : StateName='Wilma' : Value='I'm Home'
+CAP_LOG : P=722704500 T=0 C=001 :F 53 [80]::[test.cpp]::[something::TestRender::~TestRender()] 0x7ffde72c3ce7
+CAP_LOG : P=722704500 T=0 C=001 :-> 53 [81] RELEASE ALL STATE: Address=0x7ffde72c3ce7 : Deleted State Count=1
+CAP_LOG : P=722704500 T=0 C=001 :L 53 [80]::[test.cpp]::[something::TestRender::~TestRender()] 0x7ffde72c3ce7
+CAP_LOG : P=722704500 T=0 C=001 :-> 54 [1] UPDATE STATE: StoreKey='Flintstones' : StateName='Fred' : Value='Barney'
+CAP_LOG : P=722704500 T=0 C=001 :-> 54 [1] UPDATE STATE: StoreKey='140728481888960' : StateName='Foo' : Value='N/A'
+CAP_LOG : P=722704500 T=0 C=001 :-> 54 [1] UPDATE STATE: StoreKey='Jetsons' : StateName='Wilma' : Value='I'm Home'
+CAP_LOG : P=722704500 T=0 C=001 :F 54 [80]::[test.cpp]::[something::TestRender::~TestRender()] 0x7ffde72c3ce6
+CAP_LOG : P=722704500 T=0 C=001 :-> 54 [81] RELEASE ALL STATE: Address=0x7ffde72c3ce6 : Deleted State Count=1
+CAP_LOG : P=722704500 T=0 C=001 :L 54 [80]::[test.cpp]::[something::TestRender::~TestRender()] 0x7ffde72c3ce6
+CAP_LOG : P=722704500 T=0 C=001 :-> 55 [1] UPDATE STATE: StoreKey='Flintstones' : StateName='Fred' : Value='Barney'
+CAP_LOG : P=722704500 T=0 C=001 :-> 55 [1] UPDATE STATE: StoreKey='140728481888752' : StateName='Foo' : Value='N/A'
+CAP_LOG : P=722704500 T=0 C=001 :-> 55 [1] UPDATE STATE: StoreKey='Jetsons' : StateName='Wilma' : Value='I'm Home'
+CAP_LOG : P=722704500 T=0 C=001 :F 55 [80]::[test.cpp]::[something::TestRender::~TestRender()] 0x562e33823ee0
+CAP_LOG : P=722704500 T=0 C=001 :-> 55 [81] RELEASE ALL STATE: Address=0x562e33823ee0 : Deleted State Count=0
+CAP_LOG : P=722704500 T=0 C=001 :L 55 [80]::[test.cpp]::[something::TestRender::~TestRender()] 0x562e33823ee0
+CAP_LOG : P=722704500 T=0 C=001 :-> 56 [1] UPDATE STATE: StoreKey='Flintstones' : StateName='Fred' : Value='Barney'
+CAP_LOG : P=722704500 T=0 C=001 :-> 56 [1] UPDATE STATE: StoreKey='140728481888752' : StateName='Foo' : Value='N/A'
+CAP_LOG : P=722704500 T=0 C=001 :-> 56 [1] UPDATE STATE: StoreKey='Jetsons' : StateName='Wilma' : Value='I'm Home'
+CAP_LOG : P=722704500 T=0 C=001 :F 56 [80]::[test.cpp]::[something::TestRender::~TestRender()] 0x562e33823ee1
+CAP_LOG : P=722704500 T=0 C=001 :-> 56 [81] RELEASE ALL STATE: Address=0x562e33823ee1 : Deleted State Count=0
+CAP_LOG : P=722704500 T=0 C=001 :L 56 [80]::[test.cpp]::[something::TestRender::~TestRender()] 0x562e33823ee1
+CAP_LOG : P=722704500 T=0 C=001 :-> 57 [1] UPDATE STATE: StoreKey='Flintstones' : StateName='Fred' : Value='Barney'
+CAP_LOG : P=722704500 T=0 C=001 :-> 57 [1] UPDATE STATE: StoreKey='140728481888752' : StateName='Foo' : Value='N/A'
+CAP_LOG : P=722704500 T=0 C=001 :-> 57 [1] UPDATE STATE: StoreKey='Jetsons' : StateName='Wilma' : Value='I'm Home'
+CAP_LOG : P=722704500 T=0 C=001 :F 57 [80]::[test.cpp]::[something::TestRender::~TestRender()] 0x562e33823ee2
+CAP_LOG : P=722704500 T=0 C=001 :-> 57 [81] RELEASE ALL STATE: Address=0x562e33823ee2 : Deleted State Count=0
+CAP_LOG : P=722704500 T=0 C=001 :L 57 [80]::[test.cpp]::[something::TestRender::~TestRender()] 0x562e33823ee2
+CAP_LOG : P=722704500 T=0 C=001 :-> 58 [1] UPDATE STATE: StoreKey='Flintstones' : StateName='Fred' : Value='Barney'
+CAP_LOG : P=722704500 T=0 C=001 :-> 58 [1] UPDATE STATE: StoreKey='140728481888752' : StateName='Foo' : Value='N/A'
+CAP_LOG : P=722704500 T=0 C=001 :-> 58 [1] UPDATE STATE: StoreKey='Jetsons' : StateName='Wilma' : Value='I'm Home'
+CAP_LOG : P=722704500 T=0 C=001 :F 58 [80]::[test.cpp]::[something::TestRender::~TestRender()] 0x562e33823ee3
+CAP_LOG : P=722704500 T=0 C=001 :-> 58 [81] RELEASE ALL STATE: Address=0x562e33823ee3 : Deleted State Count=0
+CAP_LOG : P=722704500 T=0 C=001 :L 58 [80]::[test.cpp]::[something::TestRender::~TestRender()] 0x562e33823ee3
+CAP_LOG : P=722704500 T=0 C=001 :-> 59 [1] UPDATE STATE: StoreKey='Flintstones' : StateName='Fred' : Value='Barney'
+CAP_LOG : P=722704500 T=0 C=001 :-> 59 [1] UPDATE STATE: StoreKey='140728481888752' : StateName='Foo' : Value='N/A'
+CAP_LOG : P=722704500 T=0 C=001 :-> 59 [1] UPDATE STATE: StoreKey='Jetsons' : StateName='Wilma' : Value='I'm Home'
+CAP_LOG : P=722704500 T=0 C=001 :F 59 [80]::[test.cpp]::[something::TestRender::~TestRender()] 0x562e33823ee4
+CAP_LOG : P=722704500 T=0 C=001 :-> 59 [81] RELEASE ALL STATE: Address=0x562e33823ee4 : Deleted State Count=1
+CAP_LOG : P=722704500 T=0 C=001 :L 59 [80]::[test.cpp]::[something::TestRender::~TestRender()] 0x562e33823ee4
+CAP_LOG : P=722704500 T=0 C=007 :-> 60 [1] UPDATE STATE: StoreKey='Flintstones' : StateName='Fred' : Value='Barney'
+CAP_LOG : P=722704500 T=0 C=007 :-> 60 [1] UPDATE STATE: StoreKey='140728481888960' : StateName='Foo' : Value='N/A'
+CAP_LOG : P=722704500 T=0 C=007 :-> 60 [1] UPDATE STATE: StoreKey='Jetsons' : StateName='Wilma' : Value='I'm Home'
+CAP_LOG : P=722704500 T=0 C=007 :F 60 [108]::[test.cpp]::[NestTest1::~NestTest1()] 0x7ffde72c3ce5
+CAP_LOG : P=722704500 T=0 C=007 :-> 60 [110] RELEASE STATE: Address=0x7ffde72c3ce5 : StateName='asdf 1' : Value='asdfasdf'
+CAP_LOG : P=722704500 T=0 C=007 :L 60 [108]::[test.cpp]::[NestTest1::~NestTest1()] 0x7ffde72c3ce5
+CAP_LOG : P=722704500 T=0 C=015 L 1 [127]::[test.cpp]::[int main()] 0

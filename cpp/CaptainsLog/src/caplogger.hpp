@@ -388,33 +388,14 @@ public:
 
   void error(int line, std::string_view messageBuffer);
 
-  template<size_t DATA_COUNT>
-  void updateStateTest1(
-    int line, 
-    const DataStoreKeysArray<DATA_COUNT>& keys, 
-    const DataStoreMemberVariableNamesArray<DATA_COUNT>& varNames);
-
-  template<size_t DATA_COUNT>
-  void updateStateTest2(
-    const DataStoreValuesArrayUpdater<DATA_COUNT>& stateUpdater);
-
-  template<class Func>
-  void updateStateTest3(
-    const Func& stateUpdator);
-
-    template<size_t DATA_COUNT, class UpdaterFunc>
+  // UpdaterFunc is a callable that receives DataStoreStateArray<DATA_COUNT>&
+  // as its only input parameter.  Return is unused/ignored.
+  template<size_t DATA_COUNT, class UpdaterFunc>
   void updateState(
     int line, 
     const DataStoreKeysArray<DATA_COUNT>& keys, 
     const DataStoreMemberVariableNamesArray<DATA_COUNT>& varNames,
     const UpdaterFunc& stateUpdater);
-
-  // template<size_t DATA_COUNT>
-  // void updateState(
-  //   int line, 
-  //   const DataStoreKeysArray<DATA_COUNT>& keys, 
-  //   const DataStoreMemberVariableNamesArray<DATA_COUNT>& varNames,
-  //   const DataStoreValuesArrayUpdater<DATA_COUNT>& stateUpdater);
 
   void setState(int line, const void* address, const std::string& stateName, 
     std::function<std::string(std::optional<std::string>)>& stateUpdater);

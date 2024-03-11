@@ -111,6 +111,15 @@ namespace {
   template<class... Ts>
   overloaded(Ts...) -> overloaded<Ts...>;
 
+  std::string to_string(const DataStoreKey& key) {
+    std::string retString;
+    std::visit(overloaded{
+        [&](const std::string& storeKey) {retString = storeKey;},
+        [&](const char* storeKey) {retString = std::string(storeKey);},
+        [&](const void* storeKey) {retString = std::to_string(reinterpret_cast<uintptr_t>(storeKey));},
+      }, key);
+    return retString;
+  }
 } // namespace
 
 struct LoggerData {
@@ -172,72 +181,97 @@ public:
       }, storeKeys[i]);
     }
 
-
-// basically need to create an array of pointers, fill it up, then convert it to an 
-// array of refs
-
-        return DataStoreStateArray<DATA_COUNT>{{}};
-
-    // std::array<
-
-    // return (mStateStore[objectId][stateName] = stateUpdater(mStateStore[objectId][stateName])).value();
-
-    // if (const auto& objectFind = mStateStore.find(objectId); objectFind != mStateStore.end()) {
-    //   const auto& objectStateMap = objectFind->second;
-    //   if (const auto& stateFind = objectStateMap.find(stateName); stateFind != objectStateMap.end()) {
-    //     return stateFind->second;
-    //   }
-    // }
-    // return std::nullopt;
+    return ret;
   }
 
+  template<size_t DATA_COUNT>
+  void setStates(
+      const DataStoreKeysArray<DATA_COUNT>& storeKeys, 
+      const DataStoreMemberVariableNamesArray<DATA_COUNT>& stateNames,
+      DataStoreStateArray<DATA_COUNT>&& newStates) {
+    for (size_t i = 0; i < DATA_COUNT; ++i) {
+      std::visit(overloaded{
+        [&](const std::string& storeKey) {mDataStoreStrings[storeKey][stateNames[i]] = std::move(newStates[i]);},
+        [&](const char* storeKey) {mDataStoreStrings[std::string(storeKey)][stateNames[i]] = std::move(newStates[i]);},
+        [&](const void* storeKey) {mDataStorePointer[storeKey][stateNames[i]] = std::move(newStates[i]);},
+      }, storeKeys[i]);
+    }
+  }
 
-  // const std::string& setState(KeyType objectId, const std::string& stateName, 
-  //     std::function<std::string(std::optional<std::string>)>& stateUpdater) {
-  //   return (mStateStore[objectId][stateName] = stateUpdater(mStateStore[objectId][stateName])).value();
-  // }
+  // intentionally returning by copy for threading reasons.  Be careful if this is too large.
+  std::unordered_map<std::string, std::optional<std::string>> getAllState(DataStoreKey storeKey) {
+    std::unordered_map<std::string, std::optional<std::string>> retVal;
+    auto* variablesOfStorage = getVariablesForStore(storeKey);
+    return *variablesOfStorage;
+  }
 
-  // std::optional<std::string> getState(KeyType objectId, const std::string& stateName) const {
-  //   if (const auto& objectFind = mStateStore.find(objectId); objectFind != mStateStore.end()) {
-  //     const auto& objectStateMap = objectFind->second;
-  //     if (const auto& stateFind = objectStateMap.find(stateName); stateFind != objectStateMap.end()) {
-  //       return stateFind->second;
-  //     }
-  //   }
-  //   return std::nullopt;
-  // }
+  std::optional<std::string> releaseState(DataStoreKey storeKey, const DataStoreMemberVariableName& stateName) {
+    std::optional<std::string> deletedValueRet;
+    auto* variablesOfStorage = getVariablesForStore(storeKey);
 
-  // // intentionally returning by copy for threading reasons.  Be careful if this is too large.
-  // std::unordered_map<std::string, std::optional<std::string>> getAllState(KeyType objectId) const {
-  //   if (const auto& objectFind = mStateStore.find(objectId); objectFind != mStateStore.end()) {
-  //     return objectFind->second;
-  //   }
-  //   return {};
-  // }
+    if (variablesOfStorage) {
+      if (auto stateFind = variablesOfStorage->find(stateName); stateFind != variablesOfStorage->end()) {
+        deletedValueRet = stateFind->second;
+        variablesOfStorage->erase(stateFind);
+      }
+    }
 
-  // std::optional<std::string> releaseState(KeyType objectId, const std::string& stateName) {
-  //   std::optional<std::string> deletedValueRet;
-  //   if (auto objectFind = mStateStore.find(objectId); objectFind != mStateStore.end()) {
-  //     auto& objectStateMap = objectFind->second;
-  //     if (auto stateFind = objectStateMap.find(stateName); stateFind != objectStateMap.end()) {
-  //       deletedValueRet = stateFind->second;
-  //       objectStateMap.erase(stateFind);
-  //     }
-  //   }
-  //   return deletedValueRet;
-  // }
+    return deletedValueRet;
+  }
 
-  // int releaseAllState(KeyType objectId) {
-  //   int stateDeletedCountRet = 0;
-  //   if (auto objectFind = mStateStore.find(objectId); objectFind != mStateStore.end()) {
-  //     auto& objectStateMap = objectFind->second;
-  //     stateDeletedCountRet = objectStateMap.size();
-  //     mStateStore.erase(objectFind);
-  //   }
-  //   return stateDeletedCountRet;
-  // }
+  int releaseAllState(DataStoreKey storeKey) {
+    int stateDeletedCountRet = 0;
+    std::visit(overloaded{
+      [&](const std::string& key) {
+        if (const auto& objectFind = mDataStoreStrings.find(key); objectFind != mDataStoreStrings.end()) {
+          stateDeletedCountRet = objectFind->second.size();
+          mDataStoreStrings.erase(objectFind);
+        }
+      },
+      [&](const char* key) {
+        std::string keyAsString = key;
+        if (const auto& objectFind = mDataStoreStrings.find(keyAsString); objectFind != mDataStoreStrings.end()) {
+          stateDeletedCountRet = objectFind->second.size();
+          mDataStoreStrings.erase(objectFind);
+        }
+      },
+      [&](const void* key) {
+        if (const auto& objectFind = mDataStorePointer.find(key); objectFind != mDataStorePointer.end()) {
+          stateDeletedCountRet = objectFind->second.size();
+          mDataStorePointer.erase(objectFind);
+        }
+      },
+    }, storeKey);
+
+    return stateDeletedCountRet;
+  }
 
 private:
+  // Can better optimize this by templating a function with specializations for the types  
+  std::unordered_map<std::string, std::optional<std::string>>* getVariablesForStore(const DataStoreKey& storeKey) {
+    std::unordered_map<std::string, std::optional<std::string>>* retPtr = nullptr;
+    std::visit(overloaded{
+      [&](const std::string& key) {
+        if (const auto& objectFind = mDataStoreStrings.find(key); objectFind != mDataStoreStrings.end()) {
+          retPtr = &objectFind->second;
+        }
+      },
+      [&](const char* key) {
+        std::string keyAsString = key;
+        if (const auto& objectFind = mDataStoreStrings.find(keyAsString); objectFind != mDataStoreStrings.end()) {
+          retPtr = &objectFind->second;
+        }
+      },
+      [&](const void* key) {
+        if (const auto& objectFind = mDataStorePointer.find(key); objectFind != mDataStorePointer.end()) {
+          retPtr = &objectFind->second;
+        }
+      },
+    }, storeKey);
+
+    return retPtr;
+  }
+
   // storage for pointers
   std::unordered_map<const void*, std::unordered_map<std::string, std::optional<std::string>>> mDataStorePointer;
   // storage for strings & const chars (implicitly cast to string).
@@ -332,6 +366,24 @@ struct BlockLoggerDataStore {
     --data.logDepth;
   }
 
+  template<size_t DATA_COUNT>
+  DataStoreStateArray<DATA_COUNT> getStates(
+      const DataStoreKeysArray<DATA_COUNT>& storeKeys, 
+      const DataStoreMemberVariableNamesArray<DATA_COUNT>& stateNames) {
+    const std::lock_guard<std::mutex> guard(mMut);
+    return mCustomLogStateStores.getStates(storeKeys, stateNames);
+  }
+
+  template<size_t DATA_COUNT>
+  void setStates(
+      const DataStoreKeysArray<DATA_COUNT>& storeKeys, 
+      const DataStoreMemberVariableNamesArray<DATA_COUNT>& stateNames,
+      DataStoreStateArray<DATA_COUNT>&& newStates) {
+    const std::lock_guard<std::mutex> guard(mMut);
+    return mCustomLogStateStores.setStates(storeKeys, stateNames, std::move(newStates));
+  }
+
+   // remove later
   const std::string& setState(const void* objectId, const std::string& stateName, 
       std::function<std::string(std::optional<std::string>)>& stateUpdater) {
     const std::lock_guard<std::mutex> guard(mMut);
@@ -357,7 +409,7 @@ struct BlockLoggerDataStore {
     const std::lock_guard<std::mutex> guard(mMut);
     return mCustomLogStatePointers.releaseAllState(objectId);
   }
-
+ 
   const std::string& setStateStoreName(const std::string& storeName, const std::string& stateName, 
       std::function<std::string(std::optional<std::string>)>& stateUpdater) {
     const std::lock_guard<std::mutex> guard(mMut);
@@ -399,6 +451,8 @@ private:
   unsigned int mUniqueThreadsSeen = 0;
   //special timestamp used as a key to identify this process from others.
   const unsigned int mProcessTimestamp = 0;
+
+  DataStore mCustomLogStateStores;
 
   // for set/get/release commands.  Used for addresses.  Care must be taken not to send literal strings to this (which are just char*)
   StateStore<const void*> mCustomLogStatePointers;
@@ -472,40 +526,6 @@ BlockLogger::BlockLogger(const void* thisPointer, CAP::CHANNEL channel)
     return;
   }
 
-  auto test1 = storeKeyList("asdf", this, "ewfwefwef");
-  (void)test1;
-
-  auto test2 = variableNames("asdf", "asdf", "qwer");
-  (void)test2;
-
-  DataStore test;
-  auto rets = test.getStates(
-    storeKeyList(this, "test123", std::string("weoifj")),
-    variableNames("foo", "bar", "duper")
-  );
-  (void)rets;
-  auto rets2 = test.getStates(
-    test1, test2
-  );
-  (void)rets2;
-
-  updateStateTest1(1, test1, test2);
-
-  updateStateTest2<3>([](DataStoreStateArray<3>& statesInOut) {
-    statesInOut[0] = "hello";
-    statesInOut[1] = std::nullopt;
-    statesInOut[2] = "bye";
-  });
-
-  updateState(1, test1, test2
-  , [](DataStoreStateArray<3>& statesInOut){
-    statesInOut[0] = "hello";
-    statesInOut[1] = std::nullopt;
-    statesInOut[2] = "bye";
-  });
-
-
-
   auto& loggerDataStore = BlockLoggerDataStore::getInstance();
   auto logData = loggerDataStore.newBlockLoggerInstance();
 
@@ -514,6 +534,16 @@ BlockLogger::BlockLogger(const void* thisPointer, CAP::CHANNEL channel)
   mThreadId = logData.relativeThreadIdx;
   mProcessId = logData.processTimestamp;
   mThisPointer = thisPointer;
+
+  updateState(1,
+    storeKeyList("Flintstones", this, std::string("Jetsons")),
+    variableNames("Fred", "Foo", "Wilma"), 
+    [](DataStoreStateArray<3>& statesInOut){
+      statesInOut[0] = "Barney";
+      statesInOut[1] = std::nullopt;
+      statesInOut[2] = "I'm Home";
+    }
+  );
 }
 
 void BlockLogger::setPrimaryLog(int line, std::string_view logInfoBuffer, std::string_view customMessageBuffer) {
@@ -579,51 +609,6 @@ void BlockLogger::error(int line, std::string_view messageBuffer) {
 
 //-------- State Addresses
 
-template<size_t DATA_COUNT>
-void BlockLogger::updateStateTest1(
-    int line, 
-    const DataStoreKeysArray<DATA_COUNT>& keys, 
-    const DataStoreMemberVariableNamesArray<DATA_COUNT>& varNames) {
-  if(!mEnabledMode) {
-    return;
-  }
-
-  auto& loggerDataStore = BlockLoggerDataStore::getInstance();
-  (void) loggerDataStore;
-  (void)line;
-
-  DataStore test;
-  // auto rets = test.getStates(
-  //   storeKeyList(this, "test123", std::string("weoifj")),
-  //   variableNames("foo", "bar", "duper")
-  // );
-
-  auto rets = test.getStates(keys, varNames);
-
-}
-
-template<size_t DATA_COUNT>
-void BlockLogger::updateStateTest2(
-    const DataStoreValuesArrayUpdater<DATA_COUNT>& stateUpdater) {
-  if(!mEnabledMode) {
-    return;
-  }
-
-  
-
-}
-
-template<class Func>
-void BlockLogger::updateStateTest3(
-    const Func& stateUpdator) {
-  if(!mEnabledMode) {
-    return;
-  }
-
-  
-
-}
-
 template<size_t DATA_COUNT, class UpdaterFunc>
 void BlockLogger::updateState(
     int line, 
@@ -635,18 +620,22 @@ void BlockLogger::updateState(
   }
 
   auto& loggerDataStore = BlockLoggerDataStore::getInstance();
+  auto states =  loggerDataStore.getStates(keys, varNames);
+  stateUpdater(states);
 
+  if (mEnabledMode & CAN_WRITE_TO_OUTPUT) {
+    for (size_t i = 0; i < DATA_COUNT; ++i) {
+      std::stringstream ss;
+      printTab(ss, mProcessId, mThreadId, mDepth, (size_t)mChannel);
+      ss << COLOUR BOLD CAP_GREEN << ADD_LOG_DELIMITER << ADD_LOG_SECOND_DELIMITER << COLOUR BOLD CAP_YELLOW << " " << mId << " "
+      << COLOUR RESET << "[" << COLOUR BOLD CAP_GREEN << line << COLOUR RESET << "] " << COLOUR BOLD CAP_RED << "UPDATE STATE: "
+      << "StoreKey='" << to_string(keys[i]) << "' : StateName='" << varNames[i] << "' : Value='" << (states[i] ? states[i].value() : "N/A") << "'" << COLOUR RESET;
+      PRINT_TO_LOG("%s", ss.str().c_str());
+    }
+  }
 
-  DataStore test;
-  // auto rets = test.getStates(
-  //   storeKeyList(this, "test123", std::string("weoifj")),
-  //   variableNames("foo", "bar", "duper")
-  // );
-
-  auto rets = test.getStates(keys, varNames);
-
+  loggerDataStore.setStates(keys, varNames, std::move(states));
 }
-
 
 void BlockLogger::setState(int line, const void* address, const std::string& stateName, 
     std::function<std::string(std::optional<std::string>)>& stateUpdater) {
