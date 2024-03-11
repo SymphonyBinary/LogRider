@@ -134,16 +134,6 @@ BlockLogger::BlockLogger(const void* thisPointer, CAP::CHANNEL channel)
   mThreadId = logData.relativeThreadIdx;
   mProcessId = logData.processTimestamp;
   mThisPointer = thisPointer;
-
-  updateState(1,
-    storeKeyList("Flintstones", this, std::string("Jetsons")),
-    variableNames("Fred", "Foo", "Wilma"), 
-    [](DataStoreStateArray<3>& statesInOut){
-      statesInOut[0] = "Barney";
-      statesInOut[1] = std::nullopt;
-      statesInOut[2] = "I'm Home";
-    }
-  );
 }
 
 void BlockLogger::setPrimaryLog(int line, std::string_view logInfoBuffer, std::string_view customMessageBuffer) {
@@ -208,205 +198,75 @@ void BlockLogger::error(int line, std::string_view messageBuffer) {
 }
 
 //-------- State Addresses
+void BlockLogger::printState(int line, const DataStoreKey& key, const DataStoreMemberVariableName& varName) {
+  if(!(mEnabledMode & CAN_WRITE_TO_OUTPUT)) {
+    return;
+  }
 
-void BlockLogger::printUpdateState(int line, const std::string& storeKey, const std::string& varName, std::optional<std::string>& value) {
+  auto& loggerDataStore = BlockLoggerDataStore::getInstance();
+  auto states = loggerDataStore.getStates(storeKeyList(key), variableNames(varName));
+
+  if (mEnabledMode & CAN_WRITE_TO_OUTPUT) {
+    printStateImpl(line, "PRINT STATE", to_string(key), varName, states[0]);
+  }
+}
+
+void BlockLogger::printAllStateOfStore(int line, const DataStoreKey& key) {
+  if(!(mEnabledMode & CAN_WRITE_TO_OUTPUT)) {
+    return;
+  }
+
+  auto& loggerDataStore = BlockLoggerDataStore::getInstance();
+  auto allStates = loggerDataStore.getAllStates(key);
+
+  for(const auto& row : allStates) {
+    printStateImpl(line, "PRINT STATE", to_string(key), row.first, row.second);
+  }
+}
+
+void printAllState(int line){}
+
+void BlockLogger::releaseState(int line, const DataStoreKey& key, const DataStoreMemberVariableName& varName) {
+  if(!(mEnabledMode)) {
+    return;
+  }
+
+  auto& loggerDataStore = BlockLoggerDataStore::getInstance();
+  std::optional<std::string> oldState = loggerDataStore.releaseState(key, varName);
+
+  if (mEnabledMode & CAN_WRITE_TO_OUTPUT) {
+    printStateImpl(line, "RELEASE STATE", to_string(key), varName, oldState);
+  }
+}
+
+void BlockLogger::releaseAllStateOfStore(int line, const DataStoreKey& key) {
+  if(!(mEnabledMode)) {
+    return;
+  }
+
+  auto& loggerDataStore = BlockLoggerDataStore::getInstance();
+  int deletedCount = loggerDataStore.releaseAllStates(key);
+
+  if (mEnabledMode & CAN_WRITE_TO_OUTPUT) {
+    std::stringstream ss;
+    printTab(ss, mProcessId, mThreadId, mDepth, (size_t)mChannel);
+    ss << COLOUR BOLD CAP_GREEN << ADD_LOG_DELIMITER << ADD_LOG_SECOND_DELIMITER << COLOUR BOLD CAP_YELLOW << " " << mId << " "
+    << COLOUR RESET << "[" << COLOUR BOLD CAP_GREEN << line << COLOUR RESET << "] " << COLOUR BOLD CAP_RED 
+    << "RELEASE ALL STATE IN STORE: StoreKey='" << to_string(key) << "' Num Deleted='" << deletedCount << "'" << COLOUR RESET;
+    PRINT_TO_LOG("%s", ss.str().c_str());
+  }
+}
+
+void releaseAllState(int line){}
+
+void BlockLogger::printStateImpl(int line, const std::string& logCommand, const std::string& storeKey, const std::string& varName, const std::optional<std::string>& value) {
   std::stringstream ss;
   printTab(ss, mProcessId, mThreadId, mDepth, (size_t)mChannel);
   ss << COLOUR BOLD CAP_GREEN << ADD_LOG_DELIMITER << ADD_LOG_SECOND_DELIMITER << COLOUR BOLD CAP_YELLOW << " " << mId << " "
-  << COLOUR RESET << "[" << COLOUR BOLD CAP_GREEN << line << COLOUR RESET << "] " << COLOUR BOLD CAP_RED << "UPDATE STATE: "
+  << COLOUR RESET << "[" << COLOUR BOLD CAP_GREEN << line << COLOUR RESET << "] " << COLOUR BOLD CAP_RED << logCommand << ": "
   << "StoreKey='" << storeKey << "' : StateName='" << varName << "' : Value='" << value.value_or("N/A") << "'" << COLOUR RESET;
   PRINT_TO_LOG("%s", ss.str().c_str());
 }
-
-void BlockLogger::setState(int line, const void* address, const std::string& stateName, 
-    std::function<std::string(std::optional<std::string>)>& stateUpdater) {
-  if(!mEnabledMode) {
-    return;
-  }
-
-  auto& loggerDataStore = BlockLoggerDataStore::getInstance();
-  const std::string& newState = loggerDataStore.setState(address, stateName, stateUpdater);
-
-  if(mEnabledMode & CAN_WRITE_TO_OUTPUT) {
-    std::stringstream ss;
-    printTab(ss, mProcessId, mThreadId, mDepth, (size_t)mChannel);
-    ss << COLOUR BOLD CAP_GREEN << ADD_LOG_DELIMITER << ADD_LOG_SECOND_DELIMITER << COLOUR BOLD CAP_YELLOW << " " << mId << " "
-    << COLOUR RESET << "[" << COLOUR BOLD CAP_GREEN << line << COLOUR RESET << "] " << COLOUR BOLD CAP_RED << "SET STATE: " 
-    << "Address=" << address << " : StateName='" << stateName << "' : Value='" << newState << "'" << COLOUR RESET;
-    PRINT_TO_LOG("%s", ss.str().c_str());
-  }
-}
-
-void BlockLogger::printCurrentState(int line, const void* address, const std::string& stateName) {
-  if(!(mEnabledMode & CAN_WRITE_TO_OUTPUT)) {
-    return;
-  }
-
-  auto& loggerDataStore = BlockLoggerDataStore::getInstance();
-  std::optional<std::string> state = loggerDataStore.getState(address, stateName);
-
-  std::stringstream ss;
-  printTab(ss, mProcessId, mThreadId, mDepth, (size_t)mChannel);
-  ss << COLOUR BOLD CAP_GREEN << ADD_LOG_DELIMITER << ADD_LOG_SECOND_DELIMITER << COLOUR BOLD CAP_YELLOW << " " << mId << " "
-  << COLOUR RESET << "[" << COLOUR BOLD CAP_GREEN << line << COLOUR RESET << "] " << COLOUR BOLD CAP_RED << "PRINT STATE: " 
-  << "Address=" << address << " : StateName='" << stateName << "' : Value='" << (state ? state.value() : "NO STATE") << "'"
-  << COLOUR RESET;
-  PRINT_TO_LOG("%s", ss.str().c_str());
-}
-
-void BlockLogger::printAllCurrentState(int line, const void* address) {
-  if(!(mEnabledMode & CAN_WRITE_TO_OUTPUT)) {
-    return;
-  }
-
-  auto& loggerDataStore = BlockLoggerDataStore::getInstance();
-  auto allState = loggerDataStore.getAllState(address);
-
-  for(const auto& row : allState) {
-    std::stringstream ss;
-    printTab(ss, mProcessId, mThreadId, mDepth, (size_t)mChannel);
-    ss << COLOUR BOLD CAP_GREEN << ADD_LOG_DELIMITER << ADD_LOG_SECOND_DELIMITER << COLOUR BOLD CAP_YELLOW << " " << mId << " "
-    << COLOUR RESET << "[" << COLOUR BOLD CAP_GREEN << line << COLOUR RESET << "] " << COLOUR BOLD CAP_RED << "PRINT STATE: " 
-    << "Address=" << address << " : StateName='" << row.first << "' : Value='" << (row.second ? row.second.value() : "NO STATE") << "'"
-    << COLOUR RESET;
-    PRINT_TO_LOG("%s", ss.str().c_str());
-  }
-}
-
-void BlockLogger::releaseState(int line, const void* address, const std::string& stateName) {
-  if(!mEnabledMode) {
-    return;
-  }
-
-  auto& loggerDataStore = BlockLoggerDataStore::getInstance();
-  std::optional<std::string> deletedState = loggerDataStore.releaseState(address, stateName);
-
-  if(mEnabledMode & CAN_WRITE_TO_OUTPUT) {
-    std::stringstream ss;
-    printTab(ss, mProcessId, mThreadId, mDepth, (size_t)mChannel);
-    ss << COLOUR BOLD CAP_GREEN << ADD_LOG_DELIMITER << ADD_LOG_SECOND_DELIMITER << COLOUR BOLD CAP_YELLOW << " " << mId << " "
-    << COLOUR RESET << "[" << COLOUR BOLD CAP_GREEN << line << COLOUR RESET << "] " << COLOUR BOLD CAP_RED << "RELEASE STATE: " 
-    << "Address=" << address << " : StateName='" << stateName << "' : Value='" << (deletedState ? deletedState.value() : "NO STATE") << "'"
-    << COLOUR RESET;
-    PRINT_TO_LOG("%s", ss.str().c_str());
-  }
-}
-
-void BlockLogger::releaseAllState(int line, const void* address) {
-  if(!mEnabledMode) {
-    return;
-  }
-
-  auto& loggerDataStore = BlockLoggerDataStore::getInstance();
-  int deletedStateCount = loggerDataStore.releaseAllState(address);
-
-  if(mEnabledMode & CAN_WRITE_TO_OUTPUT) {
-    std::stringstream ss;
-    printTab(ss, mProcessId, mThreadId, mDepth, (size_t)mChannel);
-    ss << COLOUR BOLD CAP_GREEN << ADD_LOG_DELIMITER << ADD_LOG_SECOND_DELIMITER << COLOUR BOLD CAP_YELLOW << " " << mId << " "
-    << COLOUR RESET << "[" << COLOUR BOLD CAP_GREEN << line << COLOUR RESET << "] " << COLOUR BOLD CAP_RED << "RELEASE ALL STATE: " 
-    << "Address=" << address << " : Deleted State Count=" << deletedStateCount
-    << COLOUR RESET;
-    PRINT_TO_LOG("%s", ss.str().c_str());
-  }
-}
-
-//-------- State Store Name 
-
-void BlockLogger::setStateOnStoreName(int line, const std::string& stateStoreName, const std::string& stateName, 
-    std::function<std::string(std::optional<std::string>)>& stateUpdater) {
-  if(!mEnabledMode) {
-    return;
-  }
-
-  auto& loggerDataStore = BlockLoggerDataStore::getInstance();
-  const std::string& newState = loggerDataStore.setStateStoreName(stateStoreName, stateName, stateUpdater);
-
-  if(mEnabledMode & CAN_WRITE_TO_OUTPUT) {
-    std::stringstream ss;
-    printTab(ss, mProcessId, mThreadId, mDepth, (size_t)mChannel);
-    ss << COLOUR BOLD CAP_GREEN << ADD_LOG_DELIMITER << ADD_LOG_SECOND_DELIMITER << COLOUR BOLD CAP_YELLOW << " " << mId << " "
-    << COLOUR RESET << "[" << COLOUR BOLD CAP_GREEN << line << COLOUR RESET << "] " << COLOUR BOLD CAP_RED << "SET STATE: " 
-    << "StoreName=" << stateStoreName << " : StateName='" << stateName << "' : Value='" << newState << "'" << COLOUR RESET;
-    PRINT_TO_LOG("%s", ss.str().c_str());
-  }
-}
-
-void BlockLogger::printCurrentStateOnStoreName(int line, const std::string& stateStoreName, const std::string& stateName) {
-  if(!(mEnabledMode & CAN_WRITE_TO_OUTPUT)) {
-    return;
-  }
-
-  auto& loggerDataStore = BlockLoggerDataStore::getInstance();
-  std::optional<std::string> state = loggerDataStore.getStateStoreName(stateStoreName, stateName);
-
-  std::stringstream ss;
-  printTab(ss, mProcessId, mThreadId, mDepth, (size_t)mChannel);
-  ss << COLOUR BOLD CAP_GREEN << ADD_LOG_DELIMITER << ADD_LOG_SECOND_DELIMITER << COLOUR BOLD CAP_YELLOW << " " << mId << " "
-  << COLOUR RESET << "[" << COLOUR BOLD CAP_GREEN << line << COLOUR RESET << "] " << COLOUR BOLD CAP_RED << "PRINT STATE: " 
-  << "StoreName=" << stateStoreName << " : StateName='" << stateName << "' : Value='" << (state ? state.value() : "NO STATE") << "'"
-  << COLOUR RESET;
-  PRINT_TO_LOG("%s", ss.str().c_str());
-}
-
-void BlockLogger::printAllCurrentStateOnStoreName(int line, const std::string& stateStoreName) {
-  if(!(mEnabledMode & CAN_WRITE_TO_OUTPUT)) {
-    return;
-  }
-
-  auto& loggerDataStore = BlockLoggerDataStore::getInstance();
-  auto allState = loggerDataStore.getAllStateStoreName(stateStoreName);
-
-  for(const auto& row : allState) {
-    std::stringstream ss;
-    printTab(ss, mProcessId, mThreadId, mDepth, (size_t)mChannel);
-    ss << COLOUR BOLD CAP_GREEN << ADD_LOG_DELIMITER << ADD_LOG_SECOND_DELIMITER << COLOUR BOLD CAP_YELLOW << " " << mId << " "
-    << COLOUR RESET << "[" << COLOUR BOLD CAP_GREEN << line << COLOUR RESET << "] " << COLOUR BOLD CAP_RED << "PRINT STATE: " 
-    << "StoreName=" << stateStoreName << " : StateName='" << row.first << "' : Value='" << (row.second ? row.second.value() : "NO STATE") << "'"
-    << COLOUR RESET;
-    PRINT_TO_LOG("%s", ss.str().c_str());
-  }
-}
-
-void BlockLogger::releaseStateOnStoreName(int line, const std::string& stateStoreName, const std::string& stateName) {
-  if(!mEnabledMode) {
-    return;
-  }
-
-  auto& loggerDataStore = BlockLoggerDataStore::getInstance();
-  std::optional<std::string> deletedState = loggerDataStore.releaseStateStoreName(stateStoreName, stateName);
-
-  if(mEnabledMode & CAN_WRITE_TO_OUTPUT) {
-    std::stringstream ss;
-    printTab(ss, mProcessId, mThreadId, mDepth, (size_t)mChannel);
-    ss << COLOUR BOLD CAP_GREEN << ADD_LOG_DELIMITER << ADD_LOG_SECOND_DELIMITER << COLOUR BOLD CAP_YELLOW << " " << mId << " "
-    << COLOUR RESET << "[" << COLOUR BOLD CAP_GREEN << line << COLOUR RESET << "] " << COLOUR BOLD CAP_RED << "RELEASE STATE: " 
-    << "StoreName=" << stateStoreName << " : StateName='" << stateName << "' : Value='" << (deletedState ? deletedState.value() : "NO STATE") << "'" 
-    << COLOUR RESET;
-    PRINT_TO_LOG("%s", ss.str().c_str());
-  }
-}
-
-void BlockLogger::releaseAllStateOnStoreName(int line, const std::string& stateStoreName) {
-  if(!mEnabledMode) {
-    return;
-  }
-
-  auto& loggerDataStore = BlockLoggerDataStore::getInstance();
-  int deletedStateCount = loggerDataStore.releaseAllStateStoreName(stateStoreName);
-
-  if(mEnabledMode & CAN_WRITE_TO_OUTPUT) {
-    std::stringstream ss;
-    printTab(ss, mProcessId, mThreadId, mDepth, (size_t)mChannel);
-    ss << COLOUR BOLD CAP_GREEN << ADD_LOG_DELIMITER << ADD_LOG_SECOND_DELIMITER << COLOUR BOLD CAP_YELLOW << " " << mId << " "
-    << COLOUR RESET << "[" << COLOUR BOLD CAP_GREEN << line << COLOUR RESET << "] " << COLOUR BOLD CAP_RED << "RELEASE ALL STATE: " 
-    << "StoreName=" << stateStoreName << " : Deleted State Count=" << deletedStateCount
-    << COLOUR RESET;
-    PRINT_TO_LOG("%s", ss.str().c_str());
-  }
-}
-
-//------------------
 
 BlockLogger::~BlockLogger() {
   if(!mEnabledMode) {

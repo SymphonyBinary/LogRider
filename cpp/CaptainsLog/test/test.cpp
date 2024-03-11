@@ -21,7 +21,7 @@ public:
 
   void makeEntity(int id, std::string name) {
     CAP_LOG_BLOCK(CAP::CHANNEL::SET_THIS_EXAMPLE);
-    CAP_LOG_SET_STATE(CAP::string(id), [&](std::optional<std::string>){return name.c_str();})
+    CAP_LOG_UPDATE_STATE(CAP::string(id), [&](CAP::DataStoreStateArray<1>& state){state[0] = name;});
   }
 
   void connectEntities(int idA, int idB) {
@@ -51,27 +51,27 @@ void addStateToExampleState(const ExampleStateWithThisPtr& example) {
 /// ---- demonstrates how set state can be used on objects with a string name.
 void addStateToStoreName(std::string storeName, std::string name) {
   CAP_LOG_BLOCK_NO_THIS(CAP::CHANNEL::SET_STORE_NAME_EXAMPLE);
-  CAP_LOG_SET_STATE_ON_STORE_NAME(storeName, name, [&](std::optional<std::string>){return "default value";})
+  CAP_LOG_UPDATE_STATE_ON(CAP::storeKeyList(storeName), CAP::variableNames(name), [&](CAP::DataStoreStateArray<1>& state){state[0] = "default value";})
 }
 
 void changeStateToStoreName(std::string storeName, std::string name) {
   CAP_LOG_BLOCK_NO_THIS(CAP::CHANNEL::SET_STORE_NAME_EXAMPLE);
-  CAP_LOG_SET_STATE_ON_STORE_NAME(storeName, name, [&](std::optional<std::string>){return "changed value";})
+  CAP_LOG_UPDATE_STATE_ON(CAP::storeKeyList(storeName), CAP::variableNames(name), [&](CAP::DataStoreStateArray<1>& state){state[0] = "changed value";})
 }
 
 void printStore(std::string storeName, std::string name) {
   CAP_LOG_BLOCK_NO_THIS(CAP::CHANNEL::SET_STORE_NAME_EXAMPLE);
-  CAP_LOG_PRINT_STATE_ON_STORE_NAME(storeName, name);
+  CAP_LOG_PRINT_STATE_ON(storeName, name);
 }
 
 void printAllStore(std::string storeName) {
   CAP_LOG_BLOCK_NO_THIS(CAP::CHANNEL::SET_STORE_NAME_EXAMPLE);
-  CAP_LOG_PRINT_ALL_STATE_ON_STORE_NAME(storeName);
+  CAP_LOG_PRINT_ALL_STATE_ON(storeName);
 }
 
 void releaseAllStateOnStore(std::string storeName) {
   CAP_LOG_BLOCK_NO_THIS(CAP::CHANNEL::SET_STORE_NAME_EXAMPLE);
-  CAP_LOG_RELEASE_ALL_STATE_ON_STORE_NAME(storeName);
+  CAP_LOG_RELEASE_ALL_STATE_ON(storeName);
 }
 /// ----
 
@@ -79,7 +79,7 @@ class TestRender {
 public:
   TestRender(std::string name) {
     CAP_LOG_BLOCK(CAP::CHANNEL::RENDER);
-    CAP_LOG_SET_STATE("Current Name", [&](std::optional<std::string>){return name.c_str();})
+    CAP_LOG_UPDATE_STATE(CAP::variableNames("Current Name"), [&](CAP::DataStoreStateArray<1>& state){state[0] = name;})
   }
 
   ~TestRender() {
@@ -89,8 +89,8 @@ public:
 
   void testBlockOutput() {
     CAP_LOG_BLOCK(CAP::CHANNEL::RENDER);
-    CAP_LOG_SET_STATE("Current Name", [&](std::optional<std::string> prev){
-        return (prev ? prev.value() + " APPENDED SOME STUFF" : "no state yet");})
+    CAP_LOG_UPDATE_STATE(CAP::variableNames("Current Name"), [&](CAP::DataStoreStateArray<1>& state){
+        state[0] = state[0].value_or("NO PREV STATE | ") + " APPENDED SOME STUFF";})
   }
 };
 
@@ -113,12 +113,12 @@ public:
   ~NestTest1(){
     CAP_LOG_BLOCK(CAP::CHANNEL::AUDIO_SUB_CHANNEL_Z);
     // CAP_LOG_RELEASE_STATE(static_cast<const std::ostringstream&>(std::ostringstream{} << "asdf " << 1).str().c_str());
-    CAP_LOG_RELEASE_STATE(CAP::string("asdf ", 1));
+    CAP_LOG_RELEASE_ALL_STATE();
   }
 
   void doIt() {
     CAP_LOG_BLOCK(CAP::CHANNEL::AUDIO_SUB_CHANNEL_OTHER);
-    CAP_LOG_SET_STATE(CAP::string("asdf ", 1), [&](std::optional<std::string>){return "asdfasdf";})
+    CAP_LOG_UPDATE_STATE(CAP::variableNames(CAP::string("asdf ", 1)), [&](CAP::DataStoreStateArray<1>& state){state[0] = "asdfasdf";})
   }
 
   void doSomething(){
@@ -146,10 +146,10 @@ int main() {
 
     something::addStateToExampleState(exampleState);
     CAP_LOG("printing all state");
-    CAP_LOG_PRINT_All_STATE_ON_ADDRESS(&exampleState);
+    CAP_LOG_PRINT_ALL_STATE_ON(&exampleState);
   }
 
-  CAP_LOG("CAP::CHANNEL::SET_STORE_NAME_EXAMPLE is disabled for output but still works for setting state!");
+  CAP_LOG("CAP::CHANNEL::UPDATE_STORE_NAME_EXAMPLE is disabled for output but still works for setting state!");
 
   {
     CAP_LOG_BLOCK_NO_THIS(CAP::CHANNEL::SET_STORE_NAME_EXAMPLE);
@@ -162,9 +162,9 @@ int main() {
     something::printAllStore("global state");
   }
 
-  CAP_LOG("printing all the state set in CAP::CHANNEL::SET_STORE_NAME_EXAMPLE");
+  CAP_LOG("printing all the state set in CAP::CHANNEL::UPDATE_STORE_NAME_EXAMPLE");
 
-  CAP_LOG_PRINT_ALL_STATE_ON_STORE_NAME("global state");
+  CAP_LOG_PRINT_ALL_STATE_ON("global state");
 
   {
     CAP_LOG("Deleting state twice to show that second call has nothing left.")

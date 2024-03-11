@@ -142,83 +142,29 @@ a buffer at all
 
 #define CAP_LOG_PRINT_STATE_ON(storeKey, name) \
   if (blockScopeLog.getEnabledMode() & CAP::ALL_FLAGS) { \
-    blockScopeLog.printCurrentState(__LINE__, address, name); \
+    blockScopeLog.printState(__LINE__, storeKey, name); \
   }
 
-#define CAP_LOG_PRINT_All_STATE_ON(storeKey) \
+#define CAP_LOG_PRINT_ALL_STATE_ON(storeKey) \
   if (blockScopeLog.getEnabledMode() & CAP::ALL_FLAGS) { \
-    blockScopeLog.printAllCurrentState(__LINE__, address); \
+    blockScopeLog.printAllStateOfStore(__LINE__, storeKey); \
   }
 
 #define CAP_LOG_RELEASE_STATE_ON(storeKey, name) \
   if (blockScopeLog.getEnabledMode() & CAP::ALL_FLAGS) { \
-    blockScopeLog.releaseState(__LINE__, address, name); \
+    blockScopeLog.releaseState(__LINE__, storeKey, name); \
   }
 
 #define CAP_LOG_RELEASE_ALL_STATE_ON(storeKey) \
   if (blockScopeLog.getEnabledMode() & CAP::ALL_FLAGS) { \
-    blockScopeLog.releaseAllState(__LINE__, address); \
+    blockScopeLog.releaseAllStateOfStore(__LINE__, storeKey); \
   }  
 
-// https://stackoverflow.com/questions/36030589/i-cannot-pass-lambda-as-stdfunction
-// updaterLambda is of form CAP::StateUpdaterFunc
-#define CAP_LOG_SET_STATE_ON_ADDRESS(address, name, updaterLambda) \
-  if (blockScopeLog.getEnabledMode() & CAP::ALL_FLAGS) { \
-    CAP::StateUpdaterFunc updaterFunc = updaterLambda; \
-    blockScopeLog.setState(__LINE__, address, name, updaterFunc); \
-  }
-
-#define CAP_LOG_PRINT_STATE_ON_ADDRESS(address, name) \
-  if (blockScopeLog.getEnabledMode() & CAP::ALL_FLAGS) { \
-    blockScopeLog.printCurrentState(__LINE__, address, name); \
-  }
-
-#define CAP_LOG_PRINT_All_STATE_ON_ADDRESS(address) \
-  if (blockScopeLog.getEnabledMode() & CAP::ALL_FLAGS) { \
-    blockScopeLog.printAllCurrentState(__LINE__, address); \
-  }
-
-#define CAP_LOG_RELEASE_STATE_ON_ADDRESS(address, name) \
-  if (blockScopeLog.getEnabledMode() & CAP::ALL_FLAGS) { \
-    blockScopeLog.releaseState(__LINE__, address, name); \
-  }
-
-#define CAP_LOG_RELEASE_ALL_STATE_ON_ADDRESS(address) \
-  if (blockScopeLog.getEnabledMode() & CAP::ALL_FLAGS) { \
-    blockScopeLog.releaseAllState(__LINE__, address); \
-  }  
-
-#define CAP_LOG_SET_STATE(name, ...) CAP_LOG_SET_STATE_ON_ADDRESS(this, name, __VA_ARGS__)
-#define CAP_LOG_PRINT_STATE(name) CAP_LOG_PRINT_STATE_ON_ADDRESS(this, name)
-#define CAP_LOG_PRINT_ALL_STATE(name) CAP_LOG_PRINT_All_STATE_ON_ADDRESS(this)
-#define CAP_LOG_RELEASE_STATE(name) CAP_LOG_RELEASE_STATE_ON_ADDRESS(this, name)
-#define CAP_LOG_RELEASE_ALL_STATE() CAP_LOG_RELEASE_ALL_STATE_ON_ADDRESS(this)
-
-#define CAP_LOG_SET_STATE_ON_STORE_NAME(stateStoreName, name, updaterLambda) \
-  if (blockScopeLog.getEnabledMode() & CAP::ALL_FLAGS) { \
-    CAP::StateUpdaterFunc updaterFunc = updaterLambda; \
-    blockScopeLog.setStateOnStoreName(__LINE__, stateStoreName, name, updaterFunc); \
-  }
-
-#define CAP_LOG_PRINT_STATE_ON_STORE_NAME(stateStoreName, name) \
-  if (blockScopeLog.getEnabledMode() & CAP::ALL_FLAGS) { \
-    blockScopeLog.printCurrentStateOnStoreName(__LINE__, stateStoreName, name); \
-  }
-
-#define CAP_LOG_PRINT_ALL_STATE_ON_STORE_NAME(stateStoreName) \
-  if (blockScopeLog.getEnabledMode() & CAP::ALL_FLAGS) { \
-    blockScopeLog.printAllCurrentStateOnStoreName(__LINE__, stateStoreName); \
-  }
-
-#define CAP_LOG_RELEASE_STATE_ON_STORE_NAME(stateStoreName, name) \
-  if (blockScopeLog.getEnabledMode() & CAP::ALL_FLAGS) { \
-    blockScopeLog.releaseStateOnStoreName(__LINE__, stateStoreName, name); \
-  }
-
-#define CAP_LOG_RELEASE_ALL_STATE_ON_STORE_NAME(stateStoreName) \
-  if (blockScopeLog.getEnabledMode() & CAP::ALL_FLAGS) { \
-    blockScopeLog.releaseAllStateOnStoreName(__LINE__, stateStoreName); \
-  }  
+#define CAP_LOG_UPDATE_STATE(name, updaterLambda) CAP_LOG_UPDATE_STATE_ON(CAP::storeKeyList(this), CAP::variableNames(name), updaterLambda)
+#define CAP_LOG_PRINT_STATE(name) CAP_LOG_PRINT_STATE_ON(this, name)
+#define CAP_LOG_PRINT_ALL_STATE(name) CAP_LOG_PRINT_ALL_STATE_ON(this)
+#define CAP_LOG_RELEASE_STATE(name) CAP_LOG_RELEASE_STATE_ON(this, name)
+#define CAP_LOG_RELEASE_ALL_STATE() CAP_LOG_RELEASE_ALL_STATE_ON(this)
 
 #define CAP_LOG_EXECUTE_LAMBDA(function) \
   if (blockScopeLog.getEnabledMode() & CAP::ALL_FLAGS) { \
@@ -294,11 +240,6 @@ std::string string(Args... args) {
   return (stringify(args) + ...);
 }
 
-template<size_t I>
-constexpr size_t extractConstant() {
-  return I;
-}
-
 class BlockLogger {
 public:
   BlockLogger(const void* thisPointer, CAP::CHANNEL channel);
@@ -328,39 +269,29 @@ public:
 
     if (mEnabledMode & CAN_WRITE_TO_OUTPUT) {
       for (size_t i = 0; i < DATA_COUNT; ++i) {
-        printUpdateState(line, to_string(keys[i]), varNames[i], states[i]);
+        printStateImpl(line, "UPDATE STATE", to_string(keys[i]), varNames[i], states[i]);
       }
     }
 
-    loggerDataStore.setStates(keys, varNames, std::move(states));
+    loggerDataStore.updateStates(keys, varNames, std::move(states));
   }
 
-  void setState(int line, const void* address, const std::string& stateName, 
-    std::function<std::string(std::optional<std::string>)>& stateUpdater);
+  void printState(int line, const DataStoreKey& key, const DataStoreMemberVariableName& varName);
+  void printAllStateOfStore(int line, const DataStoreKey& key);
+  void printAllState(int line);
 
-  void printCurrentState(int line, const void* address, const std::string& stateName);
-
-  void printAllCurrentState(int line, const void* address);
-
-  void releaseState(int line, const void* address, const std::string& stateName);
-
-  void releaseAllState(int line, const void* address);
-
-  void setStateOnStoreName(int line, const std::string& stateStoreName, const std::string& stateName, 
-    std::function<std::string(std::optional<std::string>)>& stateUpdater);
-
-  void printCurrentStateOnStoreName(int line, const std::string& stateStoreName, const std::string& stateName);
-
-  void printAllCurrentStateOnStoreName(int line, const std::string& stateStoreName);
-
-  void releaseStateOnStoreName(int line, const std::string& stateStoreName, const std::string& stateName);
-
-  void releaseAllStateOnStoreName(int line, const std::string& stateStoreName);
+  void releaseState(int line, const DataStoreKey& keys, const std::string& stateName);
+  void releaseAllStateOfStore(int line, const DataStoreKey& key);
+  void releaseAllState(int line);
 
   uint32_t getEnabledMode() const;
 
 private:
-  void printUpdateState(int line, const std::string& storeKey, const std::string& varName, std::optional<std::string>& value);
+  void printStateImpl(int line, const std::string& logCommand, const std::string& storeKey, const std::string& varName, const std::optional<std::string>& value);
+
+  //todo : get rid of singleton in data store and make it a singleton
+  // only in this class.
+  //static blockLoggerDataStoreInstance();
 
   const uint32_t mEnabledMode = FULLY_DISABLED;
   std::string mlogInfoBuffer;
