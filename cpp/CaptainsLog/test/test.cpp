@@ -39,11 +39,33 @@ void addStateToExampleState(const ExampleStateWithThisPtr& example) {
   CAP_LOG_UPDATE_STATE_ON(
     CAP::storeKeyList(&example), 
     CAP::variableNames("SomeStateInsertedOutside"), 
-    [&](CAP::DataStoreStateArray<1>& state){state[0] = "outside state!";});
+    [&](auto& state){state[0] = "outside state!";});
   CAP_LOG_UPDATE_STATE_ON(
     CAP::storeKeyList(&example), 
     CAP::variableNames("Variable Name Can Have Spaces"), 
-    [&](CAP::DataStoreStateArray<1>& state){state[0] = "more outside state!";});
+    [&](auto& state){state[0] = "more outside state!";});
+  CAP_LOG("next update should say same, since it's not creating anything");
+  CAP_LOG_UPDATE_STATE_ON(
+    CAP::storeKeyList(&example), 
+    CAP::variableNames("variable lifetime"), 
+    [&](auto&){});
+  CAP_LOG_UPDATE_STATE_ON(
+    CAP::storeKeyList(&example), 
+    CAP::variableNames("variable lifetime"), 
+    [&](auto& state){state[0] = "this should say created!";});
+  CAP_LOG_UPDATE_STATE_ON(
+    CAP::storeKeyList(&example), 
+    CAP::variableNames("variable lifetime"), 
+    [&](auto& state){state[0] = "this should say updated.  Next write will say unchanged!";});
+  CAP_LOG_UPDATE_STATE_ON(
+    CAP::storeKeyList(&example), 
+    CAP::variableNames("variable lifetime"), 
+    [&](auto& state){state[0] = "this should say updated.  Next write will say unchanged!";}); 
+  CAP_LOG("next write should say deleted")
+  CAP_LOG_UPDATE_STATE_ON(
+    CAP::storeKeyList(&example), 
+    CAP::variableNames("variable lifetime"), 
+    [&](auto& state){state[0] = std::nullopt;}); 
 }
 /// ----
 

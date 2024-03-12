@@ -166,9 +166,10 @@ a buffer at all
 #define CAP_LOG_RELEASE_STATE(name) CAP_LOG_RELEASE_STATE_ON(this, name)
 #define CAP_LOG_RELEASE_ALL_STATE() CAP_LOG_RELEASE_ALL_STATE_ON(this)
 
-#define CAP_LOG_EXECUTE_LAMBDA(function) \
+#define CAP_LOG_EXECUTE_LAMBDA(lambda) \
+  std::function<void()> func = lambda; \
   if (blockScopeLog.getEnabledMode() & CAP::ALL_FLAGS) { \
-    function(); \
+    func(); \
   }
 
 namespace CAP {
@@ -267,13 +268,19 @@ public:
     auto states = loggerDataStore.getStates(keys, varNames);
     stateUpdater(states);
 
+    decltype(states) statesPrintCopy;
     if (mEnabledMode & CAN_WRITE_TO_OUTPUT) {
-      for (size_t i = 0; i < DATA_COUNT; ++i) {
-        printStateImpl(line, "UPDATE STATE", to_string(keys[i]), varNames[i], states[i]);
-      }
+      statesPrintCopy = states;
     }
 
-    loggerDataStore.updateStates(keys, varNames, std::move(states));
+    auto changes = loggerDataStore.updateStates(keys, varNames, std::move(states));
+
+    if (mEnabledMode & CAN_WRITE_TO_OUTPUT) {
+      for (size_t i = 0; i < DATA_COUNT; ++i) {
+        std::string comLine = "UPDATE STATE(" + to_string(changes[i]) + ") ";
+        printStateImpl(line, comLine, to_string(keys[i]), varNames[i], statesPrintCopy[i]);
+      }
+    }    
   }
 
   void printState(int line, const DataStoreKey& key, const DataStoreMemberVariableName& varName);

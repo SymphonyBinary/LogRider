@@ -21,6 +21,7 @@
 #include <limits>
 #include <optional>
 #include <variant>
+#include <type_traits>
 
 #include <cstdint>
 
@@ -39,13 +40,48 @@ struct ArrayN {
   ArrayN(std::array<T, N> array)
       : v(std::move(array)){}
 
+  ArrayN() = default;
+
   const T& operator[] (int index) const {
+    return v[index];
+  }
+
+  T& operator[] (int index) {
     return v[index];
   }
   
   constexpr static size_t Size = N;
   std::array<T, N> v;
 };
+
+enum class ValueChangeStatus {
+  UNCHANGED,
+  CREATED,
+  UPDATED,
+  DELETED,
+};
+
+inline const std::string& to_string(ValueChangeStatus changes) {
+  switch (changes) {
+    case ValueChangeStatus::UNCHANGED: 
+      static std::string unchanged = "UNCHANGED";
+      return unchanged;
+    case ValueChangeStatus::CREATED:
+      static std::string created = "CREATED";
+      return created;
+    case ValueChangeStatus::UPDATED:
+      static std::string updated = "UPDATED";
+      return updated;
+    case ValueChangeStatus::DELETED:
+      static std::string deleted = "DELETED";
+      return deleted;
+  }
+  static std::string defaultRet;
+  return defaultRet;
+}
+
+template<size_t DATA_COUNT>
+using NumChangedElementsN = ArrayN<ValueChangeStatus, DATA_COUNT>;
 
 using DataStoreKey = std::variant<const void*, const char*, std::string>;
 template<size_t DATA_COUNT>
@@ -116,18 +152,35 @@ public:
     return retVal;
   }
 
-  template<size_t DATA_COUNT>
-  void setStates(
-      const DataStoreKeysArrayN<DATA_COUNT>& storeKeys, 
+  // keysN = DataStoreKeysArrayN<DATA_COUNT>
+  template<class keysN, size_t DATA_COUNT = keysN::Size>
+  NumChangedElementsN<DATA_COUNT> setStates(
+      const keysN& storeKeys, 
       const DataStoreMemberVariableNamesArrayN<DATA_COUNT>& stateNames,
       DataStoreStateArray<DATA_COUNT>&& newStates) {
+    static_assert(std::is_same<keysN, DataStoreKeysArrayN<DATA_COUNT>>::value, "storeKeys must be of type DataStoreKeysArrayN<DATA_COUNT>");
+    NumChangedElementsN<DATA_COUNT> retStatus;        
     for (size_t i = 0; i < DATA_COUNT; ++i) {
+      DataStoreState* currentState = nullptr;
       std::visit(overloaded{
-        [&](const std::string& storeKey) {mDataStoreStrings[storeKey][stateNames[i]] = std::move(newStates[i]);},
-        [&](const char* storeKey) {mDataStoreStrings[std::string(storeKey)][stateNames[i]] = std::move(newStates[i]);},
-        [&](const void* storeKey) {mDataStorePointer[storeKey][stateNames[i]] = std::move(newStates[i]);},
+        [&](const std::string& storeKey) {currentState = &mDataStoreStrings[storeKey][stateNames[i]];},
+        [&](const char* storeKey) {currentState = &mDataStoreStrings[std::string(storeKey)][stateNames[i]];},
+        [&](const void* storeKey) {currentState = &mDataStorePointer[storeKey][stateNames[i]];},
       }, storeKeys[i]);
+
+      if(*currentState == newStates[i]) {
+        retStatus[i] = ValueChangeStatus::UNCHANGED;
+      } else if (!newStates[i]) {
+        retStatus[i] = ValueChangeStatus::DELETED;
+      } else if (!(*currentState)) {
+        retStatus[i] = ValueChangeStatus::CREATED;
+      } else {
+        retStatus[i] = ValueChangeStatus::UPDATED;
+      }
+
+      *currentState = std::move(newStates[i]);
     }
+    return retStatus;
   }
 
   std::optional<std::string> releaseState(DataStoreKey storeKey, const DataStoreMemberVariableName& stateName) {
@@ -246,7 +299,7 @@ struct BlockLoggerDataStore {
   }
 
   template<size_t DATA_COUNT>
-  void updateStates(
+  NumChangedElementsN<DATA_COUNT> updateStates(
       const DataStoreKeysArrayN<DATA_COUNT>& storeKeys, 
       const DataStoreMemberVariableNamesArrayN<DATA_COUNT>& stateNames,
       DataStoreStateArray<DATA_COUNT>&& newStates) {
