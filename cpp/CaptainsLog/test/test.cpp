@@ -153,6 +153,16 @@ private:
 int main() {
   CAP_LOG_BLOCK_NO_THIS(CAP::CHANNEL::DEFAULT, "main");
 
+  CAP_LOG_UPDATE_STATE_ON(
+    CAP::storeKeyList("SOME BIG STORE"),
+    CAP::variableNames(CAP::string("TESTID", 27)),
+    [&](CAP::DataStoreStateArray<1>& state) {
+      state[0] = CAP::string("NEW THING", 55);
+    }
+  );
+
+  CAP_LOG_PRINT_ALL_STATE_ON("SOME BIG STORE");
+
   {
     CAP_LOG_BLOCK_NO_THIS(CAP::CHANNEL::SET_THIS_EXAMPLE);
     CAP_LOG("This demonstrates writing to the 'this' pointer, and writing to explicit addresses");
