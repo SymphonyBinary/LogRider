@@ -110,7 +110,10 @@ public:
   std::unordered_map<std::string, std::optional<std::string>> getAllStates(DataStoreKey storeKey) {
     std::unordered_map<std::string, std::optional<std::string>> retVal;
     auto* variablesOfStorage = getVariablesForStore(storeKey);
-    return *variablesOfStorage;
+    if (variablesOfStorage) {
+      retVal = *variablesOfStorage;
+    }
+    return retVal;
   }
 
   template<size_t DATA_COUNT>

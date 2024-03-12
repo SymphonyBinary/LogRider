@@ -227,6 +227,13 @@ void BlockLogger::printAllStateOfStore(int line, const DataStoreKey& key) {
   auto& loggerDataStore = BlockLoggerDataStore::getInstance();
   auto allStates = loggerDataStore.getAllStates(key);
 
+  std::stringstream ss;
+  printTab(ss, mProcessId, mThreadId, mDepth, (size_t)mChannel);
+  ss << COLOUR BOLD CAP_GREEN << ADD_LOG_DELIMITER << ADD_LOG_SECOND_DELIMITER << COLOUR BOLD CAP_YELLOW << " " << mId << " "
+  << COLOUR RESET << "[" << COLOUR BOLD CAP_GREEN << line << COLOUR RESET << "] " << COLOUR BOLD CAP_RED 
+  << "PRINTING ALL STATE IN STORE: StoreKey='" << to_string(key) << COLOUR RESET;
+  PRINT_TO_LOG("%s", ss.str().c_str());
+
   for(const auto& row : allStates) {
     printStateImpl(line, "PRINT STATE", to_string(key), row.first, row.second);
   }
