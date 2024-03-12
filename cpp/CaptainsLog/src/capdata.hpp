@@ -202,11 +202,7 @@ private:
 };
 
 struct BlockLoggerDataStore {
-  static BlockLoggerDataStore& getInstance() {
-    static BlockLoggerDataStore instance;
-    //PRINT_TO_LOG("Singleton instance: %p", (void*)&instance);
-    return instance;
-  }
+  static BlockLoggerDataStore& getInstance();
   
   LoggerData newBlockLoggerInstance() {
     const std::lock_guard<std::mutex> guard(mMut);

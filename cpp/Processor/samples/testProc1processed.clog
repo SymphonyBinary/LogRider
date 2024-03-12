@@ -29,192 +29,197 @@ P=0 T=0 CHANNEL-ID=018 : FULLY ENABLED         : VERBOSITY=0 : >  DEFAULT
 
 P=0 T=0 C=018 ╔ 1 [154]::[test.cpp]::[int main()] 0
 P=0 T=0 C=018 ╠╾ 1 [154] LOG: main 
-P=0 T=0 C=011 ║╔ 2 [157]::[test.cpp]::[int main()] 0
-P=0 T=0 C=011 ║╠╾ 2 [158] LOG: This demonstrates writing to the 'this' pointer, and writing to explicit addresses 
-P=0 T=0 C=011 ║╔ 3 [23]::[test.cpp]::[void something::ExampleStateWithThisPtr::makeEntity(int, std::string)] 0x7ffc5be95e70
-P=0 T=0 C=011 ║╠╾ 3 [24] UPDATE STATE: StoreKey='140721850506864' : StateName='57' : Value='Square thing'
-P=0 T=0 C=011 ║╚ 3 [23]::[test.cpp]::[void something::ExampleStateWithThisPtr::makeEntity(int, std::string)] 0x7ffc5be95e70
-P=0 T=0 C=011 ║╔ 4 [23]::[test.cpp]::[void something::ExampleStateWithThisPtr::makeEntity(int, std::string)] 0x7ffc5be95e70
-P=0 T=0 C=011 ║╠╾ 4 [24] UPDATE STATE: StoreKey='140721850506864' : StateName='42' : Value='Triangle thing'
-P=0 T=0 C=011 ║╚ 4 [23]::[test.cpp]::[void something::ExampleStateWithThisPtr::makeEntity(int, std::string)] 0x7ffc5be95e70
-P=0 T=0 C=011 ║╔ 5 [23]::[test.cpp]::[void something::ExampleStateWithThisPtr::makeEntity(int, std::string)] 0x7ffc5be95e70
-P=0 T=0 C=011 ║╠╾ 5 [24] UPDATE STATE: StoreKey='140721850506864' : StateName='12' : Value='Airplane'
-P=0 T=0 C=011 ║╚ 5 [23]::[test.cpp]::[void something::ExampleStateWithThisPtr::makeEntity(int, std::string)] 0x7ffc5be95e70
-P=0 T=0 C=011 ║╔ 6 [23]::[test.cpp]::[void something::ExampleStateWithThisPtr::makeEntity(int, std::string)] 0x7ffc5be95e70
-P=0 T=0 C=011 ║╠╾ 6 [24] UPDATE STATE: StoreKey='140721850506864' : StateName='18' : Value='Zig'
-P=0 T=0 C=011 ║╚ 6 [23]::[test.cpp]::[void something::ExampleStateWithThisPtr::makeEntity(int, std::string)] 0x7ffc5be95e70
-P=0 T=0 C=011 ║╔ 7 [28]::[test.cpp]::[void something::ExampleStateWithThisPtr::connectEntities(int, int)] 0x7ffc5be95e70
+P=0 T=0 C=018 ╠╾ 1 [156] UPDATE STATE: StoreKey='SOME BIG STORE' : StateName='TESTID27' : Value='NEW THING55'
+P=0 T=0 C=018 ╠╾ 1 [164] PRINTING ALL STATE IN STORE: StoreKey='SOME BIG STORE
+P=0 T=0 C=018 ╠╾ 1 [164] PRINT STATE: StoreKey='SOME BIG STORE' : StateName='TESTID27' : Value='NEW THING55'
+P=0 T=0 C=011 ║╔ 2 [167]::[test.cpp]::[int main()] 0
+P=0 T=0 C=011 ║╠╾ 2 [168] LOG: This demonstrates writing to the 'this' pointer, and writing to explicit addresses 
+P=0 T=0 C=011 ║╔ 3 [23]::[test.cpp]::[void something::ExampleStateWithThisPtr::makeEntity(int, std::string)] 0x7fff9ffa1150
+P=0 T=0 C=011 ║╠╾ 3 [24] UPDATE STATE: StoreKey='140735877353808' : StateName='57' : Value='Square thing'
+P=0 T=0 C=011 ║╚ 3 [23]::[test.cpp]::[void something::ExampleStateWithThisPtr::makeEntity(int, std::string)] 0x7fff9ffa1150
+P=0 T=0 C=011 ║╔ 4 [23]::[test.cpp]::[void something::ExampleStateWithThisPtr::makeEntity(int, std::string)] 0x7fff9ffa1150
+P=0 T=0 C=011 ║╠╾ 4 [24] UPDATE STATE: StoreKey='140735877353808' : StateName='42' : Value='Triangle thing'
+P=0 T=0 C=011 ║╚ 4 [23]::[test.cpp]::[void something::ExampleStateWithThisPtr::makeEntity(int, std::string)] 0x7fff9ffa1150
+P=0 T=0 C=011 ║╔ 5 [23]::[test.cpp]::[void something::ExampleStateWithThisPtr::makeEntity(int, std::string)] 0x7fff9ffa1150
+P=0 T=0 C=011 ║╠╾ 5 [24] UPDATE STATE: StoreKey='140735877353808' : StateName='12' : Value='Airplane'
+P=0 T=0 C=011 ║╚ 5 [23]::[test.cpp]::[void something::ExampleStateWithThisPtr::makeEntity(int, std::string)] 0x7fff9ffa1150
+P=0 T=0 C=011 ║╔ 6 [23]::[test.cpp]::[void something::ExampleStateWithThisPtr::makeEntity(int, std::string)] 0x7fff9ffa1150
+P=0 T=0 C=011 ║╠╾ 6 [24] UPDATE STATE: StoreKey='140735877353808' : StateName='18' : Value='Zig'
+P=0 T=0 C=011 ║╚ 6 [23]::[test.cpp]::[void something::ExampleStateWithThisPtr::makeEntity(int, std::string)] 0x7fff9ffa1150
+P=0 T=0 C=011 ║╔ 7 [28]::[test.cpp]::[void something::ExampleStateWithThisPtr::connectEntities(int, int)] 0x7fff9ffa1150
 P=0 T=0 C=011 ║╠╾ 7 [28] LOG: Connecting 57 and 12 
-P=0 T=0 C=011 ║╠╾ 7 [29] PRINT STATE: StoreKey='140721850506864' : StateName='57' : Value='Square thing'
-P=0 T=0 C=011 ║╠╾ 7 [30] PRINT STATE: StoreKey='140721850506864' : StateName='12' : Value='Airplane'
-P=0 T=0 C=011 ║╚ 7 [28]::[test.cpp]::[void something::ExampleStateWithThisPtr::connectEntities(int, int)] 0x7ffc5be95e70
-P=0 T=0 C=011 ║╔ 8 [28]::[test.cpp]::[void something::ExampleStateWithThisPtr::connectEntities(int, int)] 0x7ffc5be95e70
+P=0 T=0 C=011 ║╠╾ 7 [29] PRINT STATE: StoreKey='140735877353808' : StateName='57' : Value='Square thing'
+P=0 T=0 C=011 ║╠╾ 7 [30] PRINT STATE: StoreKey='140735877353808' : StateName='12' : Value='Airplane'
+P=0 T=0 C=011 ║╚ 7 [28]::[test.cpp]::[void something::ExampleStateWithThisPtr::connectEntities(int, int)] 0x7fff9ffa1150
+P=0 T=0 C=011 ║╔ 8 [28]::[test.cpp]::[void something::ExampleStateWithThisPtr::connectEntities(int, int)] 0x7fff9ffa1150
 P=0 T=0 C=011 ║╠╾ 8 [28] LOG: Connecting 18 and 12 
-P=0 T=0 C=011 ║╠╾ 8 [29] PRINT STATE: StoreKey='140721850506864' : StateName='18' : Value='Zig'
-P=0 T=0 C=011 ║╠╾ 8 [30] PRINT STATE: StoreKey='140721850506864' : StateName='12' : Value='Airplane'
-P=0 T=0 C=011 ║╚ 8 [28]::[test.cpp]::[void something::ExampleStateWithThisPtr::connectEntities(int, int)] 0x7ffc5be95e70
-P=0 T=0 C=011 ║╔ 9 [28]::[test.cpp]::[void something::ExampleStateWithThisPtr::connectEntities(int, int)] 0x7ffc5be95e70
+P=0 T=0 C=011 ║╠╾ 8 [29] PRINT STATE: StoreKey='140735877353808' : StateName='18' : Value='Zig'
+P=0 T=0 C=011 ║╠╾ 8 [30] PRINT STATE: StoreKey='140735877353808' : StateName='12' : Value='Airplane'
+P=0 T=0 C=011 ║╚ 8 [28]::[test.cpp]::[void something::ExampleStateWithThisPtr::connectEntities(int, int)] 0x7fff9ffa1150
+P=0 T=0 C=011 ║╔ 9 [28]::[test.cpp]::[void something::ExampleStateWithThisPtr::connectEntities(int, int)] 0x7fff9ffa1150
 P=0 T=0 C=011 ║╠╾ 9 [28] LOG: Connecting 42 and 57 
-P=0 T=0 C=011 ║╠╾ 9 [29] PRINT STATE: StoreKey='140721850506864' : StateName='42' : Value='Triangle thing'
-P=0 T=0 C=011 ║╠╾ 9 [30] PRINT STATE: StoreKey='140721850506864' : StateName='57' : Value='Square thing'
-P=0 T=0 C=011 ║╚ 9 [28]::[test.cpp]::[void something::ExampleStateWithThisPtr::connectEntities(int, int)] 0x7ffc5be95e70
+P=0 T=0 C=011 ║╠╾ 9 [29] PRINT STATE: StoreKey='140735877353808' : StateName='42' : Value='Triangle thing'
+P=0 T=0 C=011 ║╠╾ 9 [30] PRINT STATE: StoreKey='140735877353808' : StateName='57' : Value='Square thing'
+P=0 T=0 C=011 ║╚ 9 [28]::[test.cpp]::[void something::ExampleStateWithThisPtr::connectEntities(int, int)] 0x7fff9ffa1150
 P=0 T=0 C=012 ║╔ 10 [38]::[test.cpp]::[void something::addStateToExampleState(const something::ExampleStateWithThisPtr&...] 0
-P=0 T=0 C=012 ║╠╾ 10 [39] UPDATE STATE: StoreKey='140721850506864' : StateName='SomeStateInsertedOutside' : Value='outside state!'
-P=0 T=0 C=012 ║╠╾ 10 [43] UPDATE STATE: StoreKey='140721850506864' : StateName='Variable Name Can Have Spaces' : Value='more outside state!'
+P=0 T=0 C=012 ║╠╾ 10 [39] UPDATE STATE: StoreKey='140735877353808' : StateName='SomeStateInsertedOutside' : Value='outside state!'
+P=0 T=0 C=012 ║╠╾ 10 [43] UPDATE STATE: StoreKey='140735877353808' : StateName='Variable Name Can Have Spaces' : Value='more outside state!'
 P=0 T=0 C=012 ║╚ 10 [38]::[test.cpp]::[void something::addStateToExampleState(const something::ExampleStateWithThisPtr&...] 0
-P=0 T=0 C=011 ║╠╾ 2 [169] LOG: printing all state 
-P=0 T=0 C=011 ║╠╾ 2 [170] PRINT STATE: StoreKey='140721850506864' : StateName='Variable Name Can Have Spaces' : Value='more outside state!'
-P=0 T=0 C=011 ║╠╾ 2 [170] PRINT STATE: StoreKey='140721850506864' : StateName='SomeStateInsertedOutside' : Value='outside state!'
-P=0 T=0 C=011 ║╠╾ 2 [170] PRINT STATE: StoreKey='140721850506864' : StateName='18' : Value='Zig'
-P=0 T=0 C=011 ║╠╾ 2 [170] PRINT STATE: StoreKey='140721850506864' : StateName='12' : Value='Airplane'
-P=0 T=0 C=011 ║╠╾ 2 [170] PRINT STATE: StoreKey='140721850506864' : StateName='42' : Value='Triangle thing'
-P=0 T=0 C=011 ║╠╾ 2 [170] PRINT STATE: StoreKey='140721850506864' : StateName='57' : Value='Square thing'
-P=0 T=0 C=011 ║╔ 11 [18]::[test.cpp]::[something::ExampleStateWithThisPtr::~ExampleStateWithThisPtr()] 0x7ffc5be95e70
-P=0 T=0 C=011 ║╠╾ 11 [19] RELEASE ALL STATE IN STORE: StoreKey='140721850506864' Num Deleted='6'
-P=0 T=0 C=011 ║╚ 11 [18]::[test.cpp]::[something::ExampleStateWithThisPtr::~ExampleStateWithThisPtr()] 0x7ffc5be95e70
-P=0 T=0 C=011 ║╚ 2 [157]::[test.cpp]::[int main()] 0
-P=0 T=0 C=018 ╠╾ 1 [173] LOG: CAP::CHANNEL::UPDATE_STORE_NAME_EXAMPLE is disabled for output but still works for setting state! 
-P=0 T=0 C=018 ╠╾ 1 [186] LOG: printing all the state set in CAP::CHANNEL::UPDATE_STORE_NAME_EXAMPLE 
-P=0 T=0 C=018 ╠╾ 1 [188] PRINT STATE: StoreKey='global state' : StateName='third' : Value='default value'
-P=0 T=0 C=018 ╠╾ 1 [188] PRINT STATE: StoreKey='global state' : StateName='bar' : Value='changed value'
-P=0 T=0 C=018 ╠╾ 1 [188] PRINT STATE: StoreKey='global state' : StateName='foo' : Value='default value'
-P=0 T=0 C=018 ╠╾ 1 [191] LOG: Deleting state twice to show that second call has nothing left. 
-P=0 T=0 C=018 ╠╾ 1 [196] LOG: Executing lambda if LAMBDA_EXAMPLE is enabled 
-P=0 T=0 C=014 ║╔ 12 [198]::[test.cpp]::[int main()] 0
-P=0 T=0 C=014 ║╚ 12 [198]::[test.cpp]::[int main()] 0
-P=0 T=0 C=007 ║╔ 13 [125]::[test.cpp]::[void NestTest1::doSomething()] 0x7ffc5be95d34
-P=0 T=0 C=008 ║╔ 14 [120]::[test.cpp]::[void NestTest1::doIt()] 0x7ffc5be95d34
-P=0 T=0 C=008 ║╠╾ 14 [121] UPDATE STATE: StoreKey='140721850506548' : StateName='asdf 1' : Value='asdfasdf'
-P=0 T=0 C=008 ║╚ 14 [120]::[test.cpp]::[void NestTest1::doIt()] 0x7ffc5be95d34
-P=0 T=0 C=007 ║╚ 13 [125]::[test.cpp]::[void NestTest1::doSomething()] 0x7ffc5be95d34
-P=0 T=0 C=010 ║╔ 15 [211]::[test.cpp]::[int main()] 0
-P=0 T=0 C=001 ║╔ 16 [81]::[test.cpp]::[something::TestRender::TestRender(std::string)] 0x7ffc5be95e70
-P=0 T=0 C=001 ║╠╾ 16 [82] UPDATE STATE: StoreKey='140721850506864' : StateName='Current Name' : Value='first'
-P=0 T=0 C=001 ║╚ 16 [81]::[test.cpp]::[something::TestRender::TestRender(std::string)] 0x7ffc5be95e70
-P=0 T=0 C=001 ║╔ 17 [91]::[test.cpp]::[void something::TestRender::testBlockOutput()] 0x7ffc5be95e70
-P=0 T=0 C=001 ║╠╾ 17 [92] UPDATE STATE: StoreKey='140721850506864' : StateName='Current Name' : Value='first APPENDED SOME STUFF'
-P=0 T=0 C=001 ║╚ 17 [91]::[test.cpp]::[void something::TestRender::testBlockOutput()] 0x7ffc5be95e70
-P=0 T=0 C=010 ║╠╾ 15 [214] LOG: this is a log 
-P=0 T=0 C=001 ║╔ 18 [86]::[test.cpp]::[something::TestRender::~TestRender()] 0x7ffc5be95e70
-P=0 T=0 C=001 ║╠╾ 18 [87] RELEASE ALL STATE IN STORE: StoreKey='140721850506864' Num Deleted='1'
-P=0 T=0 C=001 ║╚ 18 [86]::[test.cpp]::[something::TestRender::~TestRender()] 0x7ffc5be95e70
-P=0 T=0 C=010 ║╚ 15 [211]::[test.cpp]::[int main()] 0
-P=0 T=0 C=015 ║╔ 19 [133]::[test.cpp]::[TestNestedDisabledOutput::TestNestedDisabledOutput()] 0x7ffc5be95d35
-P=0 T=0 C=015 ║╔ 20 [149]::[test.cpp]::[void TestNestedDisabledOutput::enabledChannel()] 0x7ffc5be95d35
-P=0 T=0 C=015 ║╚ 20 [149]::[test.cpp]::[void TestNestedDisabledOutput::enabledChannel()] 0x7ffc5be95d35
-P=0 T=0 C=015 ║╚ 19 [133]::[test.cpp]::[TestNestedDisabledOutput::TestNestedDisabledOutput()] 0x7ffc5be95d35
-P=0 T=0 C=018 ╠╾ 1 [219] ERROR: this is an error 
-P=0 T=0 C=005 ║╔ 21 [102]::[test.cpp]::[something::TestNetwork::TestNetwork()] 0x7ffc5be95e80
+P=0 T=0 C=011 ║╠╾ 2 [179] LOG: printing all state 
+P=0 T=0 C=011 ║╠╾ 2 [180] PRINTING ALL STATE IN STORE: StoreKey='140735877353808
+P=0 T=0 C=011 ║╠╾ 2 [180] PRINT STATE: StoreKey='140735877353808' : StateName='Variable Name Can Have Spaces' : Value='more outside state!'
+P=0 T=0 C=011 ║╠╾ 2 [180] PRINT STATE: StoreKey='140735877353808' : StateName='SomeStateInsertedOutside' : Value='outside state!'
+P=0 T=0 C=011 ║╠╾ 2 [180] PRINT STATE: StoreKey='140735877353808' : StateName='18' : Value='Zig'
+P=0 T=0 C=011 ║╠╾ 2 [180] PRINT STATE: StoreKey='140735877353808' : StateName='12' : Value='Airplane'
+P=0 T=0 C=011 ║╠╾ 2 [180] PRINT STATE: StoreKey='140735877353808' : StateName='42' : Value='Triangle thing'
+P=0 T=0 C=011 ║╠╾ 2 [180] PRINT STATE: StoreKey='140735877353808' : StateName='57' : Value='Square thing'
+P=0 T=0 C=011 ║╔ 11 [18]::[test.cpp]::[something::ExampleStateWithThisPtr::~ExampleStateWithThisPtr()] 0x7fff9ffa1150
+P=0 T=0 C=011 ║╠╾ 11 [19] RELEASE ALL STATE IN STORE: StoreKey='140735877353808' Num Deleted='6'
+P=0 T=0 C=011 ║╚ 11 [18]::[test.cpp]::[something::ExampleStateWithThisPtr::~ExampleStateWithThisPtr()] 0x7fff9ffa1150
+P=0 T=0 C=011 ║╚ 2 [167]::[test.cpp]::[int main()] 0
+P=0 T=0 C=018 ╠╾ 1 [183] LOG: CAP::CHANNEL::UPDATE_STORE_NAME_EXAMPLE is disabled for output but still works for setting state! 
+P=0 T=0 C=018 ╠╾ 1 [196] LOG: printing all the state set in CAP::CHANNEL::UPDATE_STORE_NAME_EXAMPLE 
+P=0 T=0 C=018 ╠╾ 1 [198] PRINTING ALL STATE IN STORE: StoreKey='global state
+P=0 T=0 C=018 ╠╾ 1 [198] PRINT STATE: StoreKey='global state' : StateName='third' : Value='default value'
+P=0 T=0 C=018 ╠╾ 1 [198] PRINT STATE: StoreKey='global state' : StateName='bar' : Value='changed value'
+P=0 T=0 C=018 ╠╾ 1 [198] PRINT STATE: StoreKey='global state' : StateName='foo' : Value='default value'
+P=0 T=0 C=018 ╠╾ 1 [201] LOG: Deleting state twice to show that second call has nothing left. 
+P=0 T=0 C=018 ╠╾ 1 [206] LOG: Executing lambda if LAMBDA_EXAMPLE is enabled 
+P=0 T=0 C=014 ║╔ 12 [208]::[test.cpp]::[int main()] 0
+P=0 T=0 C=014 ║╚ 12 [208]::[test.cpp]::[int main()] 0
+P=0 T=0 C=007 ║╔ 13 [125]::[test.cpp]::[void NestTest1::doSomething()] 0x7fff9ffa1014
+P=0 T=0 C=008 ║╔ 14 [120]::[test.cpp]::[void NestTest1::doIt()] 0x7fff9ffa1014
+P=0 T=0 C=008 ║╠╾ 14 [121] UPDATE STATE: StoreKey='140735877353492' : StateName='asdf 1' : Value='asdfasdf'
+P=0 T=0 C=008 ║╚ 14 [120]::[test.cpp]::[void NestTest1::doIt()] 0x7fff9ffa1014
+P=0 T=0 C=007 ║╚ 13 [125]::[test.cpp]::[void NestTest1::doSomething()] 0x7fff9ffa1014
+P=0 T=0 C=010 ║╔ 15 [221]::[test.cpp]::[int main()] 0
+P=0 T=0 C=001 ║╔ 16 [81]::[test.cpp]::[something::TestRender::TestRender(std::string)] 0x7fff9ffa1150
+P=0 T=0 C=001 ║╠╾ 16 [82] UPDATE STATE: StoreKey='140735877353808' : StateName='Current Name' : Value='first'
+P=0 T=0 C=001 ║╚ 16 [81]::[test.cpp]::[something::TestRender::TestRender(std::string)] 0x7fff9ffa1150
+P=0 T=0 C=001 ║╔ 17 [91]::[test.cpp]::[void something::TestRender::testBlockOutput()] 0x7fff9ffa1150
+P=0 T=0 C=001 ║╠╾ 17 [92] UPDATE STATE: StoreKey='140735877353808' : StateName='Current Name' : Value='first APPENDED SOME STUFF'
+P=0 T=0 C=001 ║╚ 17 [91]::[test.cpp]::[void something::TestRender::testBlockOutput()] 0x7fff9ffa1150
+P=0 T=0 C=010 ║╠╾ 15 [224] LOG: this is a log 
+P=0 T=0 C=001 ║╔ 18 [86]::[test.cpp]::[something::TestRender::~TestRender()] 0x7fff9ffa1150
+P=0 T=0 C=001 ║╠╾ 18 [87] RELEASE ALL STATE IN STORE: StoreKey='140735877353808' Num Deleted='1'
+P=0 T=0 C=001 ║╚ 18 [86]::[test.cpp]::[something::TestRender::~TestRender()] 0x7fff9ffa1150
+P=0 T=0 C=010 ║╚ 15 [221]::[test.cpp]::[int main()] 0
+P=0 T=0 C=015 ║╔ 19 [133]::[test.cpp]::[TestNestedDisabledOutput::TestNestedDisabledOutput()] 0x7fff9ffa1015
+P=0 T=0 C=015 ║╔ 20 [149]::[test.cpp]::[void TestNestedDisabledOutput::enabledChannel()] 0x7fff9ffa1015
+P=0 T=0 C=015 ║╚ 20 [149]::[test.cpp]::[void TestNestedDisabledOutput::enabledChannel()] 0x7fff9ffa1015
+P=0 T=0 C=015 ║╚ 19 [133]::[test.cpp]::[TestNestedDisabledOutput::TestNestedDisabledOutput()] 0x7fff9ffa1015
+P=0 T=0 C=018 ╠╾ 1 [229] ERROR: this is an error 
+P=0 T=0 C=005 ║╔ 21 [102]::[test.cpp]::[something::TestNetwork::TestNetwork()] 0x7fff9ffa1160
 P=0 T=0 C=005 ║╠╾ 21 [102] LOG: Testing format = hello 
-P=0 T=0 C=001 ║╔ 22 [81]::[test.cpp]::[something::TestRender::TestRender(std::string)] 0x5633344b7ec0
-P=0 T=0 C=001 ║╠╾ 22 [82] UPDATE STATE: StoreKey='94777920683712' : StateName='Current Name' : Value='In Two 0'
-P=0 T=0 C=001 ║╚ 22 [81]::[test.cpp]::[something::TestRender::TestRender(std::string)] 0x5633344b7ec0
-P=0 T=0 C=001 ║╔ 23 [91]::[test.cpp]::[void something::TestRender::testBlockOutput()] 0x5633344b7ec0
-P=0 T=0 C=001 ║╠╾ 23 [92] UPDATE STATE: StoreKey='94777920683712' : StateName='Current Name' : Value='In Two 0 APPENDED SOME STUFF'
-P=0 T=0 C=001 ║╚ 23 [91]::[test.cpp]::[void something::TestRender::testBlockOutput()] 0x5633344b7ec0
-P=0 T=0 C=001 ║╔ 24 [81]::[test.cpp]::[something::TestRender::TestRender(std::string)] 0x5633344b7ee1
-P=0 T=0 C=001 ║╠╾ 24 [82] UPDATE STATE: StoreKey='94777920683745' : StateName='Current Name' : Value='In Two 1'
-P=0 T=0 C=001 ║╚ 24 [81]::[test.cpp]::[something::TestRender::TestRender(std::string)] 0x5633344b7ee1
-P=0 T=0 C=001 ║╔ 25 [86]::[test.cpp]::[something::TestRender::~TestRender()] 0x5633344b7ec0
-P=0 T=0 C=001 ║╠╾ 25 [87] RELEASE ALL STATE IN STORE: StoreKey='94777920683712' Num Deleted='1'
-P=0 T=0 C=001 ║╚ 25 [86]::[test.cpp]::[something::TestRender::~TestRender()] 0x5633344b7ec0
-P=0 T=0 C=001 ║╔ 26 [91]::[test.cpp]::[void something::TestRender::testBlockOutput()] 0x5633344b7ee1
-P=0 T=0 C=001 ║╠╾ 26 [92] UPDATE STATE: StoreKey='94777920683745' : StateName='Current Name' : Value='In Two 1 APPENDED SOME STUFF'
-P=0 T=0 C=001 ║╚ 26 [91]::[test.cpp]::[void something::TestRender::testBlockOutput()] 0x5633344b7ee1
-P=0 T=0 C=001 ║╔ 27 [81]::[test.cpp]::[something::TestRender::TestRender(std::string)] 0x5633344b7ec2
-P=0 T=0 C=001 ║╠╾ 27 [82] UPDATE STATE: StoreKey='94777920683714' : StateName='Current Name' : Value='In Two 2'
-P=0 T=0 C=001 ║╚ 27 [81]::[test.cpp]::[something::TestRender::TestRender(std::string)] 0x5633344b7ec2
-P=0 T=0 C=001 ║╔ 28 [86]::[test.cpp]::[something::TestRender::~TestRender()] 0x5633344b7ee0
-P=0 T=0 C=001 ║╠╾ 28 [87] RELEASE ALL STATE IN STORE: StoreKey='94777920683744' Num Deleted='0'
-P=0 T=0 C=001 ║╚ 28 [86]::[test.cpp]::[something::TestRender::~TestRender()] 0x5633344b7ee0
-P=0 T=0 C=001 ║╔ 29 [86]::[test.cpp]::[something::TestRender::~TestRender()] 0x5633344b7ee1
-P=0 T=0 C=001 ║╠╾ 29 [87] RELEASE ALL STATE IN STORE: StoreKey='94777920683745' Num Deleted='1'
-P=0 T=0 C=001 ║╚ 29 [86]::[test.cpp]::[something::TestRender::~TestRender()] 0x5633344b7ee1
-P=0 T=0 C=001 ║╔ 30 [91]::[test.cpp]::[void something::TestRender::testBlockOutput()] 0x5633344b7ec2
-P=0 T=0 C=001 ║╠╾ 30 [92] UPDATE STATE: StoreKey='94777920683714' : StateName='Current Name' : Value='In Two 2 APPENDED SOME STUFF'
-P=0 T=0 C=001 ║╚ 30 [91]::[test.cpp]::[void something::TestRender::testBlockOutput()] 0x5633344b7ec2
-P=0 T=0 C=001 ║╔ 31 [81]::[test.cpp]::[something::TestRender::TestRender(std::string)] 0x5633344b7ec3
-P=0 T=0 C=001 ║╠╾ 31 [82] UPDATE STATE: StoreKey='94777920683715' : StateName='Current Name' : Value='In Two 3'
-P=0 T=0 C=001 ║╚ 31 [81]::[test.cpp]::[something::TestRender::TestRender(std::string)] 0x5633344b7ec3
-P=0 T=0 C=001 ║╔ 32 [91]::[test.cpp]::[void something::TestRender::testBlockOutput()] 0x5633344b7ec3
-P=0 T=0 C=001 ║╠╾ 32 [92] UPDATE STATE: StoreKey='94777920683715' : StateName='Current Name' : Value='In Two 3 APPENDED SOME STUFF'
-P=0 T=0 C=001 ║╚ 32 [91]::[test.cpp]::[void something::TestRender::testBlockOutput()] 0x5633344b7ec3
-P=0 T=0 C=001 ║╔ 33 [81]::[test.cpp]::[something::TestRender::TestRender(std::string)] 0x5633344b7ee4
-P=0 T=0 C=001 ║╠╾ 33 [82] UPDATE STATE: StoreKey='94777920683748' : StateName='Current Name' : Value='In Two 4'
-P=0 T=0 C=001 ║╚ 33 [81]::[test.cpp]::[something::TestRender::TestRender(std::string)] 0x5633344b7ee4
-P=0 T=0 C=001 ║╔ 34 [86]::[test.cpp]::[something::TestRender::~TestRender()] 0x5633344b7ec0
-P=0 T=0 C=001 ║╠╾ 34 [87] RELEASE ALL STATE IN STORE: StoreKey='94777920683712' Num Deleted='0'
-P=0 T=0 C=001 ║╚ 34 [86]::[test.cpp]::[something::TestRender::~TestRender()] 0x5633344b7ec0
-P=0 T=0 C=001 ║╔ 35 [86]::[test.cpp]::[something::TestRender::~TestRender()] 0x5633344b7ec1
-P=0 T=0 C=001 ║╠╾ 35 [87] RELEASE ALL STATE IN STORE: StoreKey='94777920683713' Num Deleted='0'
-P=0 T=0 C=001 ║╚ 35 [86]::[test.cpp]::[something::TestRender::~TestRender()] 0x5633344b7ec1
-P=0 T=0 C=001 ║╔ 36 [86]::[test.cpp]::[something::TestRender::~TestRender()] 0x5633344b7ec2
-P=0 T=0 C=001 ║╠╾ 36 [87] RELEASE ALL STATE IN STORE: StoreKey='94777920683714' Num Deleted='1'
-P=0 T=0 C=001 ║╚ 36 [86]::[test.cpp]::[something::TestRender::~TestRender()] 0x5633344b7ec2
-P=0 T=0 C=001 ║╔ 37 [86]::[test.cpp]::[something::TestRender::~TestRender()] 0x5633344b7ec3
-P=0 T=0 C=001 ║╠╾ 37 [87] RELEASE ALL STATE IN STORE: StoreKey='94777920683715' Num Deleted='1'
-P=0 T=0 C=001 ║╚ 37 [86]::[test.cpp]::[something::TestRender::~TestRender()] 0x5633344b7ec3
-P=0 T=0 C=001 ║╔ 38 [91]::[test.cpp]::[void something::TestRender::testBlockOutput()] 0x5633344b7ee4
-P=0 T=0 C=001 ║╠╾ 38 [92] UPDATE STATE: StoreKey='94777920683748' : StateName='Current Name' : Value='In Two 4 APPENDED SOME STUFF'
-P=0 T=0 C=001 ║╚ 38 [91]::[test.cpp]::[void something::TestRender::testBlockOutput()] 0x5633344b7ee4
-P=0 T=0 C=005 ║╚ 21 [102]::[test.cpp]::[something::TestNetwork::TestNetwork()] 0x7ffc5be95e80
-P=0 T=0 C=018 ╠╾ 1 [222] LOG: this is a log with formatting FORMAT  
-P=0 T=0 C=001 ║╔ 39 [81]::[test.cpp]::[something::TestRender::TestRender(std::string)] 0x7ffc5be95d36
-P=0 T=0 C=001 ║╠╾ 39 [82] UPDATE STATE: StoreKey='140721850506550' : StateName='Current Name' : Value='t1'
-P=0 T=0 C=001 ║╚ 39 [81]::[test.cpp]::[something::TestRender::TestRender(std::string)] 0x7ffc5be95d36
-P=0 T=0 C=001 ║╔ 40 [81]::[test.cpp]::[something::TestRender::TestRender(std::string)] 0x7ffc5be95d37
-P=0 T=0 C=001 ║╠╾ 40 [82] UPDATE STATE: StoreKey='140721850506551' : StateName='Current Name' : Value='t2'
-P=0 T=0 C=001 ║╚ 40 [81]::[test.cpp]::[something::TestRender::TestRender(std::string)] 0x7ffc5be95d37
-P=0 T=0 C=003 ║╔ 41 [234]::[test.cpp]::[int main()] 0
-P=0 T=0 C=003 ║╠╾ 41 [235] LOG: superlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong 
-P=0 T=0 C=003 ║╠╾ 41 [235] LOG: long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longl
-P=0 T=0 C=003 ║╠╾ 41 [235] LOG: ong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long l
-P=0 T=0 C=003 ║╠╾ 41 [235] LOG: onglong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong lo
-P=0 T=0 C=003 ║╠╾ 41 [235] LOG: ng longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlon
-P=0 T=0 C=003 ║╠╾ 41 [235] LOG: g long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long lon
-P=0 T=0 C=003 ║╠╾ 41 [235] LOG: glong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long
-P=0 T=0 C=003 ║╠╾ 41 [235] LOG:  longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong 
-P=0 T=0 C=003 ║╠╾ 41 [235] LOG: long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longl
-P=0 T=0 C=003 ║╠╾ 41 [235] LOG: ong long longlong long longlong long longlong long longstring 
-P=0 T=0 C=003 ║╚ 41 [234]::[test.cpp]::[int main()] 0
-P=0 T=0 C=001 ║╔ 42 [81]::[test.cpp]::[something::TestRender::TestRender(std::string)] 0x7ffc5be95e60
-P=0 T=0 C=001 ║╠╾ 42 [82] UPDATE STATE: StoreKey='140721850506848' : StateName='Current Name' : Value='t3'
-P=0 T=0 C=001 ║╚ 42 [81]::[test.cpp]::[something::TestRender::TestRender(std::string)] 0x7ffc5be95e60
-P=0 T=0 C=018 ╠╾ 1 [241] LOG: last line before a bunch of testBlockOutput 
-P=0 T=0 C=001 ║╔ 43 [91]::[test.cpp]::[void something::TestRender::testBlockOutput()] 0x7ffc5be95e60
-P=0 T=0 C=001 ║╠╾ 43 [92] UPDATE STATE: StoreKey='140721850506848' : StateName='Current Name' : Value='t3 APPENDED SOME STUFF'
-P=0 T=0 C=001 ║╚ 43 [91]::[test.cpp]::[void something::TestRender::testBlockOutput()] 0x7ffc5be95e60
-P=0 T=0 C=001 ║╔ 44 [91]::[test.cpp]::[void something::TestRender::testBlockOutput()] 0x7ffc5be95d37
-P=0 T=0 C=001 ║╠╾ 44 [92] UPDATE STATE: StoreKey='140721850506551' : StateName='Current Name' : Value='t2 APPENDED SOME STUFF'
-P=0 T=0 C=001 ║╚ 44 [91]::[test.cpp]::[void something::TestRender::testBlockOutput()] 0x7ffc5be95d37
-P=0 T=0 C=001 ║╔ 45 [91]::[test.cpp]::[void something::TestRender::testBlockOutput()] 0x7ffc5be95d36
-P=0 T=0 C=001 ║╠╾ 45 [92] UPDATE STATE: StoreKey='140721850506550' : StateName='Current Name' : Value='t1 APPENDED SOME STUFF'
-P=0 T=0 C=001 ║╚ 45 [91]::[test.cpp]::[void something::TestRender::testBlockOutput()] 0x7ffc5be95d36
-P=0 T=0 C=001 ║╔ 46 [86]::[test.cpp]::[something::TestRender::~TestRender()] 0x7ffc5be95e60
-P=0 T=0 C=001 ║╠╾ 46 [87] RELEASE ALL STATE IN STORE: StoreKey='140721850506848' Num Deleted='1'
-P=0 T=0 C=001 ║╚ 46 [86]::[test.cpp]::[something::TestRender::~TestRender()] 0x7ffc5be95e60
-P=0 T=0 C=001 ║╔ 47 [86]::[test.cpp]::[something::TestRender::~TestRender()] 0x7ffc5be95d37
-P=0 T=0 C=001 ║╠╾ 47 [87] RELEASE ALL STATE IN STORE: StoreKey='140721850506551' Num Deleted='1'
-P=0 T=0 C=001 ║╚ 47 [86]::[test.cpp]::[something::TestRender::~TestRender()] 0x7ffc5be95d37
-P=0 T=0 C=001 ║╔ 48 [86]::[test.cpp]::[something::TestRender::~TestRender()] 0x7ffc5be95d36
-P=0 T=0 C=001 ║╠╾ 48 [87] RELEASE ALL STATE IN STORE: StoreKey='140721850506550' Num Deleted='1'
-P=0 T=0 C=001 ║╚ 48 [86]::[test.cpp]::[something::TestRender::~TestRender()] 0x7ffc5be95d36
-P=0 T=0 C=001 ║╔ 49 [86]::[test.cpp]::[something::TestRender::~TestRender()] 0x5633344b7ee0
-P=0 T=0 C=001 ║╠╾ 49 [87] RELEASE ALL STATE IN STORE: StoreKey='94777920683744' Num Deleted='0'
-P=0 T=0 C=001 ║╚ 49 [86]::[test.cpp]::[something::TestRender::~TestRender()] 0x5633344b7ee0
-P=0 T=0 C=001 ║╔ 50 [86]::[test.cpp]::[something::TestRender::~TestRender()] 0x5633344b7ee1
-P=0 T=0 C=001 ║╠╾ 50 [87] RELEASE ALL STATE IN STORE: StoreKey='94777920683745' Num Deleted='0'
-P=0 T=0 C=001 ║╚ 50 [86]::[test.cpp]::[something::TestRender::~TestRender()] 0x5633344b7ee1
-P=0 T=0 C=001 ║╔ 51 [86]::[test.cpp]::[something::TestRender::~TestRender()] 0x5633344b7ee2
-P=0 T=0 C=001 ║╠╾ 51 [87] RELEASE ALL STATE IN STORE: StoreKey='94777920683746' Num Deleted='0'
-P=0 T=0 C=001 ║╚ 51 [86]::[test.cpp]::[something::TestRender::~TestRender()] 0x5633344b7ee2
-P=0 T=0 C=001 ║╔ 52 [86]::[test.cpp]::[something::TestRender::~TestRender()] 0x5633344b7ee3
-P=0 T=0 C=001 ║╠╾ 52 [87] RELEASE ALL STATE IN STORE: StoreKey='94777920683747' Num Deleted='0'
-P=0 T=0 C=001 ║╚ 52 [86]::[test.cpp]::[something::TestRender::~TestRender()] 0x5633344b7ee3
-P=0 T=0 C=001 ║╔ 53 [86]::[test.cpp]::[something::TestRender::~TestRender()] 0x5633344b7ee4
-P=0 T=0 C=001 ║╠╾ 53 [87] RELEASE ALL STATE IN STORE: StoreKey='94777920683748' Num Deleted='1'
-P=0 T=0 C=001 ║╚ 53 [86]::[test.cpp]::[something::TestRender::~TestRender()] 0x5633344b7ee4
-P=0 T=0 C=007 ║╔ 54 [114]::[test.cpp]::[NestTest1::~NestTest1()] 0x7ffc5be95d34
-P=0 T=0 C=007 ║╠╾ 54 [116] RELEASE ALL STATE IN STORE: StoreKey='140721850506548' Num Deleted='1'
-P=0 T=0 C=007 ║╚ 54 [114]::[test.cpp]::[NestTest1::~NestTest1()] 0x7ffc5be95d34
+P=0 T=0 C=001 ║╔ 22 [81]::[test.cpp]::[something::TestRender::TestRender(std::string)] 0x562dcffceec0
+P=0 T=0 C=001 ║╠╾ 22 [82] UPDATE STATE: StoreKey='94754762976960' : StateName='Current Name' : Value='In Two 0'
+P=0 T=0 C=001 ║╚ 22 [81]::[test.cpp]::[something::TestRender::TestRender(std::string)] 0x562dcffceec0
+P=0 T=0 C=001 ║╔ 23 [91]::[test.cpp]::[void something::TestRender::testBlockOutput()] 0x562dcffceec0
+P=0 T=0 C=001 ║╠╾ 23 [92] UPDATE STATE: StoreKey='94754762976960' : StateName='Current Name' : Value='In Two 0 APPENDED SOME STUFF'
+P=0 T=0 C=001 ║╚ 23 [91]::[test.cpp]::[void something::TestRender::testBlockOutput()] 0x562dcffceec0
+P=0 T=0 C=001 ║╔ 24 [81]::[test.cpp]::[something::TestRender::TestRender(std::string)] 0x562dcffceee1
+P=0 T=0 C=001 ║╠╾ 24 [82] UPDATE STATE: StoreKey='94754762976993' : StateName='Current Name' : Value='In Two 1'
+P=0 T=0 C=001 ║╚ 24 [81]::[test.cpp]::[something::TestRender::TestRender(std::string)] 0x562dcffceee1
+P=0 T=0 C=001 ║╔ 25 [86]::[test.cpp]::[something::TestRender::~TestRender()] 0x562dcffceec0
+P=0 T=0 C=001 ║╠╾ 25 [87] RELEASE ALL STATE IN STORE: StoreKey='94754762976960' Num Deleted='1'
+P=0 T=0 C=001 ║╚ 25 [86]::[test.cpp]::[something::TestRender::~TestRender()] 0x562dcffceec0
+P=0 T=0 C=001 ║╔ 26 [91]::[test.cpp]::[void something::TestRender::testBlockOutput()] 0x562dcffceee1
+P=0 T=0 C=001 ║╠╾ 26 [92] UPDATE STATE: StoreKey='94754762976993' : StateName='Current Name' : Value='In Two 1 APPENDED SOME STUFF'
+P=0 T=0 C=001 ║╚ 26 [91]::[test.cpp]::[void something::TestRender::testBlockOutput()] 0x562dcffceee1
+P=0 T=0 C=001 ║╔ 27 [81]::[test.cpp]::[something::TestRender::TestRender(std::string)] 0x562dcffceec2
+P=0 T=0 C=001 ║╠╾ 27 [82] UPDATE STATE: StoreKey='94754762976962' : StateName='Current Name' : Value='In Two 2'
+P=0 T=0 C=001 ║╚ 27 [81]::[test.cpp]::[something::TestRender::TestRender(std::string)] 0x562dcffceec2
+P=0 T=0 C=001 ║╔ 28 [86]::[test.cpp]::[something::TestRender::~TestRender()] 0x562dcffceee0
+P=0 T=0 C=001 ║╠╾ 28 [87] RELEASE ALL STATE IN STORE: StoreKey='94754762976992' Num Deleted='0'
+P=0 T=0 C=001 ║╚ 28 [86]::[test.cpp]::[something::TestRender::~TestRender()] 0x562dcffceee0
+P=0 T=0 C=001 ║╔ 29 [86]::[test.cpp]::[something::TestRender::~TestRender()] 0x562dcffceee1
+P=0 T=0 C=001 ║╠╾ 29 [87] RELEASE ALL STATE IN STORE: StoreKey='94754762976993' Num Deleted='1'
+P=0 T=0 C=001 ║╚ 29 [86]::[test.cpp]::[something::TestRender::~TestRender()] 0x562dcffceee1
+P=0 T=0 C=001 ║╔ 30 [91]::[test.cpp]::[void something::TestRender::testBlockOutput()] 0x562dcffceec2
+P=0 T=0 C=001 ║╠╾ 30 [92] UPDATE STATE: StoreKey='94754762976962' : StateName='Current Name' : Value='In Two 2 APPENDED SOME STUFF'
+P=0 T=0 C=001 ║╚ 30 [91]::[test.cpp]::[void something::TestRender::testBlockOutput()] 0x562dcffceec2
+P=0 T=0 C=001 ║╔ 31 [81]::[test.cpp]::[something::TestRender::TestRender(std::string)] 0x562dcffceec3
+P=0 T=0 C=001 ║╠╾ 31 [82] UPDATE STATE: StoreKey='94754762976963' : StateName='Current Name' : Value='In Two 3'
+P=0 T=0 C=001 ║╚ 31 [81]::[test.cpp]::[something::TestRender::TestRender(std::string)] 0x562dcffceec3
+P=0 T=0 C=001 ║╔ 32 [91]::[test.cpp]::[void something::TestRender::testBlockOutput()] 0x562dcffceec3
+P=0 T=0 C=001 ║╠╾ 32 [92] UPDATE STATE: StoreKey='94754762976963' : StateName='Current Name' : Value='In Two 3 APPENDED SOME STUFF'
+P=0 T=0 C=001 ║╚ 32 [91]::[test.cpp]::[void something::TestRender::testBlockOutput()] 0x562dcffceec3
+P=0 T=0 C=001 ║╔ 33 [81]::[test.cpp]::[something::TestRender::TestRender(std::string)] 0x562dcffceee4
+P=0 T=0 C=001 ║╠╾ 33 [82] UPDATE STATE: StoreKey='94754762976996' : StateName='Current Name' : Value='In Two 4'
+P=0 T=0 C=001 ║╚ 33 [81]::[test.cpp]::[something::TestRender::TestRender(std::string)] 0x562dcffceee4
+P=0 T=0 C=001 ║╔ 34 [86]::[test.cpp]::[something::TestRender::~TestRender()] 0x562dcffceec0
+P=0 T=0 C=001 ║╠╾ 34 [87] RELEASE ALL STATE IN STORE: StoreKey='94754762976960' Num Deleted='0'
+P=0 T=0 C=001 ║╚ 34 [86]::[test.cpp]::[something::TestRender::~TestRender()] 0x562dcffceec0
+P=0 T=0 C=001 ║╔ 35 [86]::[test.cpp]::[something::TestRender::~TestRender()] 0x562dcffceec1
+P=0 T=0 C=001 ║╠╾ 35 [87] RELEASE ALL STATE IN STORE: StoreKey='94754762976961' Num Deleted='0'
+P=0 T=0 C=001 ║╚ 35 [86]::[test.cpp]::[something::TestRender::~TestRender()] 0x562dcffceec1
+P=0 T=0 C=001 ║╔ 36 [86]::[test.cpp]::[something::TestRender::~TestRender()] 0x562dcffceec2
+P=0 T=0 C=001 ║╠╾ 36 [87] RELEASE ALL STATE IN STORE: StoreKey='94754762976962' Num Deleted='1'
+P=0 T=0 C=001 ║╚ 36 [86]::[test.cpp]::[something::TestRender::~TestRender()] 0x562dcffceec2
+P=0 T=0 C=001 ║╔ 37 [86]::[test.cpp]::[something::TestRender::~TestRender()] 0x562dcffceec3
+P=0 T=0 C=001 ║╠╾ 37 [87] RELEASE ALL STATE IN STORE: StoreKey='94754762976963' Num Deleted='1'
+P=0 T=0 C=001 ║╚ 37 [86]::[test.cpp]::[something::TestRender::~TestRender()] 0x562dcffceec3
+P=0 T=0 C=001 ║╔ 38 [91]::[test.cpp]::[void something::TestRender::testBlockOutput()] 0x562dcffceee4
+P=0 T=0 C=001 ║╠╾ 38 [92] UPDATE STATE: StoreKey='94754762976996' : StateName='Current Name' : Value='In Two 4 APPENDED SOME STUFF'
+P=0 T=0 C=001 ║╚ 38 [91]::[test.cpp]::[void something::TestRender::testBlockOutput()] 0x562dcffceee4
+P=0 T=0 C=005 ║╚ 21 [102]::[test.cpp]::[something::TestNetwork::TestNetwork()] 0x7fff9ffa1160
+P=0 T=0 C=018 ╠╾ 1 [232] LOG: this is a log with formatting FORMAT  
+P=0 T=0 C=001 ║╔ 39 [81]::[test.cpp]::[something::TestRender::TestRender(std::string)] 0x7fff9ffa1016
+P=0 T=0 C=001 ║╠╾ 39 [82] UPDATE STATE: StoreKey='140735877353494' : StateName='Current Name' : Value='t1'
+P=0 T=0 C=001 ║╚ 39 [81]::[test.cpp]::[something::TestRender::TestRender(std::string)] 0x7fff9ffa1016
+P=0 T=0 C=001 ║╔ 40 [81]::[test.cpp]::[something::TestRender::TestRender(std::string)] 0x7fff9ffa1017
+P=0 T=0 C=001 ║╠╾ 40 [82] UPDATE STATE: StoreKey='140735877353495' : StateName='Current Name' : Value='t2'
+P=0 T=0 C=001 ║╚ 40 [81]::[test.cpp]::[something::TestRender::TestRender(std::string)] 0x7fff9ffa1017
+P=0 T=0 C=003 ║╔ 41 [244]::[test.cpp]::[int main()] 0
+P=0 T=0 C=003 ║╠╾ 41 [245] LOG: superlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong 
+P=0 T=0 C=003 ║╠╾ 41 [245] LOG: long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longl
+P=0 T=0 C=003 ║╠╾ 41 [245] LOG: ong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long l
+P=0 T=0 C=003 ║╠╾ 41 [245] LOG: onglong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong lo
+P=0 T=0 C=003 ║╠╾ 41 [245] LOG: ng longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlon
+P=0 T=0 C=003 ║╠╾ 41 [245] LOG: g long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long lon
+P=0 T=0 C=003 ║╠╾ 41 [245] LOG: glong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long
+P=0 T=0 C=003 ║╠╾ 41 [245] LOG:  longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong 
+P=0 T=0 C=003 ║╠╾ 41 [245] LOG: long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longlong long longl
+P=0 T=0 C=003 ║╠╾ 41 [245] LOG: ong long longlong long longlong long longlong long longstring 
+P=0 T=0 C=003 ║╚ 41 [244]::[test.cpp]::[int main()] 0
+P=0 T=0 C=001 ║╔ 42 [81]::[test.cpp]::[something::TestRender::TestRender(std::string)] 0x7fff9ffa1140
+P=0 T=0 C=001 ║╠╾ 42 [82] UPDATE STATE: StoreKey='140735877353792' : StateName='Current Name' : Value='t3'
+P=0 T=0 C=001 ║╚ 42 [81]::[test.cpp]::[something::TestRender::TestRender(std::string)] 0x7fff9ffa1140
+P=0 T=0 C=018 ╠╾ 1 [251] LOG: last line before a bunch of testBlockOutput 
+P=0 T=0 C=001 ║╔ 43 [91]::[test.cpp]::[void something::TestRender::testBlockOutput()] 0x7fff9ffa1140
+P=0 T=0 C=001 ║╠╾ 43 [92] UPDATE STATE: StoreKey='140735877353792' : StateName='Current Name' : Value='t3 APPENDED SOME STUFF'
+P=0 T=0 C=001 ║╚ 43 [91]::[test.cpp]::[void something::TestRender::testBlockOutput()] 0x7fff9ffa1140
+P=0 T=0 C=001 ║╔ 44 [91]::[test.cpp]::[void something::TestRender::testBlockOutput()] 0x7fff9ffa1017
+P=0 T=0 C=001 ║╠╾ 44 [92] UPDATE STATE: StoreKey='140735877353495' : StateName='Current Name' : Value='t2 APPENDED SOME STUFF'
+P=0 T=0 C=001 ║╚ 44 [91]::[test.cpp]::[void something::TestRender::testBlockOutput()] 0x7fff9ffa1017
+P=0 T=0 C=001 ║╔ 45 [91]::[test.cpp]::[void something::TestRender::testBlockOutput()] 0x7fff9ffa1016
+P=0 T=0 C=001 ║╠╾ 45 [92] UPDATE STATE: StoreKey='140735877353494' : StateName='Current Name' : Value='t1 APPENDED SOME STUFF'
+P=0 T=0 C=001 ║╚ 45 [91]::[test.cpp]::[void something::TestRender::testBlockOutput()] 0x7fff9ffa1016
+P=0 T=0 C=001 ║╔ 46 [86]::[test.cpp]::[something::TestRender::~TestRender()] 0x7fff9ffa1140
+P=0 T=0 C=001 ║╠╾ 46 [87] RELEASE ALL STATE IN STORE: StoreKey='140735877353792' Num Deleted='1'
+P=0 T=0 C=001 ║╚ 46 [86]::[test.cpp]::[something::TestRender::~TestRender()] 0x7fff9ffa1140
+P=0 T=0 C=001 ║╔ 47 [86]::[test.cpp]::[something::TestRender::~TestRender()] 0x7fff9ffa1017
+P=0 T=0 C=001 ║╠╾ 47 [87] RELEASE ALL STATE IN STORE: StoreKey='140735877353495' Num Deleted='1'
+P=0 T=0 C=001 ║╚ 47 [86]::[test.cpp]::[something::TestRender::~TestRender()] 0x7fff9ffa1017
+P=0 T=0 C=001 ║╔ 48 [86]::[test.cpp]::[something::TestRender::~TestRender()] 0x7fff9ffa1016
+P=0 T=0 C=001 ║╠╾ 48 [87] RELEASE ALL STATE IN STORE: StoreKey='140735877353494' Num Deleted='1'
+P=0 T=0 C=001 ║╚ 48 [86]::[test.cpp]::[something::TestRender::~TestRender()] 0x7fff9ffa1016
+P=0 T=0 C=001 ║╔ 49 [86]::[test.cpp]::[something::TestRender::~TestRender()] 0x562dcffceee0
+P=0 T=0 C=001 ║╠╾ 49 [87] RELEASE ALL STATE IN STORE: StoreKey='94754762976992' Num Deleted='0'
+P=0 T=0 C=001 ║╚ 49 [86]::[test.cpp]::[something::TestRender::~TestRender()] 0x562dcffceee0
+P=0 T=0 C=001 ║╔ 50 [86]::[test.cpp]::[something::TestRender::~TestRender()] 0x562dcffceee1
+P=0 T=0 C=001 ║╠╾ 50 [87] RELEASE ALL STATE IN STORE: StoreKey='94754762976993' Num Deleted='0'
+P=0 T=0 C=001 ║╚ 50 [86]::[test.cpp]::[something::TestRender::~TestRender()] 0x562dcffceee1
+P=0 T=0 C=001 ║╔ 51 [86]::[test.cpp]::[something::TestRender::~TestRender()] 0x562dcffceee2
+P=0 T=0 C=001 ║╠╾ 51 [87] RELEASE ALL STATE IN STORE: StoreKey='94754762976994' Num Deleted='0'
+P=0 T=0 C=001 ║╚ 51 [86]::[test.cpp]::[something::TestRender::~TestRender()] 0x562dcffceee2
+P=0 T=0 C=001 ║╔ 52 [86]::[test.cpp]::[something::TestRender::~TestRender()] 0x562dcffceee3
+P=0 T=0 C=001 ║╠╾ 52 [87] RELEASE ALL STATE IN STORE: StoreKey='94754762976995' Num Deleted='0'
+P=0 T=0 C=001 ║╚ 52 [86]::[test.cpp]::[something::TestRender::~TestRender()] 0x562dcffceee3
+P=0 T=0 C=001 ║╔ 53 [86]::[test.cpp]::[something::TestRender::~TestRender()] 0x562dcffceee4
+P=0 T=0 C=001 ║╠╾ 53 [87] RELEASE ALL STATE IN STORE: StoreKey='94754762976996' Num Deleted='1'
+P=0 T=0 C=001 ║╚ 53 [86]::[test.cpp]::[something::TestRender::~TestRender()] 0x562dcffceee4
+P=0 T=0 C=007 ║╔ 54 [114]::[test.cpp]::[NestTest1::~NestTest1()] 0x7fff9ffa1014
+P=0 T=0 C=007 ║╠╾ 54 [116] RELEASE ALL STATE IN STORE: StoreKey='140735877353492' Num Deleted='1'
+P=0 T=0 C=007 ║╚ 54 [114]::[test.cpp]::[NestTest1::~NestTest1()] 0x7fff9ffa1014
 P=0 T=0 C=018 ╚ 1 [154]::[test.cpp]::[int main()] 0
