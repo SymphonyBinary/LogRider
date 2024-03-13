@@ -78,21 +78,34 @@ void writeOutput(const std::string& messageBuffer, unsigned int processId, unsig
   completeOutputStream << PrintPrefix{processId, threadId, channelId} << TabDelims{depth} << messageBuffer;
   std::string completeOutputString = completeOutputStream.str();
 
-  PRINT_TO_LOG("%s", completeOutputString.substr(0, LOG_LINE_CHARACTER_LIMIT).c_str());
-  size_t index = LOG_LINE_CHARACTER_LIMIT;
+  if (completeOutputString.size() < LOG_LINE_CHARACTER_LIMIT) {
+    PRINT_TO_LOG("%s", completeOutputString.c_str());
+  } else {
+    std::stringstream concatBeginStream;
+    concatBeginStream << PrintPrefix{processId, threadId, channelId} << CONCAT_DELIMITER_BEGIN;
+    const std::string concatBeginString = concatBeginStream.str();
+    size_t concatBeginLength = concatBeginString.size();
+    size_t substrMax = LOG_LINE_CHARACTER_LIMIT - concatBeginLength;
+    std::string currentLine = concatBeginString + completeOutputString.substr(0, substrMax);
+    size_t index = substrMax;
+    PRINT_TO_LOG("%s", currentLine.c_str());
 
-  if (index < completeOutputString.size()) {
-    std::stringstream concatStream;
-    concatStream << PrintPrefix{processId, threadId, channelId} << CONCAT_DELIMITER;
-    const std::string concatPrefixString = concatStream.str();
-    size_t concatPrefixLength = concatPrefixString.size();
-    assert(concatPrefixLength < LOG_LINE_CHARACTER_LIMIT);
-    const size_t substrMax = LOG_LINE_CHARACTER_LIMIT - concatPrefixLength;
+    std::stringstream concatContinueStream;
+    concatContinueStream << PrintPrefix{processId, threadId, channelId} << CONCAT_DELIMITER_CONTINUE;
+    const std::string concatContinueString = concatContinueStream.str();
+    size_t concatContinueLength = concatContinueString.size();
+    assert(concatContinueLength < LOG_LINE_CHARACTER_LIMIT);
+    substrMax = LOG_LINE_CHARACTER_LIMIT - concatContinueLength;
     while(index < completeOutputString.size()) {
-      std::string currentLine = concatPrefixString + completeOutputString.substr(index, substrMax);
-      PRINT_TO_LOG("%s", currentLine.c_str());
+      std::string currentLine = concatContinueString + completeOutputString.substr(index, substrMax);
       index += substrMax;
+      PRINT_TO_LOG("%s", currentLine.c_str());
     }
+
+    std::stringstream concatEndStream;
+    concatEndStream << PrintPrefix{processId, threadId, channelId} << CONCAT_DELIMITER_END;
+    const std::string concatEndString = concatEndStream.str();
+    PRINT_TO_LOG("%s", concatEndString.c_str());
   }
 }
 } // namespace
@@ -182,7 +195,7 @@ void BlockLogger::setPrimaryLog(int line, std::string_view logInfoBuffer, std::s
     mlogInfoBuffer = std::move(logInfoBuffer);
 
     std::stringstream ss;
-    ss << COLOUR BOLD CAP_GREEN << PRIMARY_LOG_BEGIN_DELIMITER << COLOUR BOLD CAP_YELLOW << " " << mId << mlogInfoBuffer
+    ss << COLOUR BOLD CAP_GREEN << PRIMARY_LOG_BEGIN_DELIMITER << COLOUR BOLD CAP_YELLOW << " " << mId << mlogInfoBuffer << " "
     << colourArray[reinterpret_cast<std::uintptr_t>(mThisPointer) % colourArraySize] << mThisPointer << COLOUR RESET;
     writeOutput(ss.str(), mProcessId, mThreadId, (size_t)mChannel, mDepth);
 
@@ -278,7 +291,7 @@ BlockLogger::~BlockLogger() {
     // block logger instance is only created when logging/output mode enabled.
     BlockLoggerDataStore::getInstance().removeBlockLoggerInstance();
     std::stringstream ss;
-    ss << COLOUR BOLD CAP_GREEN << PRIMARY_LOG_BEGIN_DELIMITER << COLOUR BOLD CAP_YELLOW << " " << mId << mlogInfoBuffer
+    ss << COLOUR BOLD CAP_GREEN << PRIMARY_LOG_END_DELIMITER << COLOUR BOLD CAP_YELLOW << " " << mId << mlogInfoBuffer << " "
     << colourArray[reinterpret_cast<std::uintptr_t>(mThisPointer) % colourArraySize] << mThisPointer << COLOUR RESET;
     writeOutput(ss.str(), mProcessId, mThreadId, (size_t)mChannel, mDepth);
   }

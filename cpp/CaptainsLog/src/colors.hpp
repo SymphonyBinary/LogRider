@@ -56,6 +56,8 @@
   #define PROCESS_ID_DELIMITER "P="
   #define THREAD_ID_DELIMITER "T="
   #define CHANNEL_ID_DELIMITER "C="
-  #define CONCAT_DELIMITER "++ "
+  #define CONCAT_DELIMITER_BEGIN "|+ "
+  #define CONCAT_DELIMITER_CONTINUE "++ "
+  #define CONCAT_DELIMITER_END "+| "
   #define TAB_DELIMITER ":"
 #endif
