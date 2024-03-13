@@ -40,7 +40,6 @@ static_assert(false, "CHANNELS_PATH not defined");
 
 #ifdef ANDROID
   #include <android/log.h>
-  #define  CAPLOG_TAG    "D_LOG::"
   #define  PRINT_TO_LOG(...)  __android_log_print(ANDROID_LOG_DEBUG, "CAPLOG_TAG", __VA_ARGS__)
 #else
   #define PRINT_TO_LOG(...) printf(__VA_ARGS__); printf("\n");
@@ -337,7 +336,7 @@ private:
 
 #define CAP_LOG_UPDATE_STATE(...)
 #define CAP_LOG_PRINT_STATE(...)
-#define CAP_LOG_PRINT_All_STATE(...)
+#define CAP_LOG_PRINT_ALL_STATE(...)
 #define CAP_LOG_RELEASE_STATE(...)
 #define CAP_LOG_RELEASE_ALL_STATE(...)
 

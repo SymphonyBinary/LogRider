@@ -25,40 +25,116 @@ static const int colourArraySize = sizeof(colourArray)/sizeof(colourArray[0]);
 //somehow on Android, thread_local didn't really do the expected things.  Also the process is
 
 namespace {
-  void printChannel(std::stringstream& ss, unsigned int processId, unsigned int threadId, unsigned int depth, unsigned int channelId, std::string_view channelName, uint32_t enabledMode, int verbosityLevel) {
-    ss << COLOUR BOLD CAP_YELLOW << MAIN_PREFIX_DELIMITER << INSERT_THREAD_ID << " : " << PROCESS_ID_DELIMITER 
-      << processId << " " << THREAD_ID_DELIMITER << colourArray[threadId % colourArraySize] << threadId << COLOUR BOLD CAP_GREEN 
-      << " CHANNEL-ID=" << std::setw(3) << std::setfill('0') << channelId;
+void printChannel(std::stringstream& ss, unsigned int processId, unsigned int threadId, unsigned int depth, unsigned int channelId, std::string_view channelName, uint32_t enabledMode, int verbosityLevel) {
+  ss << COLOUR BOLD CAP_YELLOW << MAIN_PREFIX_DELIMITER << INSERT_THREAD_ID << " : " << PROCESS_ID_DELIMITER 
+    << processId << " " << THREAD_ID_DELIMITER << colourArray[threadId % colourArraySize] << threadId << COLOUR BOLD CAP_GREEN 
+    << " CHANNEL-ID=" << std::setw(3) << std::setfill('0') << channelId;
 
-    if (enabledMode == FULLY_ENABLED) {
-      ss << " : FULLY ENABLED        ";
-    } else if (enabledMode == ENABLED_NO_OUTPUT) {
-      ss << " : ENABLED BUT NO OUTPUT";
-    } else if (enabledMode == FULLY_DISABLED) {
-      ss << " : FULLY DISABLED       ";
-    } else {
-      ss << " : UNKNOWN MODE!        ";
-    }
-
-    ss << " : VERBOSITY=" << verbosityLevel << " : ";
-
-    for(unsigned int i = 0 ; i < depth; ++i ) {
-      ss << ">  ";
-    }
-
-    ss << channelName;
+  if (enabledMode == FULLY_ENABLED) {
+    ss << " : FULLY ENABLED        ";
+  } else if (enabledMode == ENABLED_NO_OUTPUT) {
+    ss << " : ENABLED BUT NO OUTPUT";
+  } else if (enabledMode == FULLY_DISABLED) {
+    ss << " : FULLY DISABLED       ";
+  } else {
+    ss << " : UNKNOWN MODE!        ";
   }
 
-  void printTab(std::stringstream& ss, unsigned int processId, unsigned int threadId, unsigned int depth, unsigned int channelId) {
-    ss << COLOUR BOLD CAP_YELLOW << MAIN_PREFIX_DELIMITER << INSERT_THREAD_ID << " : " << PROCESS_ID_DELIMITER 
-      << processId << " " << THREAD_ID_DELIMITER << colourArray[threadId % colourArraySize] << threadId << COLOUR BOLD CAP_GREEN 
-      << " " << CHANNEL_ID_DELIMITER << std::setw(3) << std::setfill('0') << channelId << " ";
+  ss << " : VERBOSITY=" << verbosityLevel << " : ";
 
-    for(unsigned int i = 0 ; i < depth; ++i ){
-      ss << TAB_DELIMITER;
+  for(unsigned int i = 0 ; i < depth; ++i ) {
+    ss << ">  ";
+  }
+
+  ss << channelName;
+}
+
+void printTab(std::stringstream& ss, unsigned int processId, unsigned int threadId, unsigned int depth, unsigned int channelId) {
+  ss << COLOUR BOLD CAP_YELLOW << MAIN_PREFIX_DELIMITER << INSERT_THREAD_ID << " : " << PROCESS_ID_DELIMITER 
+    << processId << " " << THREAD_ID_DELIMITER << colourArray[threadId % colourArraySize] << threadId << COLOUR BOLD CAP_GREEN 
+    << " " << CHANNEL_ID_DELIMITER << std::setw(3) << std::setfill('0') << channelId << " ";
+
+  for(unsigned int i = 0 ; i < depth; ++i ){
+    ss << TAB_DELIMITER;
+  }
+}
+
+struct PrintPrefix {
+  unsigned int processId;
+  unsigned int threadId;
+  unsigned int channelId;
+};
+
+// ss << << message
+// writeOutput(ss)
+// (PrintPrefix + TabDelims{depth}  << ss.str().substring(max - prefix))
+
+std::ostream& operator<<(std::ostream& os, const PrintPrefix& printPrefix) {
+  os << COLOUR BOLD CAP_YELLOW << MAIN_PREFIX_DELIMITER << INSERT_THREAD_ID << " : " << PROCESS_ID_DELIMITER 
+    << printPrefix.processId << " " << THREAD_ID_DELIMITER << colourArray[printPrefix.threadId % colourArraySize] << printPrefix.threadId << COLOUR BOLD CAP_GREEN 
+    << " " << CHANNEL_ID_DELIMITER << std::setw(3) << std::setfill('0') << printPrefix.channelId << " ";
+  return os;
+}
+
+struct TabDelims{
+  unsigned int depth;
+};
+
+std::ostream& operator<<(std::ostream& os, const TabDelims& tabDelims) {
+  for(unsigned int i = 0 ; i < tabDelims.depth; ++i ){
+    os << TAB_DELIMITER;
+  }
+  return os;
+}
+
+// struct LogOutput {
+
+// };
+
+// std::ostream& operator<<(std::ostream& os, const LogOutput& logOutput) {
+  
+// }
+
+void writeOutput(const std::string& messageBuffer, unsigned int processId, unsigned int threadId, unsigned int channelId, unsigned int depth) {
+  std::stringstream completeOutputStream;
+  completeOutputStream << PrintPrefix{processId, threadId, channelId} << TabDelims{depth} << messageBuffer;
+  std::string completeOutputString = completeOutputStream.str();
+
+  PRINT_TO_LOG("%s", completeOutputString.substr(0, LOG_LINE_CHARACTER_LIMIT).c_str());
+  size_t index = LOG_LINE_CHARACTER_LIMIT;
+
+  if (index < completeOutputString.size()) {
+    std::stringstream concatStream;
+    concatStream << PrintPrefix{processId, threadId, channelId} << CONCAT_DELIMITER;
+    const std::string concatPrefixString = concatStream.str();
+    size_t concatPrefixLength = concatPrefixString.size();
+    const size_t substrMax = LOG_LINE_CHARACTER_LIMIT - concatPrefixLength;
+    while(index < completeOutputString.size()) {
+      std::string currentLine = concatPrefixString + completeOutputString.substr(index, substrMax);
+      PRINT_TO_LOG("%s", currentLine.c_str());
+      index += substrMax;
     }
   }
+}
 } // namespace
+
+
+// void writeOutput(const std::string& messageBuffer, unsigned int processId, unsigned int threadId, unsigned int channelId, unsigned int depth) {
+//   std::stringstream ss;
+//   ss << PrintPrefix{processId, threadId, channelId} << CONCAT_DELIMITER;
+//   const std::string prefixString = ss.str();
+//   size_t prefixLength = prefixString.size();
+
+//   PRINT_TO_LOG("%s", messageBuffer.substr(0, LOG_LINE_CHARACTER_LIMIT).c_str());
+//   size_t index = LOG_LINE_CHARACTER_LIMIT;
+
+//   const size_t substrMax = LOG_LINE_CHARACTER_LIMIT - prefixLength;
+//   while(index < messageBuffer.size()) {
+//     std::string currentLine = prefixString + messageBuffer.substr(index, substrMax);
+//     PRINT_TO_LOG("%s", currentLine.c_str());
+//     index += substrMax;
+//   }
+// }
 
 
 /*static*/ BlockChannelTree& BlockChannelTree::getInstance() {
@@ -157,7 +233,6 @@ void BlockLogger::setPrimaryLog(int line, std::string_view logInfoBuffer, std::s
 
   std::stringstream ss;
   printTab(ss, mProcessId, mThreadId, mDepth, (size_t)mChannel);
-
   ss << COLOUR BOLD CAP_GREEN << PRIMARY_LOG_BEGIN_DELIMITER << COLOUR BOLD CAP_YELLOW << " " << mId << mlogInfoBuffer
   << colourArray[reinterpret_cast<std::uintptr_t>(mThisPointer) % colourArraySize] << mThisPointer << COLOUR RESET;
   PRINT_TO_LOG("%s", ss.str().c_str());
@@ -174,17 +249,23 @@ void BlockLogger::log(int line, std::string_view messageBuffer) {
     return;
   }
 
-  size_t index = 0;
-  while(index < messageBuffer.size()) {
-    // The macro which calls this hardcodes a " " to get around some macro limitations regarding zero/1/multi argument __VA_ARGS__
-    std::stringstream ss;
-    printTab(ss, mProcessId, mThreadId, mDepth, (size_t)mChannel);
-    ss << COLOUR BOLD CAP_GREEN << ADD_LOG_DELIMITER << ADD_LOG_SECOND_DELIMITER << COLOUR BOLD CAP_YELLOW << " " << mId << " "
-    << COLOUR RESET << "[" << COLOUR BOLD CAP_GREEN << line << COLOUR RESET << "] LOG: " 
-    << messageBuffer.substr(index, LOG_LINE_CHARACTER_LIMIT) << COLOUR RESET;
-    PRINT_TO_LOG("%s", ss.str().c_str());
-    index += LOG_LINE_CHARACTER_LIMIT;
-  }
+  std::stringstream ss;
+  ss << COLOUR BOLD CAP_GREEN << ADD_LOG_DELIMITER << ADD_LOG_SECOND_DELIMITER << COLOUR BOLD CAP_YELLOW << " " << mId << " "
+  << COLOUR RESET << "[" << COLOUR BOLD CAP_GREEN << line << COLOUR RESET << "] LOG: " 
+  << messageBuffer << COLOUR RESET;
+  writeOutput(ss.str(), mProcessId, mThreadId, (size_t)mChannel, mDepth);
+
+  // size_t index = 0;
+  // while(index < messageBuffer.size()) {
+  //   // The macro which calls this hardcodes a " " to get around some macro limitations regarding zero/1/multi argument __VA_ARGS__
+  //   std::stringstream ss;
+  //   printTab(ss, mProcessId, mThreadId, mDepth, (size_t)mChannel);
+  //   ss << COLOUR BOLD CAP_GREEN << ADD_LOG_DELIMITER << ADD_LOG_SECOND_DELIMITER << COLOUR BOLD CAP_YELLOW << " " << mId << " "
+  //   << COLOUR RESET << "[" << COLOUR BOLD CAP_GREEN << line << COLOUR RESET << "] LOG: " 
+  //   << messageBuffer.substr(index, LOG_LINE_CHARACTER_LIMIT) << COLOUR RESET;
+  //   PRINT_TO_LOG("%s", ss.str().c_str());
+  //   index += LOG_LINE_CHARACTER_LIMIT;
+  // }
 }
 
 void BlockLogger::error(int line, std::string_view messageBuffer) {

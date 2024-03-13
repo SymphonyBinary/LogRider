@@ -258,7 +258,7 @@ int main() {
 
   std::string giantString = "super";
   for(size_t i = 0; i < 100; ++i) {
-    giantString += "long long long";
+    giantString += "longABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
   }
   giantString += "string";
 
