@@ -5,7 +5,7 @@
 #include <vector>
 #include <array>
 #include <iomanip>
-
+#include <assert.h>
 
 namespace CAP {
 
@@ -87,14 +87,6 @@ std::ostream& operator<<(std::ostream& os, const TabDelims& tabDelims) {
   return os;
 }
 
-// struct LogOutput {
-
-// };
-
-// std::ostream& operator<<(std::ostream& os, const LogOutput& logOutput) {
-  
-// }
-
 void writeOutput(const std::string& messageBuffer, unsigned int processId, unsigned int threadId, unsigned int channelId, unsigned int depth) {
   std::stringstream completeOutputStream;
   completeOutputStream << PrintPrefix{processId, threadId, channelId} << TabDelims{depth} << messageBuffer;
@@ -108,6 +100,7 @@ void writeOutput(const std::string& messageBuffer, unsigned int processId, unsig
     concatStream << PrintPrefix{processId, threadId, channelId} << CONCAT_DELIMITER;
     const std::string concatPrefixString = concatStream.str();
     size_t concatPrefixLength = concatPrefixString.size();
+    assert(concatPrefixLength < LOG_LINE_CHARACTER_LIMIT);
     const size_t substrMax = LOG_LINE_CHARACTER_LIMIT - concatPrefixLength;
     while(index < completeOutputString.size()) {
       std::string currentLine = concatPrefixString + completeOutputString.substr(index, substrMax);
@@ -178,7 +171,8 @@ BlockChannelTree::BlockChannelTree() {
   std::stringstream ss;
 
   #define CAPTAINS_LOG_CHANNEL(name, verboseLevel, channelEnabledMode) \
-  printChannel(ss, logData.processTimestamp, logData.relativeThreadIdx, channelDepth, channelId++, #name, channelEnabledMode, verboseLevel); \
+  printChannel(ss, logData.processTimestamp, logData.relativeThreadIdx, channelDepth, channelId, #name, mEnabledModeChannelsById[channelId], verboseLevel); \
+  ++channelId; \
   PRINT_TO_LOG("%s", ss.str().c_str()); \
   ss.str("");
   #define CAPTAINS_LOG_CHANNEL_BEGIN_CHILDREN(...) \
