@@ -167,7 +167,7 @@ a buffer at all
 
 #define CAP_LOG_EXECUTE_LAMBDA(lambda) \
   std::function<void()> func = lambda; \
-  if (blockScopeLog.getEnabledMode() & CAP::ALL_FLAGS) { \
+  if (blockScopeLog.getEnabledMode()) { \
     func(); \
   }
 
