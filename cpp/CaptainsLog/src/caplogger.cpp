@@ -49,25 +49,11 @@ void printChannel(std::stringstream& ss, unsigned int processId, unsigned int th
   ss << channelName;
 }
 
-void printTab(std::stringstream& ss, unsigned int processId, unsigned int threadId, unsigned int depth, unsigned int channelId) {
-  ss << COLOUR BOLD CAP_YELLOW << MAIN_PREFIX_DELIMITER << INSERT_THREAD_ID << " : " << PROCESS_ID_DELIMITER 
-    << processId << " " << THREAD_ID_DELIMITER << colourArray[threadId % colourArraySize] << threadId << COLOUR BOLD CAP_GREEN 
-    << " " << CHANNEL_ID_DELIMITER << std::setw(3) << std::setfill('0') << channelId << " ";
-
-  for(unsigned int i = 0 ; i < depth; ++i ){
-    ss << TAB_DELIMITER;
-  }
-}
-
 struct PrintPrefix {
   unsigned int processId;
   unsigned int threadId;
   unsigned int channelId;
 };
-
-// ss << << message
-// writeOutput(ss)
-// (PrintPrefix + TabDelims{depth}  << ss.str().substring(max - prefix))
 
 std::ostream& operator<<(std::ostream& os, const PrintPrefix& printPrefix) {
   os << COLOUR BOLD CAP_YELLOW << MAIN_PREFIX_DELIMITER << INSERT_THREAD_ID << " : " << PROCESS_ID_DELIMITER 
@@ -110,25 +96,6 @@ void writeOutput(const std::string& messageBuffer, unsigned int processId, unsig
   }
 }
 } // namespace
-
-
-// void writeOutput(const std::string& messageBuffer, unsigned int processId, unsigned int threadId, unsigned int channelId, unsigned int depth) {
-//   std::stringstream ss;
-//   ss << PrintPrefix{processId, threadId, channelId} << CONCAT_DELIMITER;
-//   const std::string prefixString = ss.str();
-//   size_t prefixLength = prefixString.size();
-
-//   PRINT_TO_LOG("%s", messageBuffer.substr(0, LOG_LINE_CHARACTER_LIMIT).c_str());
-//   size_t index = LOG_LINE_CHARACTER_LIMIT;
-
-//   const size_t substrMax = LOG_LINE_CHARACTER_LIMIT - prefixLength;
-//   while(index < messageBuffer.size()) {
-//     std::string currentLine = prefixString + messageBuffer.substr(index, substrMax);
-//     PRINT_TO_LOG("%s", currentLine.c_str());
-//     index += substrMax;
-//   }
-// }
-
 
 /*static*/ BlockChannelTree& BlockChannelTree::getInstance() {
   static BlockChannelTree instance;
@@ -199,118 +166,74 @@ BlockLogger::BlockLogger(const void* thisPointer, CAP::CHANNEL channel)
   , mProcessId(0)
   , mChannel(channel)
   , mThisPointer(thisPointer) {
-  if(!(mEnabledMode & CAN_WRITE_TO_OUTPUT)) {
+  if(mEnabledMode & CAN_WRITE_TO_OUTPUT) {
     //If this block is silent and can't write to output, no need to record 
     //depth, id, etc which are used for printing to the log.
-    return;
-  } 
-
-  auto& loggerDataStore = BlockLoggerDataStore::getInstance();
-  auto logData = loggerDataStore.newBlockLoggerInstance();
-
-  mDepth = logData.logDepth;
-  mId = logData.perThreadUniqueFunctionIdx;
-  mThreadId = logData.relativeThreadIdx;
-  mProcessId = logData.processTimestamp;
+    auto logData = BlockLoggerDataStore::getInstance().newBlockLoggerInstance();
+    mDepth = logData.logDepth;
+    mId = logData.perThreadUniqueFunctionIdx;
+    mThreadId = logData.relativeThreadIdx;
+    mProcessId = logData.processTimestamp;
+  }
 }
 
 void BlockLogger::setPrimaryLog(int line, std::string_view logInfoBuffer, std::string_view customMessageBuffer) {
-  if(!(mEnabledMode & CAN_WRITE_TO_OUTPUT)) {
-    return;
+  if(mEnabledMode & CAN_WRITE_TO_OUTPUT) {
+    mlogInfoBuffer = std::move(logInfoBuffer);
+
+    std::stringstream ss;
+    ss << COLOUR BOLD CAP_GREEN << PRIMARY_LOG_BEGIN_DELIMITER << COLOUR BOLD CAP_YELLOW << " " << mId << mlogInfoBuffer
+    << colourArray[reinterpret_cast<std::uintptr_t>(mThisPointer) % colourArraySize] << mThisPointer << COLOUR RESET;
+    writeOutput(ss.str(), mProcessId, mThreadId, (size_t)mChannel, mDepth);
+
+    // The macro which calls this hardcodes a " " to get around some macro limitations regarding zero/1/multi argument __VA_ARGS__
+    if(customMessageBuffer.size() > 1) {
+      log(line, std::move(customMessageBuffer));
+    }
   }
-
-  mlogInfoBuffer = std::move(logInfoBuffer.substr(0, LOG_INFO_BUFFER_LIMIT));
-  if (mlogInfoBuffer.length() != logInfoBuffer.length()) {
-    mlogInfoBuffer.append("...]");
-  }
-  mlogInfoBuffer.append(" ");
-
-  std::stringstream ss;
-  printTab(ss, mProcessId, mThreadId, mDepth, (size_t)mChannel);
-  ss << COLOUR BOLD CAP_GREEN << PRIMARY_LOG_BEGIN_DELIMITER << COLOUR BOLD CAP_YELLOW << " " << mId << mlogInfoBuffer
-  << colourArray[reinterpret_cast<std::uintptr_t>(mThisPointer) % colourArraySize] << mThisPointer << COLOUR RESET;
-  PRINT_TO_LOG("%s", ss.str().c_str());
-
-  if(customMessageBuffer.size() == 1) {
-    return;
-  }
-
-  log(line, std::move(customMessageBuffer));
 }
 
 void BlockLogger::log(int line, std::string_view messageBuffer) {
-  if(!(mEnabledMode & CAN_WRITE_TO_OUTPUT)) {
-    return;
+  if(mEnabledMode & CAN_WRITE_TO_OUTPUT) {
+    std::stringstream ss;
+    ss << COLOUR BOLD CAP_GREEN << ADD_LOG_DELIMITER << ADD_LOG_SECOND_DELIMITER << COLOUR BOLD CAP_YELLOW << " " << mId << " "
+    << COLOUR RESET << "[" << COLOUR BOLD CAP_GREEN << line << COLOUR RESET << "] LOG: " 
+    << messageBuffer << COLOUR RESET;
+    writeOutput(ss.str(), mProcessId, mThreadId, (size_t)mChannel, mDepth);
   }
-
-  std::stringstream ss;
-  ss << COLOUR BOLD CAP_GREEN << ADD_LOG_DELIMITER << ADD_LOG_SECOND_DELIMITER << COLOUR BOLD CAP_YELLOW << " " << mId << " "
-  << COLOUR RESET << "[" << COLOUR BOLD CAP_GREEN << line << COLOUR RESET << "] LOG: " 
-  << messageBuffer << COLOUR RESET;
-  writeOutput(ss.str(), mProcessId, mThreadId, (size_t)mChannel, mDepth);
-
-  // size_t index = 0;
-  // while(index < messageBuffer.size()) {
-  //   // The macro which calls this hardcodes a " " to get around some macro limitations regarding zero/1/multi argument __VA_ARGS__
-  //   std::stringstream ss;
-  //   printTab(ss, mProcessId, mThreadId, mDepth, (size_t)mChannel);
-  //   ss << COLOUR BOLD CAP_GREEN << ADD_LOG_DELIMITER << ADD_LOG_SECOND_DELIMITER << COLOUR BOLD CAP_YELLOW << " " << mId << " "
-  //   << COLOUR RESET << "[" << COLOUR BOLD CAP_GREEN << line << COLOUR RESET << "] LOG: " 
-  //   << messageBuffer.substr(index, LOG_LINE_CHARACTER_LIMIT) << COLOUR RESET;
-  //   PRINT_TO_LOG("%s", ss.str().c_str());
-  //   index += LOG_LINE_CHARACTER_LIMIT;
-  // }
 }
 
 void BlockLogger::error(int line, std::string_view messageBuffer) {
-  if(!(mEnabledMode & CAN_WRITE_TO_OUTPUT)) {
-    return;
-  }
-
-  size_t index = 0;
-  while(index < messageBuffer.size()) {
-    // The macro which calls this hardcodes a " " to get around some macro limitations regarding zero/1/multi argument __VA_ARGS__
+  if(mEnabledMode & CAN_WRITE_TO_OUTPUT) {
     std::stringstream ss;
-    printTab(ss, mProcessId, mThreadId, mDepth, (size_t)mChannel);
     ss << COLOUR BOLD CAP_GREEN << ADD_LOG_DELIMITER << ADD_LOG_SECOND_DELIMITER << COLOUR BOLD CAP_YELLOW << " " << mId << " "
     << COLOUR RESET << "[" << COLOUR BOLD CAP_GREEN << line << COLOUR RESET << "] " << COLOUR BOLD CAP_RED << "ERROR: " 
-    << messageBuffer.substr(index, LOG_LINE_CHARACTER_LIMIT) << COLOUR RESET;
-    PRINT_TO_LOG("%s", ss.str().c_str());
-    index += LOG_LINE_CHARACTER_LIMIT;
+    << messageBuffer << COLOUR RESET;
+    writeOutput(ss.str(), mProcessId, mThreadId, (size_t)mChannel, mDepth);
   }
 }
 
 //-------- State Addresses
 void BlockLogger::printState(int line, const DataStoreKey& key, const DataStoreMemberVariableName& varName) {
-  if(!(mEnabledMode & CAN_WRITE_TO_OUTPUT)) {
-    return;
-  }
-
-  auto& loggerDataStore = BlockLoggerDataStore::getInstance();
-  auto states = loggerDataStore.getStates(storeKeyList(key), variableNames(varName));
-
-  if (mEnabledMode & CAN_WRITE_TO_OUTPUT) {
+  if(mEnabledMode & CAN_WRITE_TO_OUTPUT) {
+    auto states = BlockLoggerDataStore::getInstance().getStates(storeKeyList(key), variableNames(varName));
     printStateImpl(line, "PRINT STATE", to_string(key), varName, states[0]);
   }
 }
 
 void BlockLogger::printAllStateOfStore(int line, const DataStoreKey& key) {
-  if(!(mEnabledMode & CAN_WRITE_TO_OUTPUT)) {
-    return;
-  }
+  if(mEnabledMode & CAN_WRITE_TO_OUTPUT) {
+    auto allStates = BlockLoggerDataStore::getInstance().getAllStates(key);
 
-  auto& loggerDataStore = BlockLoggerDataStore::getInstance();
-  auto allStates = loggerDataStore.getAllStates(key);
+    std::stringstream ss;
+    ss << COLOUR BOLD CAP_GREEN << ADD_LOG_DELIMITER << ADD_LOG_SECOND_DELIMITER << COLOUR BOLD CAP_YELLOW << " " << mId << " "
+    << COLOUR RESET << "[" << COLOUR BOLD CAP_GREEN << line << COLOUR RESET << "] " << COLOUR BOLD CAP_RED 
+    << "PRINTING ALL STATE IN STORE: StoreKey='" << to_string(key) << COLOUR RESET;
+    writeOutput(ss.str(), mProcessId, mThreadId, (size_t)mChannel, mDepth);
 
-  std::stringstream ss;
-  printTab(ss, mProcessId, mThreadId, mDepth, (size_t)mChannel);
-  ss << COLOUR BOLD CAP_GREEN << ADD_LOG_DELIMITER << ADD_LOG_SECOND_DELIMITER << COLOUR BOLD CAP_YELLOW << " " << mId << " "
-  << COLOUR RESET << "[" << COLOUR BOLD CAP_GREEN << line << COLOUR RESET << "] " << COLOUR BOLD CAP_RED 
-  << "PRINTING ALL STATE IN STORE: StoreKey='" << to_string(key) << COLOUR RESET;
-  PRINT_TO_LOG("%s", ss.str().c_str());
-
-  for(const auto& row : allStates) {
-    printStateImpl(line, "PRINT STATE", to_string(key), row.first, row.second);
+    for(const auto& row : allStates) {
+      printStateImpl(line, "PRINT STATE", to_string(key), row.first, row.second);
+    }
   }
 }
 
@@ -319,8 +242,7 @@ void BlockLogger::releaseState(int line, const DataStoreKey& key, const DataStor
     return;
   }
 
-  auto& loggerDataStore = BlockLoggerDataStore::getInstance();
-  std::optional<std::string> oldState = loggerDataStore.releaseState(key, varName);
+  std::optional<std::string> oldState = BlockLoggerDataStore::getInstance().releaseState(key, varName);
 
   if (mEnabledMode & CAN_WRITE_TO_OUTPUT) {
     printStateImpl(line, "RELEASE STATE", to_string(key), varName, oldState);
@@ -332,41 +254,34 @@ void BlockLogger::releaseAllStateOfStore(int line, const DataStoreKey& key) {
     return;
   }
 
-  auto& loggerDataStore = BlockLoggerDataStore::getInstance();
-  int deletedCount = loggerDataStore.releaseAllStates(key);
+  int deletedCount = BlockLoggerDataStore::getInstance().releaseAllStates(key);
 
   if (mEnabledMode & CAN_WRITE_TO_OUTPUT) {
     std::stringstream ss;
-    printTab(ss, mProcessId, mThreadId, mDepth, (size_t)mChannel);
     ss << COLOUR BOLD CAP_GREEN << ADD_LOG_DELIMITER << ADD_LOG_SECOND_DELIMITER << COLOUR BOLD CAP_YELLOW << " " << mId << " "
     << COLOUR RESET << "[" << COLOUR BOLD CAP_GREEN << line << COLOUR RESET << "] " << COLOUR BOLD CAP_RED 
-    << "RELEASE ALL STATE IN STORE: StoreKey='" << to_string(key) << "' Num Deleted='" << deletedCount << "'" << COLOUR RESET;
-    PRINT_TO_LOG("%s", ss.str().c_str());
+    << "RELEASE ALL STATE IN STORE: StoreKey='" << to_string(key) << "' NumDeleted='" << deletedCount << "'" << COLOUR RESET;
+    writeOutput(ss.str(), mProcessId, mThreadId, (size_t)mChannel, mDepth);
   }
 }
 
 void BlockLogger::printStateImpl(int line, const std::string& logCommand, const std::string& storeKey, const std::string& varName, const std::optional<std::string>& value) {
   std::stringstream ss;
-  printTab(ss, mProcessId, mThreadId, mDepth, (size_t)mChannel);
   ss << COLOUR BOLD CAP_GREEN << ADD_LOG_DELIMITER << ADD_LOG_SECOND_DELIMITER << COLOUR BOLD CAP_YELLOW << " " << mId << " "
   << COLOUR RESET << "[" << COLOUR BOLD CAP_GREEN << line << COLOUR RESET << "] " << COLOUR BOLD CAP_RED << logCommand << ": "
   << "StoreKey='" << storeKey << "' : StateName='" << varName << "' : Value='" << value.value_or("N/A") << "'" << COLOUR RESET;
-  PRINT_TO_LOG("%s", ss.str().c_str());
+  writeOutput(ss.str(), mProcessId, mThreadId, (size_t)mChannel, mDepth);
 }
 
 BlockLogger::~BlockLogger() {
-  if(!(mEnabledMode & CAN_WRITE_TO_OUTPUT)) {
+  if(mEnabledMode & CAN_WRITE_TO_OUTPUT) {
     // block logger instance is only created when logging/output mode enabled.
-    return;
+    BlockLoggerDataStore::getInstance().removeBlockLoggerInstance();
+    std::stringstream ss;
+    ss << COLOUR BOLD CAP_GREEN << PRIMARY_LOG_BEGIN_DELIMITER << COLOUR BOLD CAP_YELLOW << " " << mId << mlogInfoBuffer
+    << colourArray[reinterpret_cast<std::uintptr_t>(mThisPointer) % colourArraySize] << mThisPointer << COLOUR RESET;
+    writeOutput(ss.str(), mProcessId, mThreadId, (size_t)mChannel, mDepth);
   }
-
-  BlockLoggerDataStore::getInstance().removeBlockLoggerInstance();
-
-  std::stringstream ss;
-  printTab(ss, mProcessId, mThreadId, mDepth, (size_t)mChannel);
-  ss << COLOUR BOLD CAP_GREEN << PRIMARY_LOG_END_DELIMITER << COLOUR BOLD CAP_YELLOW << " " << mId << mlogInfoBuffer
-  << colourArray[reinterpret_cast<std::uintptr_t>(mThisPointer) % colourArraySize] << mThisPointer << COLOUR RESET;
-  PRINT_TO_LOG("%s", ss.str().c_str());
 }
 
 uint32_t BlockLogger::getEnabledMode() const {

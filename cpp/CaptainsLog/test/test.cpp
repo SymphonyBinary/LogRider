@@ -172,8 +172,40 @@ private:
   }
 };
 
+struct SuperLongNestedClassName : public std::string {
+  SuperLongNestedClassName() {
+    CAP_LOG_BLOCK(CAP::CHANNEL::NESTED_CHANNEL);
+    [](){
+      CAP_LOG_BLOCK_NO_THIS(CAP::CHANNEL::NESTED_CHANNEL);
+      [](){
+        CAP_LOG_BLOCK_NO_THIS(CAP::CHANNEL::NESTED_CHANNEL);
+        [](){
+          CAP_LOG_BLOCK_NO_THIS(CAP::CHANNEL::NESTED_CHANNEL);
+          [](){
+            CAP_LOG_BLOCK_NO_THIS(CAP::CHANNEL::NESTED_CHANNEL);
+            [](){
+              CAP_LOG_BLOCK_NO_THIS(CAP::CHANNEL::NESTED_CHANNEL);
+              [](){
+                CAP_LOG_BLOCK_NO_THIS(CAP::CHANNEL::NESTED_CHANNEL);
+                [](){
+                  CAP_LOG_BLOCK_NO_THIS(CAP::CHANNEL::NESTED_CHANNEL);
+                  [](){
+                    CAP_LOG_BLOCK_NO_THIS(CAP::CHANNEL::NESTED_CHANNEL);
+                  }();
+                }();
+              }();
+            }();
+          }();
+        }();
+      }();
+    }();
+  }
+};
+
 int main() {
   CAP_LOG_BLOCK_NO_THIS(CAP::CHANNEL::DEFAULT, "main");
+
+  SuperLongNestedClassName name;
 
   CAP_LOG_UPDATE_STATE_ON(
     CAP::storeKeyList("SOME BIG STORE"),
