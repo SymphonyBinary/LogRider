@@ -70,7 +70,6 @@ std::regex channelLineRegex(
   ".*CAP_LOG : P=(.+?) T=(.+?) CHANNEL-ID=(.+?) : (.+?) : VERBOSITY=(.+?) : (.+?)",
   std::regex_constants::ECMAScript);
 
-
 /**
  * This will match all the logs:
  * CAP_LOG_BLOCK, CAP_LOG_BLOCK_NO_THIS, CAP_LOG, CAP_LOG_ERROR, CAP_SET
@@ -80,16 +79,24 @@ std::regex channelLineRegex(
  * 2 - ThreadId
  * 3 - ChannelId
  * 4 - Indentation
- * 5 - FunctionId
- * 6 - Line number in source code
- * 7 - Info string; the remainder of the string.  Changes depending on log type.
+ * 5 - Info String (everything after the prefix and Indentation marker)
  **/
 std::regex logLineRegex(
-  ".*CAP_LOG : P=(.+?) T=(.+?) C=(.+?) (.+?) (.+?) (\\[.+?\\])(.*)",
+  ".*CAP_LOG : P=(.+?) T=(.+?) C=(.+?) (.+?) (.+)",
   std::regex_constants::ECMAScript);
 
 /**
- * This will match the opening and closing block tags
+ * This will match the Info String (#5) from the logLineRegex
+ * 1 - FunctionId
+ * 2 - Line number in source code
+ * 3 - Info string body; the remainder of the string.  Changes depending on log type.
+ **/
+std::regex infoStringCommon(
+  "(.+?) (\\[.+?\\])(.*)",
+  std::regex_constants::ECMAScript);
+
+/**
+ * This will match the info string body if it's opening and closing block tags
  * eg. ::[test.cpp]::[something::TestNetwork::TestNetwork()] 0x7ffecc005730
  * 0 - the full string
  * 1 - filename
@@ -310,7 +317,7 @@ private:
 
   using IdxArray = std::vector<size_t>;
 
-  // can probably replace these with 2d vectors.
+  // TODO (perf) can probably replace these with 2d vectors.
   using UniqueThreadIdToStackNodeIdxArray = std::unordered_map<size_t, IdxArray>;
   using UniqueProcessIdToUniqueThreadIdToStackNodeIdxArray = std::unordered_map<size_t, UniqueThreadIdToStackNodeIdxArray>;
   UniqueProcessIdToUniqueThreadIdToStackNodeIdxArray mUniqueProcessIdToUniqueThreadIdToStackNodeIdxArray;
