@@ -683,8 +683,8 @@ void processBlockInnerLine (
 
   if ((selfDepth != expectedSelfDepth) || (expectedSelfDepth < 1)) {
     // TODO: use fix up method here later.
-    std::cout << "selfDepth: " << selfDepth << std::endl;
-    std::cout << "expectedSelfDepth: " << expectedSelfDepth << std::endl;
+    std::cerr << "selfDepth: " << selfDepth << std::endl;
+    std::cerr << "expectedSelfDepth: " << expectedSelfDepth << std::endl;
     failWithAbort(workingData, "selfDepth != expectedSelfDepth || expectedSelfDepth < 1");
   }
 
@@ -782,21 +782,17 @@ bool processLogLine(
     bool isCompleteLine = false;
     switch (inputLogLine.inputLineType) {
       case CapLogType::BLOCK_CONCAT_BEGIN:
-        // std::cout << "CapLogType::BLOCK_CONCAT_BEGIN" << std::endl;
         processIncompleteLineBegin(workingData, worldState);
         break;
       case CapLogType::BLOCK_CONCAT_CONTINUE:
-        // std::cout << "CapLogType::BLOCK_CONCAT_CONTINUE" << std::endl;
         if (!prevStackNode) {
           failWithAbort(workingData, "Cannot concat; no previous node to concat to");
         }
         processIncompleteLineContinue(workingData, worldState);
         break;
       case CapLogType::BLOCK_CONCAT_END:
-        // std::cout << "CapLogType::BLOCK_CONCAT_END" << std::endl;
         workingData.inPlace = {prevStackNodeIdx, prevStackNode};
         workingData.inputLine = std::move(workingData.prevStackNode->incompleteString);
-        std::cout << workingData.inputLine << std::endl;
         processLogLine(workingData, worldState);
         break;
       default:
