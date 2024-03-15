@@ -59,6 +59,16 @@ namespace {
 /**
  * This will match all the channel logs
  * the sub-expressions:
+ * 0 - The full string
+ * 1 - The caplog string
+ **/
+std::regex caplogRegex(
+  "(.*CAP_LOG : .*)",
+  std::regex_constants::ECMAScript);
+
+/**
+ * This will match all the channel logs
+ * the sub-expressions:
  * 0 - the full string
  * 1 - ProcessId
  * 2 - ThreadId
@@ -68,7 +78,7 @@ namespace {
  * 6 - ChannelName
  **/
 std::regex channelLineRegex(
-  ".*CAP_LOG : P=(.+?) T=(.+?) CHANNEL-ID=(.+?) : (.+?) : VERBOSITY=(.+?) : (.+?)",
+  ".*?CAP_LOG : P=(.+?) T=(.+?) CHANNEL-ID=(.+?) : (.+?) : VERBOSITY=(.+?) : (.+?)",
   std::regex_constants::ECMAScript);
 
 /**
@@ -83,7 +93,7 @@ std::regex channelLineRegex(
  * 5 - Info String (everything after the prefix and Indentation marker)
  **/
 std::regex logLineRegex(
-  "(.*?)CAP_LOG : P=(.+?) T=(.+?) C=(.+?) (.+?) (.*)",
+  ".*?CAP_LOG : P=(.+?) T=(.+?) C=(.+?) (.+?) (.*)",
   std::regex_constants::ECMAScript);
 
 /**
@@ -728,6 +738,9 @@ bool processLogLine(
     WorldState& worldState) {
   std::smatch piecesMatch;
   bool matched = std::regex_match (workingData.inputLine, piecesMatch, logLineRegex);
+  // std::cout << "processLogLine start" << std::endl;
+  // std::cout << workingData.inputLine << std::endl;
+  // std::cout << "Matched: " << matched << std::endl;
   if (matched) {
     workingData.lineType = CapLineType::CAPLOG;
     workingData.inputLogLine = std::make_unique<InputLogLine>();
@@ -738,13 +751,12 @@ bool processLogLine(
     // structured bindings don't work for regex match :(
     // cannot decompose inaccessible member ‘std::__cxx11::match_results<__gnu_cxx::__normal_iterator<...
     inputLogLine.inputFullString = piecesMatch[0];
-    inputLogLine.inputProcessId = piecesMatch[2];
-    inputLogLine.inputThreadId = piecesMatch[3];
-    inputLogLine.inputChannelId = piecesMatch[4];
-    inputLogLine.inputIndentation = piecesMatch[5];
-    inputLogLine.inputInfoString = piecesMatch[6];
+    inputLogLine.inputProcessId = piecesMatch[1];
+    inputLogLine.inputThreadId = piecesMatch[2];
+    inputLogLine.inputChannelId = piecesMatch[3];
+    inputLogLine.inputIndentation = piecesMatch[4];
+    inputLogLine.inputInfoString = piecesMatch[5];
 
-    // std::cout << "processLogLine start" << std::endl;
     // std::cout << piecesMatch[0] << std::endl;
     // std::cout << piecesMatch[1] << std::endl;
     // std::cout << piecesMatch[2] << std::endl;
@@ -842,10 +854,10 @@ bool processLogLine(
         failWithAbort(workingData, "Unable to match info line common");
       }
     }
-  }
 
-  workingData.inPlace = std::nullopt;
-  workingData.inputLine = "";
+    workingData.inPlace = std::nullopt;
+    workingData.inputLine = "";
+  }
 
   return matched;
 }
@@ -856,6 +868,16 @@ bool processChannelLine(
   std::smatch piecesMatch;
   bool matched = std::regex_match(workingData.inputLine, piecesMatch, channelLineRegex);
   if (matched) {
+    // std::cout << "processChannelLine start" << std::endl;
+    // std::cout << piecesMatch[0] << std::endl;
+    // std::cout << piecesMatch[1] << std::endl;
+    // std::cout << piecesMatch[2] << std::endl;
+    // std::cout << piecesMatch[3] << std::endl;
+    // std::cout << piecesMatch[4] << std::endl;
+    // std::cout << piecesMatch[5] << std::endl;
+    // std::cout << piecesMatch[6] << std::endl;
+    // std::cout << "processChannelLine end" << std::endl;
+
     workingData.lineType = CapLineType::CHANNEL;
     workingData.channelLine = std::make_unique<ChannelLine>();
     ChannelLine& channelLine = *workingData.channelLine.get();
@@ -935,11 +957,13 @@ int main(int argc, char* argv[]) {
 
   std::string inputLine;
   while (std::getline(fileStream, inputLine)) {
-    worldWorkingData.inputLine = std::move(inputLine);
-    if (processLogLine(worldWorkingData, worldState)) {
-      // output.outputText.append 
-    } else if (processChannelLine(worldWorkingData, worldState)) {
-      // 
+    if (std::smatch piecesMatch; std::regex_search(inputLine, piecesMatch, caplogRegex)) {
+      worldWorkingData.inputLine = std::move(piecesMatch.str());
+      if (processLogLine(worldWorkingData, worldState)) {
+        // output.outputText.append 
+      } else if (processChannelLine(worldWorkingData, worldState)) {
+        // 
+      }
     }
 
     ++worldWorkingData.intputFileLineNumber;
