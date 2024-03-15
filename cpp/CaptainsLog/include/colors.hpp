@@ -1,3 +1,6 @@
+#pragma once
+
+#ifdef ENABLE_CAP_LOGGER
 
 //#define COLOURIZE
 //#define FANCY_ASCII
@@ -45,6 +48,12 @@
   // … Unicode: U+2026, UTF-8: E2 80 A6
   //#define MAIN_PREFIX_DELIMITER "\u2026"
   #define MAIN_PREFIX_DELIMITER ""
+  #define PROCESS_ID_DELIMITER "P="
+  #define THREAD_ID_DELIMITER "T="
+  #define CHANNEL_ID_DELIMITER "C="
+  #define CONCAT_DELIMITER_BEGIN "|+ "
+  #define CONCAT_DELIMITER_CONTINUE "++ "
+  #define CONCAT_DELIMITER_END "+| "
   // ║ Unicode: U+2551, UTF-8: E2 95 91
   #define TAB_DELIMITER "\u2551"
 #else
@@ -60,4 +69,6 @@
   #define CONCAT_DELIMITER_CONTINUE "++ "
   #define CONCAT_DELIMITER_END "+| "
   #define TAB_DELIMITER ":"
+#endif
+
 #endif

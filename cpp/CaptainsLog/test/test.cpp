@@ -1,8 +1,4 @@
-#ifndef ENABLE_CAP_LOGGER
-#define ENABLE_CAP_LOGGER
-#endif
-
-#include "../src/caplogger.hpp"
+#include <caplogger.hpp>
 #include <vector>
 #include <sstream>
 

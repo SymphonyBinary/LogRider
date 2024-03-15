@@ -9,6 +9,7 @@
 
 namespace CAP {
 
+namespace {
 
 static const char* colourArray[] = {
   COLOUR BOLD CAP_RED,
@@ -21,33 +22,6 @@ static const char* colourArray[] = {
 };
 static const int colourArraySize = sizeof(colourArray)/sizeof(colourArray[0]);
 
-//Before, I was using thread_local to store the per-thread state so that I wouldn't have to deal with mutexes or anything
-//somehow on Android, thread_local didn't really do the expected things.  Also the process is
-
-namespace {
-void printChannel(std::stringstream& ss, unsigned int processId, unsigned int threadId, unsigned int depth, unsigned int channelId, std::string_view channelName, uint32_t enabledMode, int verbosityLevel) {
-  ss << COLOUR BOLD CAP_YELLOW << MAIN_PREFIX_DELIMITER << INSERT_THREAD_ID << " : " << PROCESS_ID_DELIMITER 
-    << processId << " " << THREAD_ID_DELIMITER << colourArray[threadId % colourArraySize] << threadId << COLOUR BOLD CAP_GREEN 
-    << " CHANNEL-ID=" << std::setw(3) << std::setfill('0') << channelId;
-
-  if (enabledMode == FULLY_ENABLED) {
-    ss << " : FULLY ENABLED        ";
-  } else if (enabledMode == ENABLED_NO_OUTPUT) {
-    ss << " : ENABLED BUT NO OUTPUT";
-  } else if (enabledMode == FULLY_DISABLED) {
-    ss << " : FULLY DISABLED       ";
-  } else {
-    ss << " : UNKNOWN MODE!        ";
-  }
-
-  ss << " : VERBOSITY=" << verbosityLevel << " : ";
-
-  for(unsigned int i = 0 ; i < depth; ++i ) {
-    ss << ">  ";
-  }
-
-  ss << channelName;
-}
 
 struct PrintPrefix {
   unsigned int processId;
@@ -110,67 +84,9 @@ void writeOutput(const std::string& messageBuffer, unsigned int processId, unsig
 }
 } // namespace
 
-/*static*/ BlockChannelTree& BlockChannelTree::getInstance() {
-  static BlockChannelTree instance;
-  return instance;
-}
-
-uint32_t BlockChannelTree::getEnabledMode(CHANNEL channel) {
-  return mEnabledModeChannelsById[(size_t)channel];
-}
-
-BlockChannelTree::BlockChannelTree() {
-  PRINT_TO_LOG("%s", "CAPTAIN'S LOG - VERSION 1.1"); \
-
-  std::vector<uint32_t> enabledStack = {ALL_FLAGS};
-  int index = 0;
-  uint32_t currentEnabledMode = ALL_FLAGS;
-
-  #define CAPTAINS_LOG_CHANNEL(name, verboseLevel, enabledMode) \
-  currentEnabledMode = enabledMode & enabledStack.back(); \
-  mEnabledModeChannelsById[index++] = currentEnabledMode;
-
-  #define CAPTAINS_LOG_CHANNEL_BEGIN_CHILDREN(...) \
-  enabledStack.emplace_back(currentEnabledMode);
-
-  #define CAPTAINS_LOG_CHANNEL_END_CHILDREN(...) \
-  enabledStack.pop_back();
-
-  #include CAPTAINS_LOG_STRINGIFY(CHANNELS_PATH)
-
-  #undef CAPTAINS_LOG_CHANNEL
-  #undef CAPTAINS_LOG_CHANNEL_BEGIN_CHILDREN
-  #undef CAPTAINS_LOG_CHANNEL_END_CHILDREN
-
-
-  // Now print it.  This should be the first thing caplog prints.
-  auto& loggerDataStore = BlockLoggerDataStore::getInstance();
-  auto logData = loggerDataStore.newBlockLoggerInstance();
-  int channelDepth = 0;
-  int channelId = 0;
-  std::stringstream ss;
-
-  #define CAPTAINS_LOG_CHANNEL(name, verboseLevel, channelEnabledMode) \
-  printChannel(ss, logData.processTimestamp, logData.relativeThreadIdx, channelDepth, channelId, #name, mEnabledModeChannelsById[channelId], verboseLevel); \
-  ++channelId; \
-  PRINT_TO_LOG("%s", ss.str().c_str()); \
-  ss.str("");
-  #define CAPTAINS_LOG_CHANNEL_BEGIN_CHILDREN(...) \
-  ++channelDepth;
-  #define CAPTAINS_LOG_CHANNEL_END_CHILDREN(...) \
-  --channelDepth;
-
-  #include CAPTAINS_LOG_STRINGIFY(CHANNELS_PATH)
-  #undef CAPTAINS_LOG_CHANNEL
-  #undef CAPTAINS_LOG_CHANNEL_BEGIN_CHILDREN
-  #undef CAPTAINS_LOG_CHANNEL_END_CHILDREN
-  
-  BlockLoggerDataStore::getInstance().removeBlockLoggerInstance();
-}
-
 
 BlockLogger::BlockLogger(const void* thisPointer, CAP::CHANNEL channel)
-  : mEnabledMode(BlockChannelTree::getInstance().getEnabledMode(channel))
+  : mEnabledMode(CAP::getChannelFlagMap()[(size_t)channel])
   , mlogInfoBuffer()
   , mcustomMessageBuffer()
   , mId(0)
@@ -295,10 +211,6 @@ BlockLogger::~BlockLogger() {
     << colourArray[reinterpret_cast<std::uintptr_t>(mThisPointer) % colourArraySize] << mThisPointer << COLOUR RESET;
     writeOutput(ss.str(), mProcessId, mThreadId, (size_t)mChannel, mDepth);
   }
-}
-
-uint32_t BlockLogger::getEnabledMode() const {
-  return mEnabledMode;
 }
 
 } // namespace CAP

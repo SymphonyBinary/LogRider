@@ -2,12 +2,11 @@
 
 #ifdef ENABLE_CAP_LOGGER
 
-#include <chrono>
+#include "utilities.hpp"
+
 #include <vector>
 #include <array>
-#include <iomanip>
 
-#include <cstdint>
 #include <cstdlib>
 #include <iostream>
 #include <sstream>
@@ -18,41 +17,11 @@
 #include <unordered_map>
 #include <mutex>
 #include <functional>
-#include <limits>
 #include <optional>
 #include <variant>
 #include <type_traits>
 
-#include <cstdint>
-
 namespace CAP {
-
-namespace {
-  template<class... Ts>
-  struct overloaded : Ts... { using Ts::operator()...; };
-  // explicit deduction guide (not needed as of C++20)
-  template<class... Ts>
-  overloaded(Ts...) -> overloaded<Ts...>;
-} // namespace
-
-template<class T, size_t N>
-struct ArrayN {
-  ArrayN(std::array<T, N> array)
-      : v(std::move(array)){}
-
-  ArrayN() = default;
-
-  const T& operator[] (int index) const {
-    return v[index];
-  }
-
-  T& operator[] (int index) {
-    return v[index];
-  }
-  
-  constexpr static size_t Size = N;
-  std::array<T, N> v;
-};
 
 enum class ValueChangeStatus {
   UNCHANGED,
@@ -60,25 +29,6 @@ enum class ValueChangeStatus {
   UPDATED,
   DELETED,
 };
-
-inline const std::string& to_string(ValueChangeStatus changes) {
-  switch (changes) {
-    case ValueChangeStatus::UNCHANGED: 
-      static std::string unchanged = "UNCHANGED";
-      return unchanged;
-    case ValueChangeStatus::CREATED:
-      static std::string created = "CREATED";
-      return created;
-    case ValueChangeStatus::UPDATED:
-      static std::string updated = "UPDATED";
-      return updated;
-    case ValueChangeStatus::DELETED:
-      static std::string deleted = "DELETED";
-      return deleted;
-  }
-  static std::string defaultRet;
-  return defaultRet;
-}
 
 template<size_t DATA_COUNT>
 using NumChangedElementsN = ArrayN<ValueChangeStatus, DATA_COUNT>;
@@ -107,6 +57,25 @@ template<size_t DATA_COUNT>
 using DataStoreStateArray = std::array<DataStoreState, DATA_COUNT>;
 template<size_t DATA_COUNT>
 using DataStoreValuesArrayUpdater = std::function<void(DataStoreStateArray<DATA_COUNT>&)>;
+
+inline const std::string& to_string(ValueChangeStatus changes) {
+  switch (changes) {
+    case ValueChangeStatus::UNCHANGED: 
+      static std::string unchanged = "UNCHANGED";
+      return unchanged;
+    case ValueChangeStatus::CREATED:
+      static std::string created = "CREATED";
+      return created;
+    case ValueChangeStatus::UPDATED:
+      static std::string updated = "UPDATED";
+      return updated;
+    case ValueChangeStatus::DELETED:
+      static std::string deleted = "DELETED";
+      return deleted;
+  }
+  static std::string defaultRet;
+  return defaultRet;
+}
 
 inline std::string to_string(const DataStoreKey& key) {
   std::string retString;
@@ -321,11 +290,7 @@ struct BlockLoggerDataStore {
   void operator=(const BlockLoggerDataStore&) = delete;
 
 private:
-  BlockLoggerDataStore() 
-  : mProcessTimestamp(static_cast<unsigned int>(
-    std::chrono::duration_cast<std::chrono::milliseconds>(
-      std::chrono::system_clock::now().time_since_epoch()).count())) {
-  }
+  BlockLoggerDataStore();
 
   std::mutex mMut;
   std::unordered_map<std::thread::id, LoggerData> mData;
