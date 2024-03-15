@@ -1,7 +1,7 @@
 #ifdef ENABLE_CAP_LOGGER
 
-#include "capdata.hpp"
-#include "channels.hpp"
+#include "include/capdata.hpp"
+#include "include/channels.hpp"
 
 #include <chrono>
 

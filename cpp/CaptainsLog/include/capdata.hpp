@@ -2,7 +2,7 @@
 
 #ifdef ENABLE_CAP_LOGGER
 
-#include "utilities.hpp"
+#include "include/utilities.hpp"
 
 #include <vector>
 #include <array>

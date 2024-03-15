@@ -6,7 +6,7 @@
 static_assert(false, "CHANNELS_PATH not defined");
 #endif
 
-#include "utilities.hpp"
+#include "include/utilities.hpp"
 
 #include <iomanip>
 

@@ -2,7 +2,7 @@
 
 #include <array>
 
-#include "colors.hpp"
+#include "include/colors.hpp"
 
 namespace CAP {
 

@@ -1,2 +1,2 @@
 cd `dirname "$0"`
-clang++ -Wall -std=c++17 test/test.cpp src/caplogger.cpp -Isrc -DENABLE_CAP_LOGGER -o out/test.out
+clang++ -Wall -std=c++17 test/test.cpp src/caplogger.cpp -I. -DENABLE_CAP_LOGGER -o out/test.out

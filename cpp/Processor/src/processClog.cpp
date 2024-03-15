@@ -14,6 +14,8 @@
 #include <assert.h>
 #include <cmath> // for progress bar
 
+#include <CaptainsLog/include/caplogger.hpp>
+
 /*
 ------------------------------------------------------------------------------
 CHANNEL MESSAGE (always the first caplog message to get displayed per process)
@@ -486,6 +488,7 @@ std::string replaceIndentationChars (std::string inputIndentation) {
 void processIncompleteLineBegin (
     WorldStateWorkingData& workingData, 
     WorldState& worldState) {
+  CAP_LOG_BLOCK_NO_THIS(CAP::CHANNEL::processIncompleteLineBegin, "%s", workingData.inputLine.c_str());
   InputLogLine& inputLogLine = *workingData.inputLogLine.get();
   OutputLogData& outputLogData = *workingData.outputLogData.get();
 
@@ -497,6 +500,7 @@ void processIncompleteLineBegin (
 void processIncompleteLineContinue (
     WorldStateWorkingData& workingData, 
     [[maybe_unused]] WorldState& worldState) {
+  CAP_LOG_BLOCK_NO_THIS(CAP::CHANNEL::processIncompleteLineContinue, "%s", workingData.inputLine.c_str());
   InputLogLine& inputLogLine = *workingData.inputLogLine.get();
 
   workingData.prevStackNode->incompleteString += inputLogLine.inputInfoString;
@@ -505,6 +509,7 @@ void processIncompleteLineContinue (
 void processBlockScopeOpen (
     WorldStateWorkingData& workingData, 
     WorldState& worldState) {
+  CAP_LOG_BLOCK_NO_THIS(CAP::CHANNEL::processBlockScopeOpen, "%s", workingData.inputLine.c_str());
   InputLogLine& inputLogLine = *workingData.inputLogLine.get();
   OutputLogData& outputLogData = *workingData.outputLogData.get();
 
@@ -580,6 +585,7 @@ void processBlockScopeOpen (
 void processBlockScopeClose (
     WorldStateWorkingData& workingData, 
     WorldState& worldState) {
+  CAP_LOG_BLOCK_NO_THIS(CAP::CHANNEL::processBlockScopeClose, "%s", workingData.inputLine.c_str());
   InputLogLine& inputLogLine = *workingData.inputLogLine.get();
   OutputLogData& outputLogData = *workingData.outputLogData.get();
 
@@ -658,6 +664,7 @@ void processBlockScopeClose (
 void processBlockInnerLine (
     WorldStateWorkingData& workingData, 
     WorldState& worldState) {
+  CAP_LOG_BLOCK_NO_THIS(CAP::CHANNEL::processBlockInnerLine, "%s", workingData.inputLine.c_str());
   InputLogLine& inputLogLine = *workingData.inputLogLine.get();
   OutputLogData& outputLogData = *workingData.outputLogData.get();
 
@@ -737,11 +744,16 @@ bool processLogLine(
     WorldStateWorkingData& workingData, 
     WorldState& worldState) {
   std::smatch piecesMatch;
+  CAP_LOG_BLOCK_NO_THIS(CAP::CHANNEL::processLogLine, "%s", workingData.inputLine.c_str());
   bool matched = std::regex_match (workingData.inputLine, piecesMatch, logLineRegex);
-  // std::cout << "processLogLine start" << std::endl;
-  // std::cout << workingData.inputLine << std::endl;
-  // std::cout << "Matched: " << matched << std::endl;
   if (matched) {
+    CAP_LOG("Matched 1:%s 2:%s 3:%s 4:%s 5:%s", 
+      piecesMatch[1].str().c_str(),
+      piecesMatch[2].str().c_str(),
+      piecesMatch[3].str().c_str(),
+      piecesMatch[4].str().c_str(),
+      piecesMatch[5].str().c_str());
+
     workingData.lineType = CapLineType::CAPLOG;
     workingData.inputLogLine = std::make_unique<InputLogLine>();
     workingData.outputLogData = std::make_unique<OutputLogData>();
@@ -756,15 +768,6 @@ bool processLogLine(
     inputLogLine.inputChannelId = piecesMatch[3];
     inputLogLine.inputIndentation = piecesMatch[4];
     inputLogLine.inputInfoString = piecesMatch[5];
-
-    // std::cout << piecesMatch[0] << std::endl;
-    // std::cout << piecesMatch[1] << std::endl;
-    // std::cout << piecesMatch[2] << std::endl;
-    // std::cout << piecesMatch[3] << std::endl;
-    // std::cout << piecesMatch[4] << std::endl;
-    // std::cout << piecesMatch[5] << std::endl;
-    // std::cout << piecesMatch[6] << std::endl;
-    // std::cout << "processLogLine end" << std::endl;
 
     inputLogLine.inputLineType = getLineType(inputLogLine.inputIndentation);
     outputLogData.uniqueProcessId = workingData.getUniqueProcessIdForInputProcessId(inputLogLine.inputProcessId, worldState);
@@ -812,24 +815,21 @@ bool processLogLine(
     }
 
     if (isCompleteLine) {
+      CAP_LOG_BLOCK_NO_THIS(CAP::CHANNEL::processLogLine, "Is Complete Line.  input line: %s", inputLogLine.inputInfoString.c_str());
       std::smatch infoMatch;
       bool matchedInfo = std::regex_match (inputLogLine.inputInfoString, infoMatch, infoStringCommon);
       
       // do common part of Info line.
       if (matchedInfo) {
+        CAP_LOG("Matched 1:%s 2:%s 3:%s", 
+          piecesMatch[1].str().c_str(),
+          piecesMatch[2].str().c_str(),
+          piecesMatch[3].str().c_str());
+
         inputLogLine.inputFunctionId = infoMatch[1];
         inputLogLine.inputSourceFileLine = infoMatch[2];
         inputLogLine.inputInfoString = infoMatch[3]; //overwrite infoString with common part removed
         inputLogLine.inputLineDepth = getLineDepth(inputLogLine.inputIndentation);
-
-        // std::cout << "TEST" << std::endl;
-        // std::cout << inputLogLine.inputFunctionId << std::endl;
-        // std::cout << inputLogLine.inputSourceFileLine << std::endl;
-        // std::cout << inputLogLine.inputInfoString << std::endl;
-        // std::cout << inputLogLine.inputLineDepth << std::endl;
-        // std::cout << inputLogLine.inputIndentation << std::endl;
-        // std::cout << (int)inputLogLine.inputLineType << std::endl;
-        // std::cout << "END" << std::endl;
 
         outputLogData.lineDepth = inputLogLine.inputLineDepth;
         outputLogData.commonLogText.channelId = inputLogLine.inputChannelId;
@@ -865,18 +865,17 @@ bool processLogLine(
 bool processChannelLine(
     WorldStateWorkingData& workingData, 
     WorldState& worldState) {
+  CAP_LOG_BLOCK_NO_THIS(CAP::CHANNEL::processChannelLine, "%s", workingData.inputLine.c_str());
   std::smatch piecesMatch;
   bool matched = std::regex_match(workingData.inputLine, piecesMatch, channelLineRegex);
   if (matched) {
-    // std::cout << "processChannelLine start" << std::endl;
-    // std::cout << piecesMatch[0] << std::endl;
-    // std::cout << piecesMatch[1] << std::endl;
-    // std::cout << piecesMatch[2] << std::endl;
-    // std::cout << piecesMatch[3] << std::endl;
-    // std::cout << piecesMatch[4] << std::endl;
-    // std::cout << piecesMatch[5] << std::endl;
-    // std::cout << piecesMatch[6] << std::endl;
-    // std::cout << "processChannelLine end" << std::endl;
+    CAP_LOG("Matched 1:%s 2:%s 3:%s 4:%s 5:%s 6:%s", 
+      piecesMatch[1].str().c_str(),
+      piecesMatch[2].str().c_str(),
+      piecesMatch[3].str().c_str(),
+      piecesMatch[4].str().c_str(),
+      piecesMatch[5].str().c_str(),
+      piecesMatch[6].str().c_str());
 
     workingData.lineType = CapLineType::CHANNEL;
     workingData.channelLine = std::make_unique<ChannelLine>();
@@ -934,6 +933,7 @@ struct FileReadProgress {
 } // namespace
 
 int main(int argc, char* argv[]) {
+  CAP_LOG_BLOCK_NO_THIS(CAP::CHANNEL::main);
   if (argc != 3) {
     std::cout << "Usage: processClog [input clogfile.clog] [output file]";
     return 0;
@@ -957,6 +957,7 @@ int main(int argc, char* argv[]) {
 
   std::string inputLine;
   while (std::getline(fileStream, inputLine)) {
+    CAP_LOG("%s", inputLine.c_str());
     if (std::smatch piecesMatch; std::regex_search(inputLine, piecesMatch, caplogRegex)) {
       worldWorkingData.inputLine = std::move(piecesMatch.str());
       if (processLogLine(worldWorkingData, worldState)) {

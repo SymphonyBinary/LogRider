@@ -19,9 +19,9 @@
 
 #include <cstdint>
 
-#include "capdata.hpp"
-#include "channels.hpp"
-#include "utilities.hpp"
+#include "include/capdata.hpp"
+#include "include/channels.hpp"
+#include "include/utilities.hpp"
 
 #define LOG_LINE_CHARACTER_LIMIT 150
 #define LOG_INFO_BUFFER_LIMIT 100
