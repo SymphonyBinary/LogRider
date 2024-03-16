@@ -854,9 +854,6 @@ bool processLogLine(
         failWithAbort(workingData, "Unable to match info line common");
       }
     }
-
-    workingData.inPlace = std::nullopt;
-    workingData.inputLine = "";
   }
 
   return matched;
@@ -965,6 +962,8 @@ int main(int argc, char* argv[]) {
       } else if (processChannelLine(worldWorkingData, worldState)) {
         // 
       }
+      worldWorkingData.inPlace = std::nullopt;
+      worldWorkingData.inputLine = "";
     }
 
     ++worldWorkingData.intputFileLineNumber;

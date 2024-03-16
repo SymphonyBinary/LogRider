@@ -67,7 +67,7 @@
   #define CHANNEL_ID_DELIMITER "C="
   #define CONCAT_DELIMITER_BEGIN "|+ "
   #define CONCAT_DELIMITER_CONTINUE "++ "
-  #define CONCAT_DELIMITER_END "+| "
+  #define CONCAT_DELIMITER_END "+| END"
   #define TAB_DELIMITER ":"
 #endif
 
