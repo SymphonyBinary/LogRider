@@ -298,13 +298,16 @@ public:
       OutputLogData&& logData,
       StackNode* caller,
       std::optional<InPlace> inPlace) {
+    CAP_LOG_BLOCK(CAP::CHANNEL::stackNode);
     if (!inPlace) {
+      CAP_LOG("NEW");
       size_t stackNodeIdx = mStackNodeArray.size();
       mStackNodeArray.emplace_back(std::make_unique<StackNode>(
         stackNodeIdx, std::move(logData), caller));
       mProcessToThreadToStackNodeIds[logData.uniqueProcessId][logData.uniqueThreadId].emplace_back(stackNodeIdx);
       return *mStackNodeArray.back().get();
     } else {
+      CAP_LOG("inPlace");
       size_t stackNodeIdx = inPlace.value().index;
       mStackNodeArray[stackNodeIdx] = std::make_unique<StackNode>(
         stackNodeIdx, std::move(logData), caller);
@@ -494,6 +497,8 @@ void processIncompleteLineBegin (
 
   outputLogData.isComplete = false;
   outputLogData.incompleteText = inputLogLine.inputInfoString;
+
+  CAP_LOG("processIncompleteLineBeing infoString: %s", outputLogData.incompleteText.c_str());
   worldState.addNewStackNode(std::move(outputLogData), workingData.prevStackNode, workingData.inPlace);
 }
 

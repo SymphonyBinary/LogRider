@@ -1,5 +1,6 @@
 cd `dirname "$0"`
-../CaptainsLog/makeTestClogFile
-./buildProcessClogGCC
-out/processClog.out ../CaptainsLog/samples/testProc1.clog samples/testProc1processed.clog
-out/processClog.out ../CaptainsLog/samples/combinedAndInterleaved.clog samples/combinedAndInterleavedprocessed.clog
+cd ..
+CaptainsLog/makeTestClogFile
+Processor/buildProcessClogGCC
+Processor/out/processClog.out samples/testProc1.clog samples/testProc1processed.clog
+Processor/out/processClog.out samples/combinedAndInterleaved.clog samples/combinedAndInterleavedprocessed.clog

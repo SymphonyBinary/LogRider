@@ -1,2 +1,3 @@
 cd `dirname "$0"`
-g++ test/test.cpp src/caplogger.cpp src/capdata.cpp -Wall -Wextra -std=c++17 -lstdc++ -I. -DENABLE_CAP_LOGGER -DCHANNELS_PATH=samples/channeldefs-example.hpp -o out/test.out
+cd ..
+g++ CaptainsLog/test/test.cpp CaptainsLog/src/caplogger.cpp CaptainsLog/src/capdata.cpp -Wall -Wextra -std=c++17 -lstdc++ -ICaptainsLog -I. -DENABLE_CAP_LOGGER -DCHANNELS_PATH=samples/channeldefs-example.hpp -o CaptainsLog/out/test.out
