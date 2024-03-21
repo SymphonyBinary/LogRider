@@ -934,14 +934,24 @@ struct FileReadProgress {
 
 } // namespace
 
+void writeToOutput(OutputState& output, const worldState& worldState) {
+  
+}
+
 int main(int argc, char* argv[]) {
   CAP_LOG_BLOCK_NO_THIS(CAP::CHANNEL::main);
-  if (argc != 3) {
-    std::cout << "Usage: processClog [input clogfile.clog] [output file]";
+  if (argc != 4) {
+    std::cout << "Usage: processClog [input clogfile.clog] [output file] [liveMode | completedMode]";
     return 0;
   }
   char* inputFilename = argv[1];
   char* outputFilename = argv[2];
+  std::string mode = argv[3];
+
+  if (mode != "liveMode" || mode != "completedMode") {
+    std::cout << "Usage: processClog [input clogfile.clog] [output file] [liveMode | completedMode]";
+    return 0;
+  }
 
   // size_t inputFileSize = getFileSize(inputFilename);
   size_t inputFileLineCount = countLines(inputFilename);
