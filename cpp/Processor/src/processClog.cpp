@@ -128,7 +128,7 @@ std::regex infoStringBlockMatch(
  * 2 - inner message
  **/
 std::regex infoStringInnerMatch(
-  " (.*?): (.*)",
+  " (.*?):(.*)",
   std::regex_constants::ECMAScript);
 
 enum class CapLineType {
@@ -478,7 +478,7 @@ int getLineDepth(const std::string& inputIndentation) {
 }
 
 std::string replaceIndentationChars (std::string inputIndentation) {
-  inputIndentation = std::regex_replace(inputIndentation, std::regex(":+"), "║");
+  inputIndentation = std::regex_replace(inputIndentation, std::regex(":"), "║");
   inputIndentation = std::regex_replace(inputIndentation, std::regex("F"), "╔");
   inputIndentation = std::regex_replace(inputIndentation, std::regex("L"), "╚");
   inputIndentation = std::regex_replace(inputIndentation, std::regex("-"), "╠");
