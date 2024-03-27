@@ -518,12 +518,15 @@ void processIncompleteLineBegin (
 
   int characterLimit = workingData.uniqueProcessIdToMaxCharLine[outputLogData.uniqueProcessId];
 
-  outputLogData.incompleteSpacePadding = "";
+  std::string padding;
   CAP_LOG("inputLogLine.inputFullString = %s", inputLogLine.inputFullString.c_str());
   CAP_LOG("inputLogLine.inputFullString.size() = %zu", inputLogLine.inputFullString.size());
+  CAP_LOG("characterLimit = %d", characterLimit);
   for(int i = inputLogLine.inputFullString.size(); i < characterLimit; i++) {
-    outputLogData.incompleteSpacePadding += " ";
+    padding += " ";
   }
+  outputLogData.incompleteSpacePadding += padding;
+  CAP_LOG("outputLogData.incompleteSpacePadding = |%s|", outputLogData.incompleteSpacePadding.c_str());
 
   CAP_LOG("processIncompleteLineBeing infoString: %s", outputLogData.incompleteText.c_str());
   worldState.addNewStackNode(std::move(outputLogData), workingData.prevStackNode, workingData.inPlace);
@@ -536,17 +539,25 @@ void processIncompleteLineContinue (
   InputLogLine& inputLogLine = *workingData.inputLogLine.get();
   OutputLogData& outputLogData = *workingData.outputLogData.get();
 
-  outputLogData.incompleteSpacePadding = workingData.prevStackNode->incompleteSpacePadding;
+  CAP_LOG("padding = |%s|", workingData.prevStackNode->incompleteSpacePadding.c_str());
+  CAP_LOG("incomplete string before: %s", workingData.prevStackNode->incompleteString.c_str());
+
+  workingData.prevStackNode->incompleteString += workingData.prevStackNode->incompleteSpacePadding;
   workingData.prevStackNode->incompleteString += inputLogLine.inputInfoString;
 
-  int characterLimit = workingData.uniqueProcessIdToMaxCharLine[outputLogData.uniqueProcessId];
+  CAP_LOG("incomplete string after: %s", workingData.prevStackNode->incompleteString.c_str());
 
-  outputLogData.incompleteSpacePadding = "";
+  int characterLimit = workingData.uniqueProcessIdToMaxCharLine[outputLogData.uniqueProcessId];
+  CAP_LOG("characterLimit = %d", characterLimit);
+
+  std::string padding;
   CAP_LOG("inputLogLine.inputFullString = %s", inputLogLine.inputFullString.c_str());
   CAP_LOG("inputLogLine.inputFullString.size() = %zu", inputLogLine.inputFullString.size());
   for(int i = inputLogLine.inputFullString.size(); i < characterLimit; i++) {
-    outputLogData.incompleteSpacePadding += " ";
+    padding += " ";
   }
+  workingData.prevStackNode->incompleteSpacePadding = padding;
+  CAP_LOG("outputLogData.incompleteSpacePadding = |%s|", outputLogData.incompleteSpacePadding.c_str());
 }
 
 void processBlockScopeOpen (
@@ -621,7 +632,7 @@ void processBlockScopeOpen (
     outputLogData.blockText.functionName = piecesMatch[2];
     outputLogData.blockText.objectId = piecesMatch[3];
   } else {
-    failWithAbort(workingData, "Unabled to match infoStringBlockMatch with expected block opening line");
+    failWithAbort(workingData, "Unable to match infoStringBlockMatch with expected block opening line");
   }
 
   worldState.addNewStackNode(std::move(outputLogData), callerStackNode, workingData.inPlace);
@@ -700,7 +711,7 @@ void processBlockScopeClose (
     outputLogData.blockText.functionName = piecesMatch[2];
     outputLogData.blockText.objectId = piecesMatch[3];
   } else {
-    failWithAbort(workingData, "processBlockScopeClose Unabled to match infoStringBlockMatch with expected block opening line");
+    failWithAbort(workingData, "processBlockScopeClose Unable to match infoStringBlockMatch with expected block opening line");
   }
 
   worldState.addNewStackNode(std::move(outputLogData), callerStackNode, workingData.inPlace);
@@ -779,7 +790,7 @@ void processBlockInnerLine (
     outputLogData.messageText.innerTypeString = piecesMatch[1];
     outputLogData.messageText.innerPayload = piecesMatch[2];
   } else {
-    failWithAbort(workingData, "processBlockInnerLine Unabled to match infoStringBlockMatch with expected block opening line");
+    failWithAbort(workingData, "processBlockInnerLine Unable to match infoStringBlockMatch with expected block opening line");
   }
 
   worldState.addNewStackNode(std::move(outputLogData), callerStackNode, workingData.inPlace);
@@ -994,18 +1005,19 @@ struct FileReadProgress {
 
 int main(int argc, char* argv[]) {
   CAP_LOG_BLOCK_NO_THIS(CAP::CHANNEL::main);
-  if (argc != 4) {
+  // if (argc != 4) {
+  if (argc != 3) {
     std::cout << "Usage: processClog [input clogfile.clog] [output file] [liveMode | completedMode]";
     return 0;
   }
   char* inputFilename = argv[1];
   char* outputFilename = argv[2];
-  std::string mode = argv[3];
+  // std::string mode = argv[3];
 
-  if (mode != "liveMode" || mode != "completedMode") {
-    std::cout << "Usage: processClog [input clogfile.clog] [output file] [liveMode | completedMode]";
-    return 0;
-  }
+  // if (mode != "liveMode" || mode != "completedMode") {
+  //   std::cout << "Usage: processClog [input clogfile.clog] [output file] [liveMode | completedMode]";
+  //   return 0;
+  // }
 
   // size_t inputFileSize = getFileSize(inputFilename);
   size_t inputFileLineCount = countLines(inputFilename);
