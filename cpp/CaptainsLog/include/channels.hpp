@@ -111,6 +111,10 @@ inline void printChannel(std::stringstream& ss, unsigned int processId, unsigned
   ss << channelName;
 }
 
+inline void printLogLineCharacterLimit(std::stringstream& ss, unsigned int processId) {
+  ss << COLOUR BOLD CAP_YELLOW << MAIN_PREFIX_DELIMITER << INSERT_THREAD_ID << " : " << PROCESS_ID_DELIMITER 
+    << processId <<  " " << MAX_CHAR_SIZE_DELIMITER << LOG_LINE_CHARACTER_LIMIT;
+}
 
 } // namespace CAP
 

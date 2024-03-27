@@ -19,13 +19,19 @@ BlockLoggerDataStore::BlockLoggerDataStore()
       std::chrono::system_clock::now().time_since_epoch()).count())) {
 
   // This should be the first thing caplog prints.
-  PRINT_TO_LOG("%s", "CAPTAIN'S LOG - VERSION 1.2");
+  PRINT_TO_LOG("CAP_LOG : CAPTAIN'S LOG - VERSION 1.2");
+
+  auto logData = newBlockLoggerInstance();
+
+  // Print the max chars per line
+  std::stringstream ss;
+  printLogLineCharacterLimit(ss, logData.processTimestamp);
+  PRINT_TO_LOG("%s", ss.str().c_str());
 
   // Print the enabled status of all the channels.
-  auto logData = newBlockLoggerInstance();
   int channelDepth = 0;
   int channelId = 0;
-  std::stringstream ss;
+  ss.str("");
 
   #define CAPTAINS_LOG_CHANNEL(name, verboseLevel, channelEnabledMode) \
   printChannel(ss, logData.processTimestamp, logData.relativeThreadIdx, channelDepth, channelId, #name, CAP::getChannelFlagMap()[channelId], verboseLevel); \

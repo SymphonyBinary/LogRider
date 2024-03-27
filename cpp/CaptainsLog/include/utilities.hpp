@@ -62,8 +62,10 @@ std::string string(Args... args) {
 
 #ifdef ANDROID
   #include <android/log.h>
+  #define LOG_LINE_CHARACTER_LIMIT 150
   #define  PRINT_TO_LOG(...)  __android_log_print(ANDROID_LOG_DEBUG, "CAPLOG_TAG", __VA_ARGS__)
 #else
+  #define LOG_LINE_CHARACTER_LIMIT 100000
   #define PRINT_TO_LOG(...) printf(__VA_ARGS__); printf("\n");
 #endif
 

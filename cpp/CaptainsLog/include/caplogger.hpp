@@ -23,9 +23,6 @@
 #include "include/channels.hpp"
 #include "include/utilities.hpp"
 
-#define LOG_LINE_CHARACTER_LIMIT 150
-#define LOG_INFO_BUFFER_LIMIT 100
-
 /*
 The " " here
 snprintf(blockScopeLogCustomBuffer, CAP_LOG_BUFFER_SIZE, FIRST(__VA_ARGS__) " " REST(__VA_ARGS__)); \

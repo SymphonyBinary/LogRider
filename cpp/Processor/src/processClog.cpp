@@ -13,6 +13,7 @@
 #include <cstdlib>
 #include <assert.h>
 #include <cmath> // for progress bar
+#include <string>
 
 #include <CaptainsLog/include/caplogger.hpp>
 
@@ -66,6 +67,17 @@ namespace {
  **/
 std::regex caplogRegex(
   "(.*CAP_LOG : .*)",
+  std::regex_constants::ECMAScript);
+
+/**
+ * This will match the character limit line
+ * the sub-expressions:
+ * 0 - the full string
+ * 1 - ProcessId
+ * 2 - the max number of characters per line
+ **/
+std::regex maxCharsLineRegex(
+  ".*?CAP_LOG : P=(.+?) MAX-CHAR-SIZE=(.+?)",
   std::regex_constants::ECMAScript);
 
 /**
@@ -134,6 +146,7 @@ std::regex infoStringInnerMatch(
 enum class CapLineType {
   CAPLOG,
   CHANNEL,
+  MAXCHARLINE,
   UNKNOWN,
 };
 
@@ -205,6 +218,7 @@ struct OutputLogData {
   // incomplete string
   bool isComplete = true;
   std::string incompleteText;
+  std::string incompleteSpacePadding;
 };
 
 struct LoggedObject {
@@ -239,6 +253,7 @@ struct StackNode {
     , caller(caller)
     , isComplete(logData.isComplete)
     , incompleteString(std::move(logData.incompleteText))
+    , incompleteSpacePadding(std::move(logData.incompleteSpacePadding))
     , loggedObject(nullptr) {}
 
   const int line;
@@ -258,6 +273,7 @@ struct StackNode {
   bool isComplete;
 
   std::string incompleteString;
+  std::string incompleteSpacePadding;
 
   LoggedObject* loggedObject;
 };
@@ -395,6 +411,8 @@ public:
 
   std::optional<WorldState::InPlace> inPlace;
 
+  std::unordered_map<size_t, int> uniqueProcessIdToMaxCharLine;
+
   size_t getUniqueProcessIdForInputProcessId(const std::string& inputProcessId, WorldState& world) {
     size_t retId;
     if (auto findUniqueProcessIdIter = mProcessToUniqueProcessId.find(inputProcessId); 
@@ -498,6 +516,15 @@ void processIncompleteLineBegin (
   outputLogData.isComplete = false;
   outputLogData.incompleteText = inputLogLine.inputInfoString;
 
+  int characterLimit = workingData.uniqueProcessIdToMaxCharLine[outputLogData.uniqueProcessId];
+
+  outputLogData.incompleteSpacePadding = "";
+  CAP_LOG("inputLogLine.inputFullString = %s", inputLogLine.inputFullString.c_str());
+  CAP_LOG("inputLogLine.inputFullString.size() = %zu", inputLogLine.inputFullString.size());
+  for(int i = inputLogLine.inputFullString.size(); i < characterLimit; i++) {
+    outputLogData.incompleteSpacePadding += " ";
+  }
+
   CAP_LOG("processIncompleteLineBeing infoString: %s", outputLogData.incompleteText.c_str());
   worldState.addNewStackNode(std::move(outputLogData), workingData.prevStackNode, workingData.inPlace);
 }
@@ -507,8 +534,19 @@ void processIncompleteLineContinue (
     [[maybe_unused]] WorldState& worldState) {
   CAP_LOG_BLOCK_NO_THIS(CAP::CHANNEL::processIncompleteLineContinue, "%s", workingData.inputLine.c_str());
   InputLogLine& inputLogLine = *workingData.inputLogLine.get();
+  OutputLogData& outputLogData = *workingData.outputLogData.get();
 
+  outputLogData.incompleteSpacePadding = workingData.prevStackNode->incompleteSpacePadding;
   workingData.prevStackNode->incompleteString += inputLogLine.inputInfoString;
+
+  int characterLimit = workingData.uniqueProcessIdToMaxCharLine[outputLogData.uniqueProcessId];
+
+  outputLogData.incompleteSpacePadding = "";
+  CAP_LOG("inputLogLine.inputFullString = %s", inputLogLine.inputFullString.c_str());
+  CAP_LOG("inputLogLine.inputFullString.size() = %zu", inputLogLine.inputFullString.size());
+  for(int i = inputLogLine.inputFullString.size(); i < characterLimit; i++) {
+    outputLogData.incompleteSpacePadding += " ";
+  }
 }
 
 void processBlockScopeOpen (
@@ -572,6 +610,8 @@ void processBlockScopeOpen (
   } else {
     callerStackNode = nullptr;
   }
+
+  CAP_LOG("info string: %s", workingData.inputLogLine->inputInfoString.c_str());
 
   std::smatch piecesMatch;
   bool matched = std::regex_match(workingData.inputLogLine->inputInfoString, piecesMatch, infoStringBlockMatch);
@@ -897,6 +937,24 @@ bool processChannelLine(
   return matched;
 }
 
+bool processLogLineCharLimit(
+    WorldStateWorkingData& workingData, 
+    WorldState& worldState) {
+  CAP_LOG_BLOCK_NO_THIS(CAP::CHANNEL::processLogLineCharLimit, "%s", workingData.inputLine.c_str());
+  std::smatch piecesMatch;
+  bool matched = std::regex_match(workingData.inputLine, piecesMatch, maxCharsLineRegex);
+  if (matched) {
+    CAP_LOG("Matched 1:%s 2:%s", 
+      piecesMatch[1].str().c_str(),
+      piecesMatch[2].str().c_str());
+
+    size_t uniqueProcessId = workingData.getUniqueProcessIdForInputProcessId(piecesMatch[1], worldState);
+    workingData.uniqueProcessIdToMaxCharLine[uniqueProcessId] = std::stoi(piecesMatch[2]);
+  }
+
+  return matched;
+}
+
 // TODO handle broken lines
 // void adjustToExpectedDepth(expected depth)
 
@@ -933,10 +991,6 @@ struct FileReadProgress {
 };
 
 } // namespace
-
-void writeToOutput(OutputState& output, const worldState& worldState) {
-  
-}
 
 int main(int argc, char* argv[]) {
   CAP_LOG_BLOCK_NO_THIS(CAP::CHANNEL::main);
@@ -976,6 +1030,8 @@ int main(int argc, char* argv[]) {
         // output.outputText.append 
       } else if (processChannelLine(worldWorkingData, worldState)) {
         // 
+      } else if (processLogLineCharLimit(worldWorkingData, worldState)) {
+        //
       }
       worldWorkingData.inPlace = std::nullopt;
       worldWorkingData.inputLine = "";
