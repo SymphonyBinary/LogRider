@@ -1,6 +1,5 @@
 #pragma once
 
-#define ENABLE_CAP_LOGGER
 #ifdef ENABLE_CAP_LOGGER
 
 #if defined LINUX || defined(__linux__) || defined ANDROID || defined __ANDROID__ || \

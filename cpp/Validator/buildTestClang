@@ -1,0 +1,5 @@
+#!/bin/bash
+# cd `dirname "$0"`
+cd ..
+mkdir -p out
+clang++ -Wall -std=c++20 Validator/validator.cpp  -IValidator -I.  -o out/validator.out

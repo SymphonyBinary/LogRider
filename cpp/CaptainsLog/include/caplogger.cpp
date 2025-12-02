@@ -1,4 +1,4 @@
-#define ENABLE_CAP_LOGGER
+
 #ifdef ENABLE_CAP_LOGGER
 
 #include <assert.h>

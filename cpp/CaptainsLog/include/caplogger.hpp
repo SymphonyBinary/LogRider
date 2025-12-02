@@ -1,6 +1,5 @@
 #pragma once
 
-#define ENABLE_CAP_LOGGER
 #ifdef ENABLE_CAP_LOGGER
 
 #define CAP_LOGGER_ONLY

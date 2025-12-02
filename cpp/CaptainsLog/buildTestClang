@@ -1,3 +1,5 @@
-cd `dirname "$0"`
+#!/bin/bash
+# cd `dirname "$0"`
 cd ..
-clang++ -Wall -std=c++17 CaptainsLog/test/test.cpp CaptainsLog/src/caplogger.cpp CaptainsLog/src/capdata.cpp -ICaptainsLog -I. -DENABLE_CAP_LOGGER -DCHANNELS_PATH=samples/channeldefs-example.hpp -o out/test.out
+mkdir -p out
+clang++ -Wall -std=c++17 CaptainsLog/test/test.cpp CaptainsLog/include/caplogger.cpp CaptainsLog/include/capdata.cpp -ICaptainsLog -I. -DENABLE_CAP_LOGGER -DCHANNELS_PATH=samples/channeldefs-example.hpp -o out/CaptainsLogTest.out

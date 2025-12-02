@@ -12,7 +12,7 @@ public:
   virtual ~CanResolveTo() = default;
   virtual ResolveToType resolve(const CurrentLine& currLine, const BehaviorTreeState& state) const = 0;
   
-  virtual nlohmann::json toJson() {};
+  virtual nlohmann::json toJson() {nlohmann::json j; return j;};
 };
 
 class LiteralString : public CanResolveTo<ScalarVal<std::string>> {
@@ -85,6 +85,7 @@ public:
   ScalarVal<size_t> resolve(const CurrentLine& currLine, const BehaviorTreeState& state) const override {
     ScalarVal<size_t> ret;
     ret.data = currLine.node.uniqueProcessId;
+    (void)type_;
     return ret;
   }
 

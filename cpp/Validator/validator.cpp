@@ -42,21 +42,24 @@ BehaviorTree makeTreeExample() {
         // It similarly removes the address:objects when encountering their dtors.
         BehaviorNodeMemoObjectPointer(),
         // triggers on this log:
-        // "owner().context() | context: [<address>]"
-        // Validates that the class associated with <address> is "ContextProxyGuest"
-        BehaviorNodeCheckMessage(
+        // "TestLabel | testKey: [testValue]"
+        BehaviorNodeConditionalExecute(
           // This node's check condition only gets triggered when the label matches
           std::make_unique<ConditionScalarEquality<std::string>>( // trigger
             std::make_unique<FromScanLine>(FromScanLine::Label), // lhs
-            std::make_unique<LiteralString>("owner().context()")),  // rhs
-          // once triggered, the node will lookup the object with id from {value[0]}
-          // and then validate that the class name is expected.
-          std::make_unique<ConditionScalarEquality<std::string>>( // check
-            // this query gets the classname(string) associated with the id.
-            std::make_unique<QueryStateGetObjectClassFromId>( // lhs
-              std::make_unique<FromScanLine>(FromScanLine::Value, 0), // objectId
-              std::make_unique<FromStackNode>(FromStackNode::ProcessId)), // processId
-            std::make_unique<LiteralString>("ContextProxyGuest")))))};
+            std::make_unique<LiteralString>("TestLabel")),  // rhs
+          std::make_unique<BehaviorNodeSequence>(
+            make_vector_unique<BehaviorNodeBase>(
+                BehaviorNodeCheckMessage(
+                    std::make_unique<ConditionScalarEquality<std::string>>( // check
+                        // this query gets the classname(string) associated with the id.
+                        std::make_unique<QueryStateGetObjectClassFromId>( // lhs
+                            std::make_unique<FromScanLine>(FromScanLine::Value, 0), // objectId
+                            std::make_unique<FromStackNode>(FromStackNode::ProcessId)), // processId
+                        std::make_unique<LiteralString>("testValue")))
+                )
+            )
+          )))};
   return tree;
 }
 

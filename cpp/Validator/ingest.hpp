@@ -16,7 +16,7 @@
 #include <cmath> // for progress bar
 #include <string>
 
-#include <CaptainsLog/caplogger.hpp>
+// #include <CaptainsLog/caplogger.hpp>
 
 /*
 ------------------------------------------------------------------------------

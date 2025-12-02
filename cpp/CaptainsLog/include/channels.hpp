@@ -1,9 +1,8 @@
 #pragma once
 
-#define ENABLE_CAP_LOGGER
 #ifdef ENABLE_CAP_LOGGER
 
-#define CHANNELS_PATH channeldefs.hpp
+// #define CHANNELS_PATH channeldefs.hpp
 #ifndef CHANNELS_PATH
 static_assert(false, "CHANNELS_PATH not defined");
 #endif
