@@ -1,7 +1,5 @@
 #pragma once
 
-#ifdef ENABLE_CAP_LOGGER
-
 #include <array>
 #include <string>
 
@@ -112,5 +110,3 @@ std::string string(Args... args) {
 #else
 #define INSERT_THREAD_ID ""
 #endif
-
-#endif  // ENABLE_CAP_LOGGER

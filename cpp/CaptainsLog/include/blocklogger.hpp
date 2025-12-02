@@ -1,7 +1,5 @@
 #pragma once
 
-#ifdef ENABLE_CAP_LOGGER
-
 #include <any>
 #include <cstdint>
 #include <cstdlib>
@@ -29,7 +27,6 @@
 
 #include "constants.hpp"
 #include "datastore.hpp"
-#include "channels.hpp"
 #include "utilities.hpp"
 #include "outputsocket.hpp"
 
@@ -388,5 +385,3 @@ class BlockLogger {
 }; 
 
 }  // namespace CAP
-
-#endif

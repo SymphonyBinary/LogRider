@@ -1,7 +1,5 @@
 #pragma once
 
-#ifdef ENABLE_CAP_LOGGER
-
 #include "channels.hpp"
 #include "output.hpp"
 #include "utilities.hpp"
@@ -461,5 +459,3 @@ size_t BlockLoggerDataStore::generateProcessTimestampInstanceKey() {
 }
 
 }  // namespace CAP
-
-#endif  // ENABLE_CAP_LOGGER

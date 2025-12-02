@@ -1,7 +1,5 @@
 #pragma once
 
-#ifdef ENABLE_CAP_LOGGER
-
 #include "outputfile.hpp"
 #include "outputsocket.hpp"
 #include "outputstdout.hpp"
@@ -101,5 +99,3 @@ constexpr const OutputMode DefaultOutputMode = OutputMode::StandardOut;
 #endif
 
 }  // namespace CAP
-
-#endif

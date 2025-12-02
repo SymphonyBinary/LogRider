@@ -1,7 +1,5 @@
 #pragma once
 
-#ifdef ENABLE_CAP_LOGGER
-
 // #define CHANNELS_PATH channeldefs.hpp
 #ifndef CHANNELS_PATH
 static_assert(false, "CHANNELS_PATH not defined");
@@ -111,5 +109,3 @@ inline void printLogLineCharacterLimit(std::stringstream& ss, unsigned int proce
 }
 
 }  // namespace CAP
-
-#endif

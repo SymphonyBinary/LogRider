@@ -1,7 +1,5 @@
 #pragma once
 
-#ifdef ENABLE_CAP_LOGGER
-
 #include "outputstdout.hpp"
 
 namespace CAP {
@@ -43,5 +41,3 @@ class FileLogger {
 };
 
 }  // namespace CAP
-
-#endif  // ENABLE_CAP_LOGGER

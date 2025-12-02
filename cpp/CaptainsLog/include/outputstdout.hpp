@@ -1,7 +1,5 @@
 #pragma once
 
-#ifdef ENABLE_CAP_LOGGER
-
 #include <string>
 
 #ifdef ANDROID
@@ -29,5 +27,3 @@ inline void writeToPlatformOut(const std::string& output) {
 }
 
 }  // namespace CAP
-
-#endif  // ENABLE_CAP_LOGGER

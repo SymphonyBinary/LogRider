@@ -1,7 +1,5 @@
 #pragma once
 
-#ifdef ENABLE_CAP_LOGGER
-
 #if defined LINUX || defined(__linux__) || defined ANDROID || defined __ANDROID__ || \
         defined APPLE || defined __APPLE__
 #define CAPLOG_SOCKET_ENABLED
@@ -240,5 +238,3 @@ class SocketLogger {
 }  // namespace CAP
 
 #endif  // CAPLOG_SOCKET_ENABLED
-
-#endif  // ENABLE_CAP_LOGGER
