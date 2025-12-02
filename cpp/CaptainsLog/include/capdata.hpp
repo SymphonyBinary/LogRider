@@ -2,6 +2,7 @@
 
 #ifdef ENABLE_CAP_LOGGER
 
+#include "output.hpp"
 #include "include/utilities.hpp"
 
 #include <vector>
@@ -12,14 +13,14 @@
 #include <sstream>
 #include <string_view>
 
-#include <thread>
 #include <cstring>
-#include <unordered_map>
-#include <mutex>
 #include <functional>
+#include <mutex>
 #include <optional>
-#include <variant>
+#include <thread>
 #include <type_traits>
+#include <unordered_map>
+#include <variant>
 
 namespace CAP {
 
@@ -82,16 +83,22 @@ inline std::string to_string(const DataStoreKey& key) {
   std::visit(overloaded{
       [&](const std::string& storeKey) {retString = storeKey;},
       [&](const char* storeKey) {retString = std::string(storeKey);},
-      [&](const void* storeKey) {retString = std::to_string(reinterpret_cast<uintptr_t>(storeKey));},
-    }, key);
+      [&](const void* storeKey) {
+        retString = std::to_string(reinterpret_cast<uintptr_t>(storeKey));
+      },
+    }, 
+    key);
   return retString;
 }
 
+// TODO make test that shows it works with fork and .so
+
 struct LoggerData {
-  unsigned int logDepth = 0;
-  unsigned int perThreadUniqueFunctionIdx = 0;
+  int logDepth = -1;
+  int perThreadUniqueFunctionIdx = -1;
   unsigned int relativeThreadIdx = 0;
-  unsigned int processTimestamp = 0;
+  size_t processTimestampInstanceKey = 0;
+  bool isNew = true;
 };
 
 class DataStore {
@@ -103,16 +110,24 @@ public:
     auto ret = DataStoreStateArray<DATA_COUNT>();
     for (size_t i = 0; i < DATA_COUNT; ++i){
       std::visit(overloaded{
-        [&](const std::string& storeKey) {ret[i] = mDataStoreStrings[storeKey][stateNames[i]];},
-        [&](const char* storeKey) {ret[i] = mDataStoreStrings[std::string(storeKey)][stateNames[i]];},
-        [&](const void* storeKey) {ret[i] = mDataStorePointer[storeKey][stateNames[i]];},
-      }, storeKeys[i]);
+        [&](const std::string& storeKey) {
+          ret[i] = mDataStoreStrings[storeKey][stateNames[i]];
+        },
+        [&](const char* storeKey) {
+          ret[i] = mDataStoreStrings[std::string(storeKey)][stateNames[i]];
+        },
+        [&](const void* storeKey) {
+          ret[i] = mDataStorePointer[storeKey][stateNames[i]];
+        },
+      }, 
+      storeKeys[i]);
     }
     return ret;
   }
 
   // intentionally returning by copy for threading reasons.  Be careful if this is too large.
-  std::unordered_map<std::string, std::optional<std::string>> getAllStates(DataStoreKey storeKey) {
+  std::unordered_map<std::string, std::optional<std::string>> getAllStates(
+      DataStoreKey storeKey) {
     std::unordered_map<std::string, std::optional<std::string>> retVal;
     auto* variablesOfStorage = getVariablesForStore(storeKey);
     if (variablesOfStorage) {
@@ -127,15 +142,24 @@ public:
       const keysN& storeKeys, 
       const DataStoreMemberVariableNamesArrayN<DATA_COUNT>& stateNames,
       DataStoreStateArray<DATA_COUNT>&& newStates) {
-    static_assert(std::is_same<keysN, DataStoreKeysArrayN<DATA_COUNT>>::value, "storeKeys must be of type DataStoreKeysArrayN<DATA_COUNT>");
+    static_assert(std::is_same<keysN, DataStoreKeysArrayN<DATA_COUNT>>::value, 
+                  "storeKeys must be of type DataStoreKeysArrayN<DATA_COUNT>");
     NumChangedElementsN<DATA_COUNT> retStatus;        
     for (size_t i = 0; i < DATA_COUNT; ++i) {
       DataStoreState* currentState = nullptr;
       std::visit(overloaded{
-        [&](const std::string& storeKey) {currentState = &mDataStoreStrings[storeKey][stateNames[i]];},
-        [&](const char* storeKey) {currentState = &mDataStoreStrings[std::string(storeKey)][stateNames[i]];},
-        [&](const void* storeKey) {currentState = &mDataStorePointer[storeKey][stateNames[i]];},
-      }, storeKeys[i]);
+        [&](const std::string& storeKey) {
+          currentState = &mDataStoreStrings[storeKey][stateNames[i]];
+        },
+        [&](const char* storeKey) {
+          currentState = 
+                &mDataStoreStrings[std::string(storeKey)][stateNames[i]];
+        },
+        [&](const void* storeKey) {
+          currentState = &mDataStorePointer[storeKey][stateNames[i]];
+        },
+      }, 
+      storeKeys[i]);
 
       if(*currentState == newStates[i]) {
         retStatus[i] = ValueChangeStatus::UNCHANGED;
@@ -152,11 +176,13 @@ public:
     return retStatus;
   }
 
-  std::optional<std::string> releaseState(DataStoreKey storeKey, const DataStoreMemberVariableName& stateName) {
+  std::optional<std::string> releaseState(DataStoreKey storeKey, 
+      const DataStoreMemberVariableName& stateName) {
     std::optional<std::string> deletedValueRet;
     auto* variablesOfStorage = getVariablesForStore(storeKey);
     if (variablesOfStorage) {
-      if (auto stateFind = variablesOfStorage->find(stateName); stateFind != variablesOfStorage->end()) {
+      if (auto stateFind = variablesOfStorage->find(stateName); 
+          stateFind != variablesOfStorage->end()) {
         deletedValueRet = stateFind->second;
         variablesOfStorage->erase(stateFind);
       }
@@ -168,139 +194,190 @@ public:
     int stateDeletedCountRet = 0;
     std::visit(overloaded{
       [&](const std::string& key) {
-        if (const auto& objectFind = mDataStoreStrings.find(key); objectFind != mDataStoreStrings.end()) {
+        if (const auto& objectFind = mDataStoreStrings.find(key); 
+            objectFind != mDataStoreStrings.end()) {
           stateDeletedCountRet = objectFind->second.size();
           mDataStoreStrings.erase(objectFind);
         }
       },
       [&](const char* key) {
         std::string keyAsString = key;
-        if (const auto& objectFind = mDataStoreStrings.find(keyAsString); objectFind != mDataStoreStrings.end()) {
+        if (const auto& objectFind = mDataStoreStrings.find(keyAsString); 
+            objectFind != mDataStoreStrings.end()) {
           stateDeletedCountRet = objectFind->second.size();
           mDataStoreStrings.erase(objectFind);
         }
       },
       [&](const void* key) {
-        if (const auto& objectFind = mDataStorePointer.find(key); objectFind != mDataStorePointer.end()) {
+        if (const auto& objectFind = mDataStorePointer.find(key); 
+            objectFind != mDataStorePointer.end()) {
           stateDeletedCountRet = objectFind->second.size();
           mDataStorePointer.erase(objectFind);
         }
       },
-    }, storeKey);
+    }, 
+    storeKey);
 
     return stateDeletedCountRet;
   }
 
 private:
   // Can better optimize this by templating a function with specializations for the types  
-  std::unordered_map<std::string, std::optional<std::string>>* getVariablesForStore(const DataStoreKey& storeKey) {
+  std::unordered_map<std::string, std::optional<std::string>>* getVariablesForStore(
+      const DataStoreKey& storeKey) {
     std::unordered_map<std::string, std::optional<std::string>>* retPtr = nullptr;
     std::visit(overloaded{
       [&](const std::string& key) {
-        if (const auto& objectFind = mDataStoreStrings.find(key); objectFind != mDataStoreStrings.end()) {
+        if (const auto& objectFind = mDataStoreStrings.find(key); 
+            objectFind != mDataStoreStrings.end()) {
           retPtr = &objectFind->second;
         }
       },
       [&](const char* key) {
         std::string keyAsString = key;
-        if (const auto& objectFind = mDataStoreStrings.find(keyAsString); objectFind != mDataStoreStrings.end()) {
+        if (const auto& objectFind = mDataStoreStrings.find(keyAsString); 
+            objectFind != mDataStoreStrings.end()) {
           retPtr = &objectFind->second;
         }
       },
       [&](const void* key) {
-        if (const auto& objectFind = mDataStorePointer.find(key); objectFind != mDataStorePointer.end()) {
+        if (const auto& objectFind = mDataStorePointer.find(key); 
+            objectFind != mDataStorePointer.end()) {
           retPtr = &objectFind->second;
         }
       },
-    }, storeKey);
+    }, 
+    storeKey);
 
     return retPtr;
   }
 
   // storage for pointers
-  std::unordered_map<const void*, std::unordered_map<std::string, std::optional<std::string>>> mDataStorePointer;
+  std::unordered_map<const void*, std::unordered_map<std::string, std::optional<std::string>>> 
+      mDataStorePointer;
   // storage for strings & const chars (implicitly cast to string).
-  std::unordered_map<std::string, std::unordered_map<std::string, std::optional<std::string>>> mDataStoreStrings;
+  std::unordered_map<std::string, std::unordered_map<std::string, std::optional<std::string>>> 
+      mDataStoreStrings;
 };
 
 struct BlockLoggerDataStore {
   static BlockLoggerDataStore& getInstance();
   
+  static int getNextThreadId() {
+    static std::atomic<int> id{0};
+    return id++;
+  }
+
+  static LoggerData& getThreadLocalLoggerData() {
+    thread_local LoggerData loggerData;
+    return loggerData;
+  }
+
+  // must call this immediately after a ::fork() call to update
+  // mProcessTimestampInstanceKey.
+  //
+  // WARNING: it's critical that you close all other threads prior to
+  // calling fork.
+  //
+  // Reminder, fork() will only retain the thread where the fork was called.
+  // If you have threads still open before calling fork(), and those threads
+  // are executing code which are decorated with CAPS_LOGS, it's undefined
+  // behavior at that point and you may or may not end up with unexpected caplog
+  // scope blocks created and destroyed for the parent or child process.
+  void onChildFork();
+
   LoggerData newBlockLoggerInstance() {
-    const std::lock_guard<std::mutex> guard(mMut);
+        auto& data = getThreadLocalLoggerData();
 
-    auto threadId = std::this_thread::get_id();
+        if (data.isNew) {
+            data.isNew = false;
+            data.processTimestampInstanceKey = mProcessTimestampInstanceKey;
+            data.relativeThreadIdx = getNextThreadId();
+            PRINT_TO_LOG("New Thread. New ThreadID: " + std::to_string(data.relativeThreadIdx) +
+                         CAP::OutputModeToNewLineChar[static_cast<int>(CAP::DefaultOutputMode)]);
+        } else if (data.processTimestampInstanceKey != mProcessTimestampInstanceKey) {
+            // logger data already exists, but was associated with a different process Id.
+            // this only happens immediately after forking.  We will treat these blocks as though
+            // they're on new threads.  If there's an existing block scope still existing on this
+            // thread post-fork, (eg. if fork() is called inside a block scope), that scope's
+            // destructor will still properly update with the new process id, but still use the
+            // thread id from before the fork.
+            // to the processor, it will look as though is sees a block closing at a depth
+            // larger than it expects for the new process, which it allows.
 
-    bool newThreadId = (mData.find(threadId) == mData.end());
-    //PRINT_TO_LOG("newThreadId = %s", newThreadId ? "true" : "false");
+            data = LoggerData{};
+            data.isNew = false;
+            data.processTimestampInstanceKey = mProcessTimestampInstanceKey;
+            data.relativeThreadIdx = getNextThreadId();
+            PRINT_TO_LOG("New Process: [" + std::to_string(data.processTimestampInstanceKey) +
+                         "] | Thread remap: [" + std::to_string(data.relativeThreadIdx) + "]" +
+                         CAP::OutputModeToNewLineChar[static_cast<int>(CAP::DefaultOutputMode)]);
+        }
 
-    auto& counters = mData[threadId];
-    if(!newThreadId) {
-      ++counters.logDepth;
-      ++counters.perThreadUniqueFunctionIdx;
-    } else {
-      counters.processTimestamp = mProcessTimestamp;
-      counters.relativeThreadIdx = mUniqueThreadsSeen++;
+        ++data.logDepth;
+        ++data.perThreadUniqueFunctionIdx;
+
+        return data;
     }
 
-    return counters;
-  }
+    void removeBlockLoggerInstance() {
+        auto& data = getThreadLocalLoggerData();
+        data.processTimestampInstanceKey = mProcessTimestampInstanceKey;
+        --data.logDepth;
+    }
 
-  void removeBlockLoggerInstance(){
-    const std::lock_guard<std::mutex> guard(mMut);
+    template <size_t DATA_COUNT>
+    DataStoreStateArray<DATA_COUNT> getStates(
+            const DataStoreKeysArrayN<DATA_COUNT>& storeKeys,
+            const DataStoreMemberVariableNamesArrayN<DATA_COUNT>& stateNames) {
+        const std::lock_guard<std::mutex> guard(mMut);
+        return mCustomLogStateStores.getStates(storeKeys, stateNames);
+    }
 
-    auto threadId = std::this_thread::get_id();
-    auto& data = mData.at(threadId); //will throw if it can't find, which we want
-    --data.logDepth;
-  }
+    std::unordered_map<std::string, std::optional<std::string>> getAllStates(
+            const DataStoreKey& storeKey) {
+        const std::lock_guard<std::mutex> guard(mMut);
+        return mCustomLogStateStores.getAllStates(storeKey);
+    }
 
-  template<size_t DATA_COUNT>
-  DataStoreStateArray<DATA_COUNT> getStates(
-      const DataStoreKeysArrayN<DATA_COUNT>& storeKeys, 
-      const DataStoreMemberVariableNamesArrayN<DATA_COUNT>& stateNames) {
-    const std::lock_guard<std::mutex> guard(mMut);
-    return mCustomLogStateStores.getStates(storeKeys, stateNames);
-  }
+    template <size_t DATA_COUNT>
+    NumChangedElementsN<DATA_COUNT> updateStates(
+            const DataStoreKeysArrayN<DATA_COUNT>& storeKeys,
+            const DataStoreMemberVariableNamesArrayN<DATA_COUNT>& stateNames,
+            DataStoreStateArray<DATA_COUNT>&& newStates) {
+        const std::lock_guard<std::mutex> guard(mMut);
+        return mCustomLogStateStores.setStates(storeKeys, stateNames, std::move(newStates));
+    }
 
-  std::unordered_map<std::string, std::optional<std::string>> getAllStates(const DataStoreKey& storeKey) {
-    const std::lock_guard<std::mutex> guard(mMut);
-    return mCustomLogStateStores.getAllStates(storeKey);
-  }
+    std::optional<std::string> releaseState(DataStoreKey storeKey,
+                                            const DataStoreMemberVariableName& stateName) {
+        const std::lock_guard<std::mutex> guard(mMut);
+        return mCustomLogStateStores.releaseState(storeKey, stateName);
+    }
 
-  template<size_t DATA_COUNT>
-  NumChangedElementsN<DATA_COUNT> updateStates(
-      const DataStoreKeysArrayN<DATA_COUNT>& storeKeys, 
-      const DataStoreMemberVariableNamesArrayN<DATA_COUNT>& stateNames,
-      DataStoreStateArray<DATA_COUNT>&& newStates) {
-    const std::lock_guard<std::mutex> guard(mMut);
-    return mCustomLogStateStores.setStates(storeKeys, stateNames, std::move(newStates));
-  }
+    int releaseAllStates(DataStoreKey storeKey) {
+        const std::lock_guard<std::mutex> guard(mMut);
+        return mCustomLogStateStores.releaseAllStates(storeKey);
+    }
 
-  std::optional<std::string> releaseState(DataStoreKey storeKey, const DataStoreMemberVariableName& stateName) {
-    const std::lock_guard<std::mutex> guard(mMut);
-    return mCustomLogStateStores.releaseState(storeKey, stateName);
-  }
+    BlockLoggerDataStore(const BlockLoggerDataStore&) = delete;
+    void operator=(const BlockLoggerDataStore&) = delete;
 
-  int releaseAllStates(DataStoreKey storeKey) {
-    const std::lock_guard<std::mutex> guard(mMut);
-    return mCustomLogStateStores.releaseAllStates(storeKey);
-  }
+  private:
+    BlockLoggerDataStore();
 
-  BlockLoggerDataStore(const BlockLoggerDataStore&) = delete;
-  void operator=(const BlockLoggerDataStore&) = delete;
+    size_t generateProcessTimestampInstanceKey();
 
-private:
-  BlockLoggerDataStore();
+    // this value is only ever written to when the singleton is created (thread safe)
+    // and immediately after a fork (thread safe, because you should only have 1 thread
+    // before calling fork)
+    size_t mProcessTimestampInstanceKey = 0;
 
-  std::mutex mMut;
-  std::unordered_map<std::thread::id, LoggerData> mData;
-  unsigned int mUniqueThreadsSeen = 0;
-  //special timestamp used as a key to identify this process from others.
-  const unsigned int mProcessTimestamp = 0;
-
-  DataStore mCustomLogStateStores;
+    // mutex guards the custom log state store
+    std::mutex mMut;
+    DataStore mCustomLogStateStores;
 };
 
-} // namespace CAP
+}  // namespace CAP
 
-#endif
+#endif  // ENABLE_CAP_LOGGER
