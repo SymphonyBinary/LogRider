@@ -55,7 +55,11 @@ struct Processor {
 
       if (validationTree) {
         validationTree->state.lineIndex = worldWorkingData.intputFileLineNumber;
-        validationTree->execute(node, validationTree->state);
+        auto result = validationTree->execute(node);
+        if (result == NodeStatus::FAILED) {
+          std::cerr << "Validation failed at line " << worldWorkingData.intputFileLineNumber << std::endl;
+          std::abort();
+        }
       }
 
       ++worldWorkingData.intputFileLineNumber;

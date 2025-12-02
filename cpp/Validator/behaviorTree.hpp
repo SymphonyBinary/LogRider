@@ -108,32 +108,49 @@ public:
   }
 };
 
-class BehaviorNodeCheckMessage : public BehaviorNodeBase {
+class BehaviorNodeConditionalExecute : public BehaviorNodeBase {
 public:
-  BehaviorNodeCheckMessage(std::unique_ptr<ConditionBase> triggerCondition, std::unique_ptr<ConditionBase> check) : triggerCondition_(std::move(triggerCondition)), check_(std::move(check)) {}
+  BehaviorNodeConditionalExecute(std::unique_ptr<ConditionBase> triggerCondition, std::unique_ptr<BehaviorNodeBase> child) : 
+    triggerCondition_(std::move(triggerCondition)), child_(std::move(child)) {}
 
   NodeStatus execute(const CurrentLine& currLine, BehaviorTreeState& state) override {
     if (triggerCondition_->evaluate(currLine, state)) {
-      bool result = check_->evaluate(currLine, state);
-      
-      if (state.validationOStream) {
-        (*state.validationOStream) << "[Check] | Line [" << state.lineIndex << "] | TRIGGERED | Result: [" << (result ? std::string("SUCCESS") : std::string("FAIL"))
-        << "] | ProcessId: [" << currLine.node.uniqueProcessId << "] | ThreadId: [" << currLine.node.uniqueThreadId 
-        << "] | messageText: [" << currLine.node.messageText.innerPayload << "]" << std::endl;
-        state.validationOStream->flush();
-      }
-
-      return result ? NodeStatus::SUCCESS : NodeStatus::FAILED;
-    }  
+      return child_->execute(currLine, state);
+    }
     return NodeStatus::EXECUTING;
   }
 private:
   std::unique_ptr<ConditionBase> triggerCondition_ = nullptr;
+  std::unique_ptr<BehaviorNodeBase> child_ = nullptr;
+};
+
+class BehaviorNodeCheckMessage : public BehaviorNodeBase {
+public:
+  BehaviorNodeCheckMessage(std::unique_ptr<ConditionBase> check) : check_(std::move(check)) {}
+
+  NodeStatus execute(const CurrentLine& currLine, BehaviorTreeState& state) override {
+    bool result = check_->evaluate(currLine, state);
+    
+    if (state.validationOStream) {
+      (*state.validationOStream) << "[Check] | Line [" << state.lineIndex << "] | TRIGGERED | Result: [" << (result ? std::string("SUCCESS") : std::string("FAIL"))
+      << "] | ProcessId: [" << currLine.node.uniqueProcessId << "] | ThreadId: [" << currLine.node.uniqueThreadId 
+      << "] | messageText: [" << currLine.node.messageText.innerPayload << "]" << std::endl;
+      state.validationOStream->flush();
+    }
+
+    if (!result) {
+      std::cout << "Check failed at line. " << state.lineIndex << std::endl;
+      std::cout << currLine.node.messageText.innerPayload << std::endl;
+    }
+
+    return result ? NodeStatus::SUCCESS : NodeStatus::FAILED;
+  }
+private:
   std::unique_ptr<ConditionBase> check_ = nullptr;
 };
 
 struct BehaviorTree {
-  NodeStatus execute(const StackNode& stackNode, BehaviorTreeState& state) {
+  NodeStatus execute(const StackNode& stackNode) {
     CurrentLine currLine {
       .node = stackNode,
       .funcString = getFuncName(stackNode),

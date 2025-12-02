@@ -3,12 +3,16 @@
 #include "behaviorTreeData.hpp"
 #include "behaviorTreeValues.hpp"
 
+#include "json.hpp"
+
 template <class T>
 class CanResolveTo {
 public:
   using ResolveToType = T;
   virtual ~CanResolveTo() = default;
   virtual ResolveToType resolve(const CurrentLine& currLine, const BehaviorTreeState& state) const = 0;
+  
+  virtual nlohmann::json toJson() {};
 };
 
 class LiteralString : public CanResolveTo<ScalarVal<std::string>> {
@@ -19,6 +23,12 @@ public:
     // printf("LiteralString::resolve: %s\n", literal.c_str());
     return ScalarVal<std::string>{literal};
   }
+
+  nlohmann::json toJson() override {
+    nlohmann::json j{{"typeid", "LiteralString"}, {"literal", literal}};
+    return j;
+  };
+  
 private:
   std::string literal;
 };
