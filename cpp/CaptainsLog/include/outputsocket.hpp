@@ -25,7 +25,6 @@
 #include <mutex>
 #include <vector>
 
-#include "outputsocket.hpp"
 #include "outputstdout.hpp"
 
 namespace CAP {
