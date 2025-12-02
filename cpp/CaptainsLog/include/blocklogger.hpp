@@ -1,5 +1,25 @@
+#pragma once
 
 #ifdef ENABLE_CAP_LOGGER
+
+#include <any>
+#include <cstdint>
+#include <cstdlib>
+#include <iostream>
+#include <sstream>
+#include <stack>
+#include <string_view>
+
+#include <cstring>
+#include <functional>
+#include <limits>
+#include <optional>
+#include <thread>
+#include <type_traits>
+#include <unordered_map>
+#include <variant>
+
+#include <inttypes.h>
 
 #include <assert.h>
 #include <array>
@@ -7,20 +27,128 @@
 #include <iomanip>
 #include <vector>
 
-#include "caplogger.hpp"
-#include "output.hpp"
+#include "constants.hpp"
+#include "datastore.hpp"
+#include "channels.hpp"
+#include "utilities.hpp"
+#include "outputsocket.hpp"
 
 namespace CAP {
 
-namespace {
-
-static const char* colourArray[] = {
-        CAP_COLOUR CAP_BOLD CAP_RED,     CAP_COLOUR CAP_BOLD CAP_GREEN,
-        CAP_COLOUR CAP_BOLD CAP_YELLOW,  CAP_COLOUR CAP_BOLD CAP_BLUE,
-        CAP_COLOUR CAP_BOLD CAP_MAGENTA, CAP_COLOUR CAP_BOLD CAP_CYAN,
-        CAP_COLOUR CAP_BOLD CAP_WHITE,
+struct TLSScopeBlock {
+    class BlockLogger* blockScope = nullptr;
+    std::string_view blockScopeFileId;
+    std::string_view blockScopeFunctionId;
 };
-static const int colourArraySize = sizeof(colourArray) / sizeof(colourArray[0]);
+
+struct TLSScopeStack {
+    static TLSScopeStack& getThreadLocalInstance() {
+        thread_local TLSScopeStack scopeStack{};
+        return scopeStack;
+    }
+
+    std::stack<TLSScopeBlock> blocks{};
+};
+
+// 1 - get the current scope
+// 2 - check if the current scope has the same file/function as the requestor
+// 3 - if it is, a scope already exists with the file/function, so use that scope
+// 4 - if it isn't, we need to create a new scope and push it on the stack
+struct TLSScope {
+    TLSScope(std::string_view fileId, std::string_view functionId) {
+        TLSScopeStack* tlsScopeStack = &CAP::TLSScopeStack::getThreadLocalInstance();
+
+        if (!tlsScopeStack->blocks.empty()) {
+            const auto& topBlock = tlsScopeStack->blocks.top();
+            if (topBlock.blockScopeFileId == fileId &&
+                topBlock.blockScopeFunctionId == functionId) {
+                blockLog = topBlock.blockScope;
+            }
+        }
+
+        if (!blockLog) {
+            anonymousBlockLog = std::make_unique<BlockLogger>(nullptr, CAP::CHANNEL::DEFAULT,
+                                                              fileId, functionId);
+            blockLog = anonymousBlockLog.get();
+            // TODO: set a flag in the anonymous block so we can specify unknown depth.
+        }
+    }
+
+    std::unique_ptr<BlockLogger> anonymousBlockLog = nullptr;
+    BlockLogger* blockLog = nullptr;
+};
+
+class BlockLogger {
+  public:
+    BlockLogger(const void* thisPointer, CAP::CHANNEL channel, std::string_view fileId,
+                std::string_view processId);
+    ~BlockLogger();
+
+    void setPrimaryLog(int line, std::string_view logInfoBuffer,
+                       std::string_view customMessageBuffer);
+
+    void dumpToFile(int line, std::string_view filename, const void* pointerToBuffer,
+                    size_t numberOfBytes);
+
+    void log(int line, std::string_view messageBuffer);
+
+    void error(int line, std::string_view messageBuffer);
+
+    // UpdaterFunc is a callable that receives DataStoreStateArray<DATA_COUNT>&
+    // as its only input parameter.  Return is unused/ignored.
+    template <size_t DATA_COUNT, class UpdaterFunc>
+    void updateState(int line, const DataStoreKeysArrayN<DATA_COUNT>& keys,
+                     const DataStoreMemberVariableNamesArrayN<DATA_COUNT>& varNames,
+                     const UpdaterFunc& stateUpdater) {
+        if (!mEnabledMode) {
+            return;
+        }
+
+        auto& loggerDataStore = BlockLoggerDataStore::getInstance();
+        auto states = loggerDataStore.getStates(keys, varNames);
+        stateUpdater(states);
+
+        decltype(states) statesPrintCopy;
+        if (mEnabledMode & CAN_WRITE_TO_OUTPUT) {
+            statesPrintCopy = states;
+        }
+
+        auto changes = loggerDataStore.updateStates(keys, varNames, std::move(states));
+
+        if (mEnabledMode & CAN_WRITE_TO_OUTPUT) {
+            for (size_t i = 0; i < DATA_COUNT; ++i) {
+                std::string comLine = "UPDATE STATE(" + to_string(changes[i]) + ") ";
+                printStateImpl(line, comLine, to_string(keys[i]), varNames[i], statesPrintCopy[i]);
+            }
+        }
+    }
+
+    void printState(int line, const DataStoreKey& key, const DataStoreMemberVariableName& varName);
+    void printAllStateOfStore(int line, const DataStoreKey& key);
+
+    void releaseState(int line, const DataStoreKey& keys, const std::string& stateName);
+    void releaseAllStateOfStore(int line, const DataStoreKey& key);
+
+  private:
+    void printStateImpl(int line, const std::string& logCommand, const std::string& storeKey,
+                        const std::string& varName, const std::optional<std::string>& value);
+
+    TLSScopeStack* tlsScopeStack_ = nullptr;
+    std::string_view fileId_;
+    std::string_view functionId_;
+
+    const uint32_t mEnabledMode = FULLY_DISABLED;
+    std::string mlogInfoBuffer;
+    std::string mcustomMessageBuffer;
+    unsigned int mId;
+    unsigned int mDepth;
+    unsigned int mThreadId;
+    unsigned int mProcessId;
+    CAP::CHANNEL mChannel;
+    const void* mThisPointer;
+};
+
+namespace Impl{
 
 struct PrintPrefix {
     unsigned int processId;
@@ -29,10 +157,9 @@ struct PrintPrefix {
 };
 
 std::ostream& operator<<(std::ostream& os, const PrintPrefix& printPrefix) {
-    os << CAP_COLOUR CAP_BOLD CAP_YELLOW << CAP_MAIN_PREFIX_DELIMITER << INSERT_THREAD_ID << " : "
+    os << CAP_MAIN_PREFIX_DELIMITER << INSERT_THREAD_ID << " : "
        << CAP_PROCESS_ID_DELIMITER << printPrefix.processId << " " << CAP_THREAD_ID_DELIMITER
-       << colourArray[printPrefix.threadId % colourArraySize] << printPrefix.threadId
-       << CAP_COLOUR CAP_BOLD CAP_GREEN << " " << CAP_CHANNEL_ID_DELIMITER << std::setw(3)
+       << printPrefix.threadId << " " << CAP_CHANNEL_ID_DELIMITER << std::setw(3)
        << std::setfill('0') << printPrefix.channelId << " ";
     return os;
 }
@@ -101,7 +228,7 @@ void writeOutput(const std::string& messageBuffer, unsigned int processId, unsig
         PRINT_TO_LOG(concatEndString.c_str());
     }
 }
-}  // namespace
+}  // namespace Impl
 
 // NOTE: need to always have a default channel
 BlockLogger::BlockLogger(const void* thisPointer, CAP::CHANNEL channel, std::string_view fileId,
@@ -139,11 +266,10 @@ void BlockLogger::setPrimaryLog(int line, std::string_view logInfoBuffer,
         }
 
         std::stringstream ss;
-        ss << CAP_COLOUR CAP_BOLD CAP_GREEN << CAP_PRIMARY_LOG_BEGIN_DELIMITER
-           << CAP_COLOUR CAP_BOLD CAP_YELLOW << " " << mId << mlogInfoBuffer << " "
-           << colourArray[reinterpret_cast<std::uintptr_t>(mThisPointer) % colourArraySize]
-           << mThisPointer << CAP_COLOUR CAP_RESET;
-        writeOutput(ss.str(), mProcessId, mThreadId, (size_t)mChannel, mDepth);
+        ss << CAP_PRIMARY_LOG_BEGIN_DELIMITER
+           << " " << mId << mlogInfoBuffer << " "
+           << mThisPointer;
+        Impl::writeOutput(ss.str(), mProcessId, mThreadId, (size_t)mChannel, mDepth);
 
         // The macro which calls this hardcodes a " " to get around some macro limitations regarding
         // zero/1/multi argument __VA_ARGS__
@@ -157,21 +283,19 @@ void BlockLogger::dumpToFile(int line, std::string_view filename, const void* po
                              size_t numberOfBytes) {
     if (mEnabledMode & CAN_WRITE_TO_OUTPUT) {
         std::stringstream ss;
-        ss << CAP_COLOUR CAP_BOLD CAP_GREEN << CAP_ADD_LOG_DELIMITER << CAP_ADD_LOG_SECOND_DELIMITER
-           << CAP_COLOUR CAP_BOLD CAP_YELLOW << " " << mId << " " << CAP_COLOUR CAP_RESET << "["
-           << CAP_COLOUR CAP_BOLD CAP_GREEN << line << CAP_COLOUR CAP_RESET
+        ss << CAP_ADD_LOG_DELIMITER << CAP_ADD_LOG_SECOND_DELIMITER
+           << " " << mId << " " << "[" << line
            << "] LOG: DUMP_TO_FILE | filename: [" << filename << "] | pointerToBuffer: ["
            << pointerToBuffer << "] | numberOfBytes: [" << numberOfBytes << "]";
 
         // TODO: use this after introducing file dump type
-        // ss << CAP_COLOUR CAP_BOLD CAP_GREEN << CAP_ADD_FILEDUMP_DELIMITER <<
-        // CAP_ADD_FILEDUMP_SECOND_DELIMITER << CAP_COLOUR CAP_BOLD CAP_YELLOW << " " << mId << " "
-        // << CAP_COLOUR CAP_RESET << "[" << CAP_COLOUR CAP_BOLD CAP_GREEN << line << CAP_COLOUR
-        // CAP_RESET << "] DUMP_TO_FILE | filename: [" << filename
+        // ss << CAP_ADD_FILEDUMP_DELIMITER <<
+        // CAP_ADD_FILEDUMP_SECOND_DELIMITER << " " << mId << " "
+        // << "[" << line << "] DUMP_TO_FILE | filename: [" << filename
         // << "] | pointerToBuffer: [" << pointerToBuffer << "] | numberOfBytes: [" << numberOfBytes
         // << "]";
 
-        writeOutput(ss.str(), mProcessId, mThreadId, (size_t)mChannel, mDepth);
+        Impl::writeOutput(ss.str(), mProcessId, mThreadId, (size_t)mChannel, mDepth);
 
         PRINT_TO_BINARY_FILE(filename, pointerToBuffer, numberOfBytes);
     }
@@ -180,9 +304,9 @@ void BlockLogger::dumpToFile(int line, std::string_view filename, const void* po
 void BlockLogger::log(int line, std::string_view messageBuffer) {
     if (mEnabledMode & CAN_WRITE_TO_OUTPUT) {
         std::stringstream ss;
-        ss << CAP_COLOUR CAP_BOLD CAP_GREEN << CAP_ADD_LOG_DELIMITER << CAP_ADD_LOG_SECOND_DELIMITER
-           << CAP_COLOUR CAP_BOLD CAP_YELLOW << " " << mId << " " << CAP_COLOUR CAP_RESET << "["
-           << CAP_COLOUR CAP_BOLD CAP_GREEN << line << CAP_COLOUR CAP_RESET << "] LOG: ";
+        ss << CAP_ADD_LOG_DELIMITER << CAP_ADD_LOG_SECOND_DELIMITER
+           << " " << mId << " " << "["
+           << line << "] LOG: ";
 
         if (messageBuffer.size() <= CAP::LogAbsoluteCharacterLimitForUserLog) {
             ss << messageBuffer;
@@ -190,19 +314,17 @@ void BlockLogger::log(int line, std::string_view messageBuffer) {
             ss << messageBuffer.substr(0, CAP::LogAbsoluteCharacterLimitForUserLog);
         }
 
-        ss << CAP_COLOUR CAP_RESET;
-        writeOutput(ss.str(), mProcessId, mThreadId, (size_t)mChannel, mDepth);
+        Impl::writeOutput(ss.str(), mProcessId, mThreadId, (size_t)mChannel, mDepth);
     }
 }
 
 void BlockLogger::error(int line, std::string_view messageBuffer) {
     if (mEnabledMode & CAN_WRITE_TO_OUTPUT) {
         std::stringstream ss;
-        ss << CAP_COLOUR CAP_BOLD CAP_GREEN << CAP_ADD_LOG_DELIMITER << CAP_ADD_LOG_SECOND_DELIMITER
-           << CAP_COLOUR CAP_BOLD CAP_YELLOW << " " << mId << " " << CAP_COLOUR CAP_RESET << "["
-           << CAP_COLOUR CAP_BOLD CAP_GREEN << line << CAP_COLOUR CAP_RESET << "] "
-           << CAP_COLOUR CAP_BOLD CAP_RED << "ERROR: " << messageBuffer << CAP_COLOUR CAP_RESET;
-        writeOutput(ss.str(), mProcessId, mThreadId, (size_t)mChannel, mDepth);
+        ss << CAP_ADD_LOG_DELIMITER << CAP_ADD_LOG_SECOND_DELIMITER
+           << " " << mId << " " << "["
+           << line << "] " << "ERROR: " << messageBuffer;
+        Impl::writeOutput(ss.str(), mProcessId, mThreadId, (size_t)mChannel, mDepth);
     }
 }
 
@@ -221,12 +343,12 @@ void BlockLogger::printAllStateOfStore(int line, const DataStoreKey& key) {
         auto allStates = BlockLoggerDataStore::getInstance().getAllStates(key);
 
         std::stringstream ss;
-        ss << CAP_COLOUR CAP_BOLD CAP_GREEN << CAP_ADD_LOG_DELIMITER << CAP_ADD_LOG_SECOND_DELIMITER
-           << CAP_COLOUR CAP_BOLD CAP_YELLOW << " " << mId << " " << CAP_COLOUR CAP_RESET << "["
-           << CAP_COLOUR CAP_BOLD CAP_GREEN << line << CAP_COLOUR CAP_RESET << "] "
-           << CAP_COLOUR CAP_BOLD CAP_RED << "PRINTING ALL STATE IN STORE: StoreKey='"
-           << to_string(key) << CAP_COLOUR CAP_RESET;
-        writeOutput(ss.str(), mProcessId, mThreadId, (size_t)mChannel, mDepth);
+        ss << CAP_ADD_LOG_DELIMITER << CAP_ADD_LOG_SECOND_DELIMITER
+           << " " << mId << " ["
+           << line << "] "
+           << "PRINTING ALL STATE IN STORE: StoreKey='"
+           << to_string(key);
+        Impl::writeOutput(ss.str(), mProcessId, mThreadId, (size_t)mChannel, mDepth);
 
         for (const auto& row : allStates) {
             printStateImpl(line, "PRINT STATE", to_string(key), row.first, row.second);
@@ -257,12 +379,12 @@ void BlockLogger::releaseAllStateOfStore(int line, const DataStoreKey& key) {
 
     if (mEnabledMode & CAN_WRITE_TO_OUTPUT) {
         std::stringstream ss;
-        ss << CAP_COLOUR CAP_BOLD CAP_GREEN << CAP_ADD_LOG_DELIMITER << CAP_ADD_LOG_SECOND_DELIMITER
-           << CAP_COLOUR CAP_BOLD CAP_YELLOW << " " << mId << " " << CAP_COLOUR CAP_RESET << "["
-           << CAP_COLOUR CAP_BOLD CAP_GREEN << line << CAP_COLOUR CAP_RESET << "] "
-           << CAP_COLOUR CAP_BOLD CAP_RED << "RELEASE ALL STATE IN STORE: StoreKey='"
-           << to_string(key) << "' NumDeleted='" << deletedCount << "'" << CAP_COLOUR CAP_RESET;
-        writeOutput(ss.str(), mProcessId, mThreadId, (size_t)mChannel, mDepth);
+        ss << CAP_ADD_LOG_DELIMITER << CAP_ADD_LOG_SECOND_DELIMITER
+           << " " << mId << " ["
+           << line << "] "
+           << "RELEASE ALL STATE IN STORE: StoreKey='"
+           << to_string(key) << "' NumDeleted='" << deletedCount << "'";
+        Impl::writeOutput(ss.str(), mProcessId, mThreadId, (size_t)mChannel, mDepth);
     }
 }
 
@@ -270,13 +392,13 @@ void BlockLogger::printStateImpl(int line, const std::string& logCommand,
                                  const std::string& storeKey, const std::string& varName,
                                  const std::optional<std::string>& value) {
     std::stringstream ss;
-    ss << CAP_COLOUR CAP_BOLD CAP_GREEN << CAP_ADD_LOG_DELIMITER << CAP_ADD_LOG_SECOND_DELIMITER
-       << CAP_COLOUR CAP_BOLD CAP_YELLOW << " " << mId << " " << CAP_COLOUR CAP_RESET << "["
-       << CAP_COLOUR CAP_BOLD CAP_GREEN << line << CAP_COLOUR CAP_RESET << "] "
-       << CAP_COLOUR CAP_BOLD CAP_RED << logCommand << ": "
+    ss << CAP_ADD_LOG_DELIMITER << CAP_ADD_LOG_SECOND_DELIMITER
+       << " " << mId << " ["
+       << line << "] "
+       << logCommand << ": "
        << "StoreKey='" << storeKey << "' : StateName='" << varName << "' : Value='"
-       << value.value_or("N/A") << "'" << CAP_COLOUR CAP_RESET;
-    writeOutput(ss.str(), mProcessId, mThreadId, (size_t)mChannel, mDepth);
+       << value.value_or("N/A") << "'";
+    Impl::writeOutput(ss.str(), mProcessId, mThreadId, (size_t)mChannel, mDepth);
 }
 
 BlockLogger::~BlockLogger() {
@@ -284,11 +406,10 @@ BlockLogger::~BlockLogger() {
         // block logger instance is only created when logging/output mode enabled.
         BlockLoggerDataStore::getInstance().removeBlockLoggerInstance();
         std::stringstream ss;
-        ss << CAP_COLOUR CAP_BOLD CAP_GREEN << CAP_PRIMARY_LOG_END_DELIMITER
-           << CAP_COLOUR CAP_BOLD CAP_YELLOW << " " << mId << mlogInfoBuffer << " "
-           << colourArray[reinterpret_cast<std::uintptr_t>(mThisPointer) % colourArraySize]
-           << mThisPointer << CAP_COLOUR CAP_RESET;
-        writeOutput(ss.str(), mProcessId, mThreadId, (size_t)mChannel, mDepth);
+        ss << CAP_PRIMARY_LOG_END_DELIMITER
+           << " " << mId << mlogInfoBuffer << " "
+           << mThisPointer;
+        Impl::writeOutput(ss.str(), mProcessId, mThreadId, (size_t)mChannel, mDepth);
 
         if (tlsScopeStack_ != nullptr) {
             tlsScopeStack_->blocks.pop();

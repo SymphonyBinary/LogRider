@@ -2,4 +2,4 @@
 # cd `dirname "$0"`
 cd ..
 mkdir -p out
-clang++ -Wall -std=c++17 CaptainsLog/test/test.cpp CaptainsLog/include/caplogger.cpp CaptainsLog/include/capdata.cpp -ICaptainsLog -I. -DENABLE_CAP_LOGGER -DCHANNELS_PATH=samples/channeldefs-example.hpp -o out/CaptainsLogTest.out
+clang++ -Wall -std=c++17 CaptainsLog/test/test.cpp -ICaptainsLog -I. -DENABLE_CAP_LOGGER -DCHANNELS_PATH=samples/channeldefs-example.hpp -o out/CaptainsLogTest.out

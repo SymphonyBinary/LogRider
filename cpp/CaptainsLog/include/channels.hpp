@@ -9,6 +9,7 @@ static_assert(false, "CHANNELS_PATH not defined");
 
 #include <iomanip>
 
+#include "constants.hpp"
 #include "output.hpp"
 #include "utilities.hpp"
 
@@ -78,18 +79,9 @@ constexpr std::array<uint32_t, (size_t)CHANNEL::COUNT> getChannelFlagMap() {
 inline void printChannel(std::stringstream& ss, unsigned int processId, unsigned int threadId,
                          unsigned int depth, unsigned int channelId, std::string_view channelName,
                          uint32_t enabledMode, int verbosityLevel) {
-    // probabably just deleted these
-    static const char* colourArray[] = {
-            CAP_COLOUR CAP_BOLD CAP_RED,     CAP_COLOUR CAP_BOLD CAP_GREEN,
-            CAP_COLOUR CAP_BOLD CAP_YELLOW,  CAP_COLOUR CAP_BOLD CAP_BLUE,
-            CAP_COLOUR CAP_BOLD CAP_MAGENTA, CAP_COLOUR CAP_BOLD CAP_CYAN,
-            CAP_COLOUR CAP_BOLD CAP_WHITE,
-    };
-    static const int colourArraySize = sizeof(colourArray) / sizeof(colourArray[0]);
-
-    ss << CAP_COLOUR CAP_BOLD CAP_YELLOW << CAP_MAIN_PREFIX_DELIMITER << INSERT_THREAD_ID << " : "
+    ss << CAP_MAIN_PREFIX_DELIMITER << INSERT_THREAD_ID << " : "
        << CAP_PROCESS_ID_DELIMITER << processId << " " << CAP_THREAD_ID_DELIMITER
-       << colourArray[threadId % colourArraySize] << threadId << CAP_COLOUR CAP_BOLD CAP_GREEN
+       << threadId
        << " CHANNEL-ID=" << std::setw(3) << std::setfill('0') << channelId;
 
     if (enabledMode == FULLY_ENABLED) {
@@ -112,7 +104,7 @@ inline void printChannel(std::stringstream& ss, unsigned int processId, unsigned
 }
 
 inline void printLogLineCharacterLimit(std::stringstream& ss, unsigned int processId) {
-    ss << CAP_COLOUR CAP_BOLD CAP_YELLOW << CAP_MAIN_PREFIX_DELIMITER << INSERT_THREAD_ID << " : "
+    ss << CAP_MAIN_PREFIX_DELIMITER << INSERT_THREAD_ID << " : "
        << CAP_PROCESS_ID_DELIMITER << processId << " " << CAP_MAX_CHAR_SIZE_DELIMITER
        << CAP::OutputModeToLogLineCharLimit[static_cast<int>(CAP::DefaultOutputMode)]
        << CAP::OutputModeToNewLineChar[static_cast<int>(CAP::DefaultOutputMode)];

@@ -5,8 +5,6 @@
 #include <array>
 #include <string>
 
-#include "colors.hpp"
-
 /// This macro converts the input X macro into a quoted string by double evaluating it.
 #define CAPTAINS_LOG_STRINGIFY(X) CAPTAINS_LOG_STRINGIFY2(X)
 #define CAPTAINS_LOG_STRINGIFY2(X) #X
@@ -109,14 +107,10 @@ std::string string(Args... args) {
     a20
 ///////
 
-#ifdef ENABLE_CAP_LOGGER
-
 #ifdef SHOW_THREAD_ID
-#define INSERT_THREAD_ID CAP_COLOUR CAP_BLUE << std::this_thread::get_id() << CAP_COLOUR CAP_RESET
+#define INSERT_THREAD_ID << std::this_thread::get_id()
 #else
 #define INSERT_THREAD_ID ""
-#endif
-
 #endif
 
 #endif  // ENABLE_CAP_LOGGER
