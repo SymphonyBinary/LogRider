@@ -1,0 +1,1 @@
+- make channels not required, unless using a strict mode.  Use specialized template with the channel as a string, used as a type
