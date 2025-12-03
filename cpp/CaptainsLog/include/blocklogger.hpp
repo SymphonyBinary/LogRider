@@ -146,7 +146,7 @@ struct TLSScope {
         }
 
         if (!blockLog) {
-            anonymousBlockLog = std::make_unique<BlockLogger>(nullptr, CAP::CHANNEL::DEFAULT,
+            anonymousBlockLog = std::make_unique<BlockLogger>(nullptr, "DEFAULT",
                                                               fileId, functionId);
             blockLog = anonymousBlockLog.get();
             // TODO: set a flag in the anonymous block so we can specify unknown depth.
@@ -160,9 +160,10 @@ struct TLSScope {
 class BlockLogger {
   public:
     // NOTE: need to always have a default channel
-    BlockLogger(const void* thisPointer, CAP::CHANNEL channel, std::string_view fileId,
+    BlockLogger(const void* thisPointer, std::string_view channel, std::string_view fileId,
                 std::string_view processId) 
-            : mEnabledMode(CAP::getChannelFlagMap()[(size_t)channel]),
+            // : mEnabledMode(CAP::getChannelFlagMap()[(size_t)channel]),
+            : mEnabledMode(CAP::ChannelEnabledMode::FULLY_ENABLED),
             mlogInfoBuffer(),
             mcustomMessageBuffer(),
             mId(0),
@@ -192,7 +193,7 @@ class BlockLogger {
             std::stringstream ss;
             ss << CAP_PRIMARY_LOG_END_DELIMITER << " " << mId 
                << mlogInfoBuffer << " " << mThisPointer;
-            Impl::writeOutput(ss.str(), mProcessId, mThreadId, (size_t)mChannel, mDepth);
+            Impl::writeOutput(ss.str(), mProcessId, mThreadId, 0, mDepth);
 
             if (tlsScopeStack_ != nullptr) {
                 tlsScopeStack_->blocks.pop();
@@ -213,7 +214,7 @@ class BlockLogger {
             ss << CAP_PRIMARY_LOG_BEGIN_DELIMITER
             << " " << mId << mlogInfoBuffer << " "
             << mThisPointer;
-            Impl::writeOutput(ss.str(), mProcessId, mThreadId, (size_t)mChannel, mDepth);
+            Impl::writeOutput(ss.str(), mProcessId, mThreadId, 0, mDepth);
 
             // The macro which calls this hardcodes a " " to get around some macro limitations regarding
             // zero/1/multi argument __VA_ARGS__
@@ -239,7 +240,7 @@ class BlockLogger {
             // << "] | pointerToBuffer: [" << pointerToBuffer << "] | numberOfBytes: [" << numberOfBytes
             // << "]";
 
-            Impl::writeOutput(ss.str(), mProcessId, mThreadId, (size_t)mChannel, mDepth);
+            Impl::writeOutput(ss.str(), mProcessId, mThreadId, 0, mDepth);
 
             PRINT_TO_BINARY_FILE(filename, pointerToBuffer, numberOfBytes);
         }
@@ -258,7 +259,7 @@ class BlockLogger {
                 ss << messageBuffer.substr(0, CAP::LogAbsoluteCharacterLimitForUserLog);
             }
 
-            Impl::writeOutput(ss.str(), mProcessId, mThreadId, (size_t)mChannel, mDepth);
+            Impl::writeOutput(ss.str(), mProcessId, mThreadId, 0, mDepth);
         }
     }
 
@@ -268,7 +269,7 @@ class BlockLogger {
             ss << CAP_ADD_LOG_DELIMITER << CAP_ADD_LOG_SECOND_DELIMITER
             << " " << mId << " " << "["
             << line << "] " << "ERROR: " << messageBuffer;
-            Impl::writeOutput(ss.str(), mProcessId, mThreadId, (size_t)mChannel, mDepth);
+            Impl::writeOutput(ss.str(), mProcessId, mThreadId, 0, mDepth);
         }
     }
 
@@ -319,7 +320,7 @@ class BlockLogger {
             << line << "] "
             << "PRINTING ALL STATE IN STORE: StoreKey='"
             << to_string(key);
-            Impl::writeOutput(ss.str(), mProcessId, mThreadId, (size_t)mChannel, mDepth);
+            Impl::writeOutput(ss.str(), mProcessId, mThreadId, 0, mDepth);
 
             for (const auto& row : allStates) {
                 printStateImpl(line, "PRINT STATE", to_string(key), row.first, row.second);
@@ -354,7 +355,7 @@ class BlockLogger {
             << line << "] "
             << "RELEASE ALL STATE IN STORE: StoreKey='"
             << to_string(key) << "' NumDeleted='" << deletedCount << "'";
-            Impl::writeOutput(ss.str(), mProcessId, mThreadId, (size_t)mChannel, mDepth);
+            Impl::writeOutput(ss.str(), mProcessId, mThreadId, 0, mDepth);
         }
     }
 
@@ -366,7 +367,7 @@ class BlockLogger {
            << " " << mId << " [" << line << "] " << logCommand << ": "
            << "StoreKey='" << storeKey << "' : StateName='" << varName << "' : Value='"
            << value.value_or("N/A") << "'";
-        Impl::writeOutput(ss.str(), mProcessId, mThreadId, (size_t)mChannel, mDepth);
+        Impl::writeOutput(ss.str(), mProcessId, mThreadId, 0, mDepth);
     }
 
     TLSScopeStack* tlsScopeStack_ = nullptr;
@@ -380,7 +381,7 @@ class BlockLogger {
     unsigned int mDepth;
     unsigned int mThreadId;
     unsigned int mProcessId;
-    CAP::CHANNEL mChannel;
+    std::string_view mChannel;
     const void* mThisPointer;
 }; 
 

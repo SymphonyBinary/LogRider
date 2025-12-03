@@ -56,17 +56,37 @@ snprintf(blockScopeLogCustomBuffer, CAP_LOG_BUFFER_SIZE, FIRST(__VA_ARGS__) " " 
 \ is because you will get warnings if you try to pass a zero sized string to sprintf. Ideally, you
 want to branch if __VA_ARGS__ is empty and call setPrimaryLog without passing it a buffer at all
 */
-#define CAP_LOG_INTERNAL(pointer, channel, ...)                                               \
-    PRAGMA_IGNORE_SHADOW_BEGIN                                                                \
-    [[maybe_unused]] constexpr bool channelCompileNotDisabled =                               \
-            CAP::getChannelFlagMap()[(size_t)channel];                                        \
-    [[maybe_unused]] constexpr bool channelCompileEnabledOutput =                             \
-            CAP::getChannelFlagMap()[(size_t)channel] & CAP::CAN_WRITE_TO_OUTPUT;             \
-    [[maybe_unused]] constexpr bool channelCompileEnabledState =                              \
-            CAP::getChannelFlagMap()[(size_t)channel] & CAP::CAN_WRITE_TO_STATE;              \
-    CAP::BlockLogger blockScopeLog{pointer, channel, __FILENAME__, __PRETTY_FUNCTION__};      \
-    CAP::BlockLogger* blockScope = &blockScopeLog;                                            \
-    PRAGMA_IGNORE_SHADOW_END                                                                  \
+// #define CAP_LOG_INTERNAL(pointer, channel, ...)                                               \
+//     PRAGMA_IGNORE_SHADOW_BEGIN                                                                \
+//     [[maybe_unused]] constexpr bool channelCompileNotDisabled =                               \
+//             CAP::getChannelFlagMap()[(size_t)channel];                                        \
+//     [[maybe_unused]] constexpr bool channelCompileEnabledOutput =                             \
+//             CAP::getChannelFlagMap()[(size_t)channel] & CAP::CAN_WRITE_TO_OUTPUT;             \
+//     [[maybe_unused]] constexpr bool channelCompileEnabledState =                              \
+//             CAP::getChannelFlagMap()[(size_t)channel] & CAP::CAN_WRITE_TO_STATE;              \
+//     CAP::BlockLogger blockScopeLog{pointer, channel, __FILENAME__, __PRETTY_FUNCTION__};      \
+//     CAP::BlockLogger* blockScope = &blockScopeLog;                                            \
+//     PRAGMA_IGNORE_SHADOW_END                                                                  \
+//     if constexpr (channelCompileEnabledOutput) {                                              \
+//         std::stringstream CAPLOG_ss;                                                          \
+//         CAPLOG_ss << " [" << __LINE__                                                         \
+//                   << "]::[" << __FILENAME__                                                   \
+//                   << "]::[" << __PRETTY_FUNCTION__ << "]";                                    \
+//         blockScope->setPrimaryLog(__LINE__, CAPLOG_ss.str(), "");                             \
+//         CAP_LOG(__VA_ARGS__);                                                                 \
+//     } else if constexpr (channelCompileEnabledState) {                                        \
+//         blockScope->setPrimaryLog(__LINE__, "", "");                                          \
+//     }
+
+#define CAP_LOG_INTERNAL(pointer, channel, ...) \
+  PRAGMA_IGNORE_SHADOW_BEGIN \
+  constexpr static std::string_view SVChannel{#channel}; \
+  [[maybe_unused]] constexpr bool channelCompileNotDisabled = CAP::Channel<CAP::as_sequence<SVChannel>::type>::mode(); \
+  [[maybe_unused]] constexpr bool channelCompileEnabledOutput = CAP::Channel<CAP::as_sequence<SVChannel>::type>::mode() & CAP::CAN_WRITE_TO_OUTPUT; \
+  [[maybe_unused]] constexpr bool channelCompileEnabledState = CAP::Channel<CAP::as_sequence<SVChannel>::type>::mode() & CAP::CAN_WRITE_TO_STATE; \
+  CAP::BlockLogger blockScopeLog{pointer, SVChannel, __FILENAME__, __PRETTY_FUNCTION__}; \
+  CAP::BlockLogger* blockScope = &blockScopeLog; \
+  PRAGMA_IGNORE_SHADOW_END                                                                  \
     if constexpr (channelCompileEnabledOutput) {                                              \
         std::stringstream CAPLOG_ss;                                                          \
         CAPLOG_ss << " [" << __LINE__                                                         \
@@ -77,6 +97,16 @@ want to branch if __VA_ARGS__ is empty and call setPrimaryLog without passing it
     } else if constexpr (channelCompileEnabledState) {                                        \
         blockScope->setPrimaryLog(__LINE__, "", "");                                          \
     }
+  // if constexpr (channelCompileEnabledOutput) { \
+  //   std::stringstream CAPLOG_ss; \
+  //   CAPLOG_ss << CAP_COLOUR CAP_RESET " [" CAP_COLOUR CAP_BOLD CAP_GREEN << __LINE__ <<  CAP_COLOUR CAP_RESET "]::[" \
+  //     CAP_COLOUR CAP_BOLD CAP_CYAN << __FILENAME__ << CAP_COLOUR CAP_RESET "]::[" \
+  //     CAP_COLOUR CAP_BOLD CAP_MAGENTA << __PRETTY_FUNCTION__ << CAP_COLOUR CAP_RESET "]"; \
+  //   blockScopeLog.setPrimaryLog(__LINE__, CAPLOG_ss.str(), ""); \
+  //   CAP_LOG(__VA_ARGS__); \
+  // } else if constexpr (channelCompileEnabledState) { \
+  //   blockScopeLog.setPrimaryLog(__LINE__, "", ""); \
+  // }
 
 /// you may optionally provide an argument in the form of "(format, ...)"
 #define CAP_LOG_BLOCK(...) CAP_LOG_INTERNAL(this, __VA_ARGS__)
@@ -86,10 +116,11 @@ want to branch if __VA_ARGS__ is empty and call setPrimaryLog without passing it
 #define CAP_LOG_CHANNEL_BLOCK_NO_THIS(...) CAP_LOG_INTERNAL(nullptr, __VA_ARGS__)
 
 // Need to rename this to "cap log to channel"
-#define CAP_LOG(...)                             \
-    if constexpr (channelCompileEnabledOutput) { \
-        CAP_LOG_IMPL(__VA_ARGS__);               \
-    }
+#define CAP_LOG(...)
+// #define CAP_LOG(...)                             \
+//     if constexpr (channelCompileEnabledOutput) { \
+//         CAP_LOG_IMPL(__VA_ARGS__);               \
+//     }
 
 #define CAP_LOG_IMPL(...)                                                            \
     size_t needed = snprintf(NULL, 0, FIRST(__VA_ARGS__) " " REST(__VA_ARGS__)) + 1; \
