@@ -116,11 +116,10 @@ want to branch if __VA_ARGS__ is empty and call setPrimaryLog without passing it
 #define CAP_LOG_CHANNEL_BLOCK_NO_THIS(...) CAP_LOG_INTERNAL(nullptr, __VA_ARGS__)
 
 // Need to rename this to "cap log to channel"
-#define CAP_LOG(...)
-// #define CAP_LOG(...)                             \
-//     if constexpr (channelCompileEnabledOutput) { \
-//         CAP_LOG_IMPL(__VA_ARGS__);               \
-//     }
+#define CAP_LOG(...)                             \
+    if constexpr (channelCompileEnabledOutput) { \
+        CAP_LOG_IMPL(__VA_ARGS__);               \
+    }
 
 #define CAP_LOG_IMPL(...)                                                            \
     size_t needed = snprintf(NULL, 0, FIRST(__VA_ARGS__) " " REST(__VA_ARGS__)) + 1; \
