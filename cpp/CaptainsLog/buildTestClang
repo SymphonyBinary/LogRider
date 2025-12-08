@@ -3,3 +3,6 @@
 cd ..
 mkdir -p out
 clang++ -Wall -std=c++17 CaptainsLog/test/test.cpp -ICaptainsLog -I. -DENABLE_CAP_LOGGER -DCHANNELS_PATH=samples/channeldefs-example.hpp -o out/CaptainsLogTest.out
+
+out/CaptainsLogTest.out
+

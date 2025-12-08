@@ -75,6 +75,7 @@ std::string getTimestampString() {
 
 struct StreamParser {
   constexpr static uint32_t headerDelimiter[2] = {0x12345678, 0x87654321};
+  // doubled size becaue we store additional 8 bytes in the header for payload type and length
   constexpr static size_t headerDelimiterSize = sizeof(uint32_t) * 2;
 
   enum class State {
@@ -95,9 +96,12 @@ struct StreamParser {
     // printf("parsing \n");
     std::string_view delim((const char*)headerDelimiter, (const char*)headerDelimiter + headerDelimiterSize);
 
+    // These are the starting points of each deliminter.  We use these starting points
+    // because we scan from the end of the "current" delimiter to the start of the next
+    // deliminter.
     std::vector<size_t> delimiterIndices{};
     std::string_view line(buffer, buffer + numBytes);
-
+    
     size_t lenthBeforeAppend = accumulatedLine.size();
     accumulatedLine += line;
     
@@ -105,9 +109,21 @@ struct StreamParser {
     // start our search "header size" before the accumulation point, (or 0, if the accumulated line is too small)
     // However, we also assume that the start of the accumulated line is a header.
     
+    // We do our search slightly delayed because because we only take the text between delimiters.
+    // TODO: Consider adding an end delimiter (eg. reversed bytes of current delim so that we can 
+    // print the line as soon as we have the whole thing currently we need to do a hacky 
+    // check at the very end where we grab the remaining text.
+    
+    // we move the search cursor a maximum of headerDelimiterSize bytes back to catch deliminters which may have
+    // been partially transferred in the previous iteration.  Any complete delimiters would have been extracted however.
+    
+    // we also guarantee that the first set of bytes is the delimiter.  We know this because we currently buffer the string
+    // until we hit a delimiter, then print it.  Thus, we always accumulate starting with a delimiter.
     size_t from = (lenthBeforeAppend < headerDelimiterSize) ? 0 : (lenthBeforeAppend - headerDelimiterSize);
     from = std::max(from, headerDelimiterSize); // skip first delimiter, since we know accumulator starts with it.
 
+    // we want to find the first deliminter **unless** the first 
+    // delimiter is at the very start of the line.
     from = accumulatedLine.find(delim, from);
     while(from != std::string::npos) {
       // printf("delim: %zu \n", from);
@@ -308,7 +324,7 @@ void runAsSocketServer(Processor&& processor) {
       StreamParser parser;
 
       while ((readChars = read(socketID, buffer, 1024)) != 0) { // 0 is eof; closed connection
-        rawoutput.write(buffer, readChars);        
+        rawoutput.write(buffer, readChars); 
         std::vector<std::string> stringsOut{};
         std::vector<std::pair<std::string, std::vector<unsigned char>>> bytesOut{};
 
@@ -327,6 +343,18 @@ void runAsSocketServer(Processor&& processor) {
             clientBytes.push_back(std::move(filenameAndBytes));
           }
         }
+      }
+
+      // TODO: if we add a delimiter to mark the end of the line, we won't need this hack.
+      // Line accumulator likely has leftover data because we always process the previous lines only when we see a delim
+      // marking the start of a new line.  If the leftover ends in a newline, we will assume it's a complete line that
+      // hasn't been processed yet. 
+      size_t headerSize = StreamParser::headerDelimiterSize + 2 * sizeof(uint32_t);
+      if ((parser.accumulatedLine.size() > headerSize) &&
+        (parser.accumulatedLine.find('\n') != std::string::npos)) {
+          std::string lastLine = parser.accumulatedLine.substr(headerSize);
+        std::lock_guard<std::mutex> lock(clientLinesMut);
+        clientLines.push_back(std::move(lastLine));
       }
 
       std::cout << std::endl << "EOF.  Closing connection with id: " << socketID << std::endl;

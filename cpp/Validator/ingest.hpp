@@ -1111,6 +1111,7 @@ struct FileReadProgress {
 };
 
 void ProcessCaplogLine(const std::string& inputString, WorldStateWorkingData& workingData, WorldState& worldState) {
+  // printf("Processing line %zu: %s\n", workingData.intputFileLineNumber, inputString.c_str());
   CapLogMatcher matcher;
   if(!matcher.caplog.match(inputString)) {
     return;
