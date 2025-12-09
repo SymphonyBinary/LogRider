@@ -36,7 +36,7 @@
 #define CAP_LOG_DEFAULT_CHANNEL "DEFAULT"
 #define CAP_LOG_CHANNEL_ARG_TYPE std::string_view
 #define CAP_LOG_CHANNEL_ENABLED(channel) CAP::ChannelEnabledMode::FULLY_ENABLED
-//Channel<as_sequence<channel>::type>::mode()
+// #define CAP_LOG_CHANNEL_ENABLED(channel) Channel<as_sequence<channel>::type>::mode() & CAP::CAN_WRITE_TO_OUTPUT
 #define CAP_LOG_CHANNEL_ID 0
 #else
 #define CAP_LOG_DEFAULT_CHANNEL CAP::CHANNEL::DEFAULT

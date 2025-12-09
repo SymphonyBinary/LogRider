@@ -11,6 +11,30 @@ static_assert(false, "CHANNELS_PATH not defined");
 #include "output.hpp"
 #include "utilities.hpp"
 
+#define DEFINE_CAP_LOG_CHANNEL(channelname, verboseLevel, enabledMode) \
+namespace CAP { \
+constexpr std::string_view SV_ ## channelname {#channelname}; \
+template <> \
+struct Channel<::CAP::as_sequence<SV_ ## channelname>::type> { \
+    constexpr static ChannelEnabledMode mode() { \
+      return enabledMode; \
+    } \
+    constexpr static int verbosityLevel() { \
+      return verboseLevel; \
+    } \
+}; \
+}
+
+#define CAP_CHANNEL(channel) \
+CAP::Channel<CAP::as_sequence<CAP::SV_ ## channel>::type>
+
+#define CAP_CHANNEL_OUTPUT_MODE(channel) \
+CAP_CHANNEL(channel)::mode()
+
+// #define CAP_CHANNEL_OUTPUT_MODE(channel) \
+// CAP::Channel<CAP::as_sequence<CAP::SV_ ## channel>::type>::mode()
+
+
 namespace CAP {
 
 ///// string stuff
@@ -73,32 +97,35 @@ enum ChannelEnabledMode : uint32_t {
 
 template <typename>
 struct Channel {
-  constexpr static ChannelEnabledMode mode() { \
-    return ChannelEnabledMode::FULLY_DISABLED; \
-  } \
-  constexpr static int verbosityLevel() { \
-    return 0; \
-  } \
+  constexpr static ChannelEnabledMode mode() {
+    return ChannelEnabledMode::FULLY_DISABLED;
+  }
+  constexpr static int verbosityLevel() {
+    return 0;
+  }
 };
 
-#define CAPTAINS_LOG_CHANNEL(name, verboseLevel, enabledMode) \
-constexpr std::string_view SV_ ## name {#name}; \
-template <> \
-struct Channel<as_sequence<SV_ ## name>::type> { \
-    constexpr static ChannelEnabledMode mode() { \
-      return enabledMode; \
-    } \
-    constexpr static int verbosityLevel() { \
-      return verboseLevel; \
-    } \
-};
+// #define CAPTAINS_LOG_CHANNEL(name, verboseLevel, enabledMode) \
+//     constexpr std::string_view SV_ ## name {#name}; \
+// template <> \
+// struct Channel<as_sequence<SV_ ## name>::type> { \
+//     constexpr static ChannelEnabledMode mode() { \
+//       return enabledMode; \
+//     } \
+//     constexpr static int verbosityLevel() { \
+//       return verboseLevel; \
+//     } \
+// };
 
-#define CAPTAINS_LOG_CHANNEL_BEGIN_CHILDREN(...)
-#define CAPTAINS_LOG_CHANNEL_END_CHILDREN(...)
-#include CAPTAINS_LOG_STRINGIFY(CHANNELS_PATH)
-#undef CAPTAINS_LOG_CHANNEL
-#undef CAPTAINS_LOG_CHANNEL_BEGIN_CHILDREN
-#undef CAPTAINS_LOG_CHANNEL_END_CHILDREN
+// #define CAPTAINS_LOG_CHANNEL(name, verboseLevel, enabledMode) \
+//     DEFINE_CAP_LOG_CHANNEL(name, verboseLevel, enabledMode)
+
+// #define CAPTAINS_LOG_CHANNEL_BEGIN_CHILDREN(...)
+// #define CAPTAINS_LOG_CHANNEL_END_CHILDREN(...)
+// #include CAPTAINS_LOG_STRINGIFY(CHANNELS_PATH)
+// #undef CAPTAINS_LOG_CHANNEL
+// #undef CAPTAINS_LOG_CHANNEL_BEGIN_CHILDREN
+// #undef CAPTAINS_LOG_CHANNEL_END_CHILDREN
 
 /////
 /////

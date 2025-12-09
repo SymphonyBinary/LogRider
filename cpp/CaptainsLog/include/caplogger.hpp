@@ -107,6 +107,7 @@ want to branch if __VA_ARGS__ is empty and call setPrimaryLog without passing it
 #endif
 
 /// you may optionally provide an argument in the form of "(format, ...)"
+// TODO rename to CAP_LOG_SCOPE
 #define CAP_LOG_BLOCK(...) CAP_LOG_INTERNAL(this, __VA_ARGS__)
 #define CAP_LOG_BLOCK_NO_THIS(...) CAP_LOG_INTERNAL(nullptr, __VA_ARGS__)
 

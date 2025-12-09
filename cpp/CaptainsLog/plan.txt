@@ -1,1 +1,6 @@
 - make channels not required, unless using a strict mode.  Use specialized template with the channel as a string, used as a type
+
+
+- string channel plan
+    - static counter for id.  is ok, because it will be consistent without the same process.  Need to communicate that channel ids depend on the pid; maybe they should be combined on the validator side so you can search easier for that channel
+    
