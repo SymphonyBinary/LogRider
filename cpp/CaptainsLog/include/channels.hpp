@@ -19,14 +19,72 @@ static_assert(false, "CHANNELS_PATH not defined");
 
 #define CAP_LOG_SV_CHANNEL(channelname) SV_ ## channelname
 
+// Public macros
 #define DEFINE_CAP_LOG_CHANNEL(channelname, verboseLevel, enabledMode) \
 namespace CAP { \
-DEFINE_CAP_LOG_CHANNEL_IMPL(channelname, verboseLevel, enabledMode) \
+DEFINE_CAP_LOG_CHANNEL_CHILD_IMPL(channelname, verboseLevel, enabledMode, CHANNEL_ROOT_ALL) \
 }
+
+// Public macros
+#define DEFINE_CAP_LOG_CHANNEL_CHILD(channelname, verboseLevel, enabledMode, parentChannel) \
+namespace CAP { \
+DEFINE_CAP_LOG_CHANNEL_CHILD_IMPL(channelname, verboseLevel, enabledMode, parentChannel) \
+}
+
+
+///////
+// template <typename... Types> 
+// struct ChannelData {
+//   std::tuple<Types...> items;
+// }; 
+
+// template <typename... Args>
+// auto channelDef(Args... args) {
+//     return std::tuple<Types...> items; 
+//     //ChannelData<Args...>{std::make_tuple(args...)};
+//     // constexpr std::size_t count = sizeof...(Args); // Count of types in the type pack
+//     // constexpr std::size_t count2 = sizeof...(args); // Count of arguments in the function parameter pack
+//     // ...
+// }
+
+
+// x-macro unpacking pattern:
+/*
+
+
+builder pattern with array literal as input data:
+
+
+
+
+CAPTAINS_LOG_CHANNEL(TOP_CHANNEL_NAME, 9, FULLY_ENABLED)
+  CAPTAINS_LOG_CHANNEL_BEGIN_CHILDREN()
+  CAPTAINS_LOG_CHANNEL(CHILD_CHANNEL_NAME, 5, ENABLED_NO_OUTPUT)
+  CAPTAINS_LOG_CHANNEL(CHILD_CHANNEL_NAME_TWO, 2, FULLY_DISABLED)
+    CAPTAINS_LOG_CHANNEL_BEGIN_CHILDREN()
+    CAPTAINS_LOG_CHANNEL(GRANDCHILD_CHANNEL_NAME, 5, ENABLED_NO_OUTPUT)
+    CAPTAINS_LOG_CHANNEL(GRANDCHILD_CHANNEL_NAME_TWO, 2, FULLY_DISABLED)
+
+
+
+
+DEFINE_CAP_LOG_CHANNEL(TOP_CHANNEL_NAME, 9, CAP::ChannelEnabledMode::FULLY_ENABLED)
+  DEFINE_CAP_LOG_CHANNEL_CHILDREN()
+  DEFINE_CAP_LOG_CHANNEL(CHILD_CHANNEL_NAME, 5, CAP::ChannelEnabledMode::ENABLED_NO_OUTPUT)
+  DEFINE_CAP_LOG_CHANNEL(CHILD_CHANNEL_NAME_TWO, 2, CAP::ChannelEnabledMode::FULLY_DISABLED)
+    DEFINE_CAP_LOG_CHANNEL_END_CHILDREN(CHILD_CHANNEL_NAME_TWO)
+    DEFINE_CAP_LOG_CHANNEL(GRANDCHILD_CHANNEL_NAME, 5, CAP::ChannelEnabledMode::ENABLED_NO_OUTPUT)
+    DEFINE_CAP_LOG_CHANNEL(GRANDCHILD_CHANNEL_NAME_TWO, 2, CAP::ChannelEnabledMode::FULLY_DISABLED)
+*/
+
 
 #define DEFINE_CAP_LOG_CHANNEL_IMPL(channelname, verboseLevel, enabledMode) \
 CAP_LOG_CHANNEL_DEFINE_STRING_VIEW_IMPL(channelname) \
 DEFINE_CAP_LOG_CHANNEL_FROM_CONSTEXPR_STRINGVIEW_IMPL(channelname, verboseLevel, enabledMode)
+
+#define DEFINE_CAP_LOG_CHANNEL_CHILD_IMPL(channelname, verboseLevel, enabledMode, parentChannel) \
+CAP_LOG_CHANNEL_DEFINE_STRING_VIEW_IMPL(channelname) \
+DEFINE_CAP_LOG_CHANNEL_CHILD_FROM_CONSTEXPR_STRINGVIEW_IMPL(channelname, verboseLevel, enabledMode, parentChannel)
 
 #define CAP_LOG_CHANNEL_DEFINE_STRING_VIEW_IMPL(channelname) \
   constexpr const std::string_view CAP_LOG_SV_CHANNEL(channelname) {#channelname};
@@ -39,8 +97,24 @@ struct Channel<::CAP::as_sequence<CAP_LOG_SV_CHANNEL(channelname)>::type> { \
       static size_t uniqueID = ChannelID::getNextChannelUniqueID(); \
       return uniqueID; \
     } \
-    constexpr static ChannelEnabledMode enableMode() { \
+    constexpr static uint32_t enableMode() { \
       return enabledMode; \
+    } \
+    constexpr static int verbosityLevel() { \
+      return verboseLevel; \
+    } \
+};
+
+// TODO print once what the mode is in english (eg. enabled || enabled and printing)
+#define DEFINE_CAP_LOG_CHANNEL_CHILD_FROM_CONSTEXPR_STRINGVIEW_IMPL(channelname, verboseLevel, enabledMode, parentChannel) \
+template <> \
+struct Channel<::CAP::as_sequence<CAP_LOG_SV_CHANNEL(channelname)>::type> { \
+    static size_t id() { \
+      static size_t uniqueID = ChannelID::getNextChannelUniqueID(); \
+      return uniqueID; \
+    } \
+    constexpr static uint32_t enableMode() { \
+      return CAP_CHANNEL_OUTPUT_MODE(parentChannel) & enabledMode; \
     } \
     constexpr static int verbosityLevel() { \
       return verboseLevel; \
@@ -127,7 +201,7 @@ struct Channel {
     static size_t uniqueID = ChannelID::getNextChannelUniqueID();
     return uniqueID;
   }
-  constexpr static ChannelEnabledMode enableMode() {
+  constexpr static uint32_t enableMode() {
     return ChannelEnabledMode::FULLY_DISABLED;
   }
   constexpr static int verbosityLevel() {
@@ -137,13 +211,14 @@ struct Channel {
 
 // declare the default channel.  We're already in the CAP namespace,
 // se we use the inner "impl" versions.
-DEFINE_CAP_LOG_CHANNEL_IMPL(DEFAULT, 0, ChannelEnabledMode::FULLY_ENABLED);
+DEFINE_CAP_LOG_CHANNEL_IMPL(CHANNEL_ROOT_ALL, 0, ChannelEnabledMode::FULLY_ENABLED);
+DEFINE_CAP_LOG_CHANNEL_CHILD_IMPL(DEFAULT, 0, ChannelEnabledMode::FULLY_ENABLED, CHANNEL_ROOT_ALL);
 
 // #define CAPTAINS_LOG_CHANNEL(name, verboseLevel, enabledMode) \
 //     constexpr std::string_view SV_ ## name {#name}; \
 // template <> \
 // struct Channel<as_sequence<SV_ ## name>::type> { \
-//     constexpr static ChannelEnabledMode enableMode() { \
+//     constexpr static uint32_t enableMode() { \
 //       return enabledMode; \
 //     } \
 //     constexpr static int verbosityLevel() { \

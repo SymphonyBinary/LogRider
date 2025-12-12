@@ -199,7 +199,6 @@
 // };
 
 int main() {
-  // CAP_LOG_BLOCK_NO_THIS(CAP::CHANNEL::DEFAULT, "main");
   CAP_LOG_BLOCK_NO_THIS(DEFAULT, "main");
 
   // SuperLongNestedClassName name;
