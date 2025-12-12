@@ -30,19 +30,19 @@
 #include "utilities.hpp"
 #include "outputsocket.hpp"
 
+// #define CAP_LOG_STRING_TEMPLATE_CHANNEL
 #define CAP_LOG_STRING_TEMPLATE_CHANNEL
 
 #ifdef CAP_LOG_STRING_TEMPLATE_CHANNEL
-#define CAP_LOG_DEFAULT_CHANNEL "DEFAULT"
-#define CAP_LOG_CHANNEL_ARG_TYPE std::string_view
-#define CAP_LOG_CHANNEL_ENABLED(channel) CAP::ChannelEnabledMode::FULLY_ENABLED
-// #define CAP_LOG_CHANNEL_ENABLED(channel) Channel<as_sequence<channel>::type>::mode() & CAP::CAN_WRITE_TO_OUTPUT
-#define CAP_LOG_CHANNEL_ID 0
+#define CAP_LOG_DEFAULT_CHANNEL 0
+// #define CAP_LOG_CHANNEL_ARG_TYPE std::string_view
+// #define CAP_LOG_CHANNEL_ENABLED(channel) CAP::ChannelEnabledMode::FULLY_ENABLED
+// #define CAP_LOG_CHANNEL_ENABLE_MODE(svChannel) Channel<as_sequence<svChannel>::type>::enableMode()
+// #define CAP_LOG_CHANNEL_ID(svChannel) CAP::Channel<CAP::as_sequence<svChannel>::type>::id()
 #else
 #define CAP_LOG_DEFAULT_CHANNEL CAP::CHANNEL::DEFAULT
 #define CAP_LOG_CHANNEL_ARG_TYPE CAP::CHANNEL
-#define CAP_LOG_CHANNEL_ENABLED(channel) CAP::getChannelFlagMap()[(size_t)channel]
-#define CAP_LOG_CHANNEL_ID (size_t)mChannel
+#define CAP_LOG_CHANNEL_ENABLE_MODE(channel) CAP::getChannelFlagMap()[(size_t)channel]
 #endif
 
 namespace CAP {
@@ -161,7 +161,9 @@ struct TLSScope {
         }
 
         if (!blockLog) {
-            anonymousBlockLog = std::make_unique<BlockLogger>(nullptr, CAP_LOG_DEFAULT_CHANNEL,
+            // anonymousBlockLog = std::make_unique<BlockLogger>(nullptr, 0,
+            //                                                   fileId, functionId);
+            anonymousBlockLog = std::make_unique<BlockLogger>(nullptr, CAP_LOG_DEFAULT_CHANNEL, true,
                                                               fileId, functionId);
             blockLog = anonymousBlockLog.get();
             // TODO: set a flag in the anonymous block so we can specify unknown depth.
@@ -175,16 +177,16 @@ struct TLSScope {
 class BlockLogger {
   public:
     // NOTE: need to always have a default channel
-    BlockLogger(const void* thisPointer, CAP_LOG_CHANNEL_ARG_TYPE channel, std::string_view fileId,
+    BlockLogger(const void* thisPointer, size_t channelId, uint32_t enabledMode, std::string_view fileId,
                 std::string_view processId) 
-            : mEnabledMode(CAP_LOG_CHANNEL_ENABLED(channel)),
+            : mEnabledMode(enabledMode),
             mlogInfoBuffer(),
             mcustomMessageBuffer(),
             mId(0),
             mDepth(0),
             mThreadId(0),
             mProcessId(0),
-            mChannel(channel),
+            mChannel(channelId),
             mThisPointer(thisPointer) {
         if (mEnabledMode & CAN_WRITE_TO_OUTPUT) {
             tlsScopeStack_ = &CAP::TLSScopeStack::getThreadLocalInstance();
@@ -207,7 +209,7 @@ class BlockLogger {
             std::stringstream ss;
             ss << CAP_PRIMARY_LOG_END_DELIMITER << " " << mId 
                << mlogInfoBuffer << " " << mThisPointer;
-            Impl::writeOutput(ss.str(), mProcessId, mThreadId, CAP_LOG_CHANNEL_ID, mDepth);
+            Impl::writeOutput(ss.str(), mProcessId, mThreadId, mChannel, mDepth);
 
             if (tlsScopeStack_ != nullptr) {
                 tlsScopeStack_->blocks.pop();
@@ -228,7 +230,7 @@ class BlockLogger {
             ss << CAP_PRIMARY_LOG_BEGIN_DELIMITER
             << " " << mId << mlogInfoBuffer << " "
             << mThisPointer;
-            Impl::writeOutput(ss.str(), mProcessId, mThreadId, CAP_LOG_CHANNEL_ID, mDepth);
+            Impl::writeOutput(ss.str(), mProcessId, mThreadId, mChannel, mDepth);
 
             // The macro which calls this hardcodes a " " to get around some macro limitations regarding
             // zero/1/multi argument __VA_ARGS__
@@ -254,7 +256,7 @@ class BlockLogger {
             // << "] | pointerToBuffer: [" << pointerToBuffer << "] | numberOfBytes: [" << numberOfBytes
             // << "]";
 
-            Impl::writeOutput(ss.str(), mProcessId, mThreadId, CAP_LOG_CHANNEL_ID, mDepth);
+            Impl::writeOutput(ss.str(), mProcessId, mThreadId, mChannel, mDepth);
 
             PRINT_TO_BINARY_FILE(filename, pointerToBuffer, numberOfBytes);
         }
@@ -273,7 +275,7 @@ class BlockLogger {
                 ss << messageBuffer.substr(0, CAP::LogAbsoluteCharacterLimitForUserLog);
             }
 
-            Impl::writeOutput(ss.str(), mProcessId, mThreadId, CAP_LOG_CHANNEL_ID, mDepth);
+            Impl::writeOutput(ss.str(), mProcessId, mThreadId, mChannel, mDepth);
         }
     }
 
@@ -283,7 +285,7 @@ class BlockLogger {
             ss << CAP_ADD_LOG_DELIMITER << CAP_ADD_LOG_SECOND_DELIMITER
             << " " << mId << " " << "["
             << line << "] " << "ERROR: " << messageBuffer;
-            Impl::writeOutput(ss.str(), mProcessId, mThreadId, CAP_LOG_CHANNEL_ID, mDepth);
+            Impl::writeOutput(ss.str(), mProcessId, mThreadId, mChannel, mDepth);
         }
     }
 
@@ -334,7 +336,7 @@ class BlockLogger {
             << line << "] "
             << "PRINTING ALL STATE IN STORE: StoreKey='"
             << to_string(key);
-            Impl::writeOutput(ss.str(), mProcessId, mThreadId, CAP_LOG_CHANNEL_ID, mDepth);
+            Impl::writeOutput(ss.str(), mProcessId, mThreadId, mChannel, mDepth);
 
             for (const auto& row : allStates) {
                 printStateImpl(line, "PRINT STATE", to_string(key), row.first, row.second);
@@ -369,7 +371,7 @@ class BlockLogger {
             << line << "] "
             << "RELEASE ALL STATE IN STORE: StoreKey='"
             << to_string(key) << "' NumDeleted='" << deletedCount << "'";
-            Impl::writeOutput(ss.str(), mProcessId, mThreadId, CAP_LOG_CHANNEL_ID, mDepth);
+            Impl::writeOutput(ss.str(), mProcessId, mThreadId, mChannel, mDepth);
         }
     }
 
@@ -381,7 +383,7 @@ class BlockLogger {
            << " " << mId << " [" << line << "] " << logCommand << ": "
            << "StoreKey='" << storeKey << "' : StateName='" << varName << "' : Value='"
            << value.value_or("N/A") << "'";
-        Impl::writeOutput(ss.str(), mProcessId, mThreadId, CAP_LOG_CHANNEL_ID, mDepth);
+        Impl::writeOutput(ss.str(), mProcessId, mThreadId, mChannel, mDepth);
     }
 
     TLSScopeStack* tlsScopeStack_ = nullptr;
@@ -395,7 +397,7 @@ class BlockLogger {
     unsigned int mDepth;
     unsigned int mThreadId;
     unsigned int mProcessId;
-    CAP_LOG_CHANNEL_ARG_TYPE mChannel;
+    size_t mChannel;
     const void* mThisPointer;
 }; 
 

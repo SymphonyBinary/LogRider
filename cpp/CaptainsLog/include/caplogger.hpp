@@ -50,6 +50,7 @@
 #define PRAGMA_IGNORE_SHADOW_END
 #endif
 
+// #define CAP_LOG_STRING_TEMPLATE_CHANNEL
 #define CAP_LOG_STRING_TEMPLATE_CHANNEL
 
 #ifdef CAP_LOG_STRING_TEMPLATE_CHANNEL
@@ -63,10 +64,11 @@ want to branch if __VA_ARGS__ is empty and call setPrimaryLog without passing it
 #define CAP_LOG_INTERNAL(pointer, channel, ...) \
   PRAGMA_IGNORE_SHADOW_BEGIN \
   constexpr static std::string_view SVChannel{#channel}; \
-  [[maybe_unused]] constexpr bool channelCompileNotDisabled = CAP::Channel<CAP::as_sequence<SVChannel>::type>::mode(); \
-  [[maybe_unused]] constexpr bool channelCompileEnabledOutput = CAP::Channel<CAP::as_sequence<SVChannel>::type>::mode() & CAP::CAN_WRITE_TO_OUTPUT; \
-  [[maybe_unused]] constexpr bool channelCompileEnabledState = CAP::Channel<CAP::as_sequence<SVChannel>::type>::mode() & CAP::CAN_WRITE_TO_STATE; \
-  CAP::BlockLogger blockScopeLog{pointer, SVChannel, __FILENAME__, __PRETTY_FUNCTION__}; \
+  [[maybe_unused]] constexpr bool channelCompileNotDisabled = CAP::Channel<CAP::as_sequence<SVChannel>::type>::enableMode(); \
+  [[maybe_unused]] constexpr bool channelCompileEnabledOutput = CAP::Channel<CAP::as_sequence<SVChannel>::type>::enableMode() & CAP::CAN_WRITE_TO_OUTPUT; \
+  [[maybe_unused]] constexpr bool channelCompileEnabledState = CAP::Channel<CAP::as_sequence<SVChannel>::type>::enableMode() & CAP::CAN_WRITE_TO_STATE; \
+  [[maybe_unused]] size_t channelId = CAP::Channel<CAP::as_sequence<SVChannel>::type>::id(); \
+  CAP::BlockLogger blockScopeLog{pointer, channelId, CAP_CHANNEL_OUTPUT_MODE(channel), __FILENAME__, __PRETTY_FUNCTION__}; \
   CAP::BlockLogger* blockScope = &blockScopeLog; \
   PRAGMA_IGNORE_SHADOW_END                                                                  \
     if constexpr (channelCompileEnabledOutput) {                                              \

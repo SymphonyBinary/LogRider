@@ -11,31 +11,57 @@ static_assert(false, "CHANNELS_PATH not defined");
 #include "output.hpp"
 #include "utilities.hpp"
 
+// convenience macros to split up building this:
+//      "constexpr const std::string_view SV_ ## channelname {#channelname};"
+// and 
+//      "struct Channel<::CAP::as_sequence<SV_ ## channelname>::type> {"
+// multiple macros aren't strictly needed but they add convenience elsewhere too.
+
+#define CAP_LOG_SV_CHANNEL(channelname) SV_ ## channelname
+
 #define DEFINE_CAP_LOG_CHANNEL(channelname, verboseLevel, enabledMode) \
 namespace CAP { \
-constexpr std::string_view SV_ ## channelname {#channelname}; \
+DEFINE_CAP_LOG_CHANNEL_IMPL(channelname, verboseLevel, enabledMode) \
+}
+
+#define DEFINE_CAP_LOG_CHANNEL_IMPL(channelname, verboseLevel, enabledMode) \
+CAP_LOG_CHANNEL_DEFINE_STRING_VIEW_IMPL(channelname) \
+DEFINE_CAP_LOG_CHANNEL_FROM_CONSTEXPR_STRINGVIEW_IMPL(channelname, verboseLevel, enabledMode)
+
+#define CAP_LOG_CHANNEL_DEFINE_STRING_VIEW_IMPL(channelname) \
+  constexpr const std::string_view CAP_LOG_SV_CHANNEL(channelname) {#channelname};
+
+// TODO print once what the mode is in english (eg. enabled || enabled and printing)
+#define DEFINE_CAP_LOG_CHANNEL_FROM_CONSTEXPR_STRINGVIEW_IMPL(channelname, verboseLevel, enabledMode) \
 template <> \
-struct Channel<::CAP::as_sequence<SV_ ## channelname>::type> { \
-    constexpr static ChannelEnabledMode mode() { \
+struct Channel<::CAP::as_sequence<CAP_LOG_SV_CHANNEL(channelname)>::type> { \
+    static size_t id() { \
+      static size_t uniqueID = ChannelID::getNextChannelUniqueID(); \
+      return uniqueID; \
+    } \
+    constexpr static ChannelEnabledMode enableMode() { \
       return enabledMode; \
     } \
     constexpr static int verbosityLevel() { \
       return verboseLevel; \
     } \
-}; \
-}
+};
 
 #define CAP_CHANNEL(channel) \
 CAP::Channel<CAP::as_sequence<CAP::SV_ ## channel>::type>
 
 #define CAP_CHANNEL_OUTPUT_MODE(channel) \
-CAP_CHANNEL(channel)::mode()
-
-// #define CAP_CHANNEL_OUTPUT_MODE(channel) \
-// CAP::Channel<CAP::as_sequence<CAP::SV_ ## channel>::type>::mode()
-
+CAP_CHANNEL(channel)::enableMode()
 
 namespace CAP {
+
+struct ChannelID {
+    static size_t getNextChannelUniqueID() {
+        static std::atomic<size_t> currentChannelUniqueID = 0;
+        return currentChannelUniqueID++;
+    }
+};
+
 
 ///// string stuff
 /////
@@ -97,7 +123,11 @@ enum ChannelEnabledMode : uint32_t {
 
 template <typename>
 struct Channel {
-  constexpr static ChannelEnabledMode mode() {
+  static size_t id() {
+    static size_t uniqueID = ChannelID::getNextChannelUniqueID();
+    return uniqueID;
+  }
+  constexpr static ChannelEnabledMode enableMode() {
     return ChannelEnabledMode::FULLY_DISABLED;
   }
   constexpr static int verbosityLevel() {
@@ -105,11 +135,15 @@ struct Channel {
   }
 };
 
+// declare the default channel.  We're already in the CAP namespace,
+// se we use the inner "impl" versions.
+DEFINE_CAP_LOG_CHANNEL_IMPL(DEFAULT, 0, ChannelEnabledMode::FULLY_ENABLED);
+
 // #define CAPTAINS_LOG_CHANNEL(name, verboseLevel, enabledMode) \
 //     constexpr std::string_view SV_ ## name {#name}; \
 // template <> \
 // struct Channel<as_sequence<SV_ ## name>::type> { \
-//     constexpr static ChannelEnabledMode mode() { \
+//     constexpr static ChannelEnabledMode enableMode() { \
 //       return enabledMode; \
 //     } \
 //     constexpr static int verbosityLevel() { \
