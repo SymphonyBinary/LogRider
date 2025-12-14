@@ -1,5 +1,8 @@
 #!/bin/bash
-# cd `dirname "$0"`
+
+# Navigate to the script's directory
+# https://stackoverflow.com/questions/3349105/how-can-i-set-the-current-working-directory-to-the-directory-of-the-script-in-ba
+cd "$(dirname "$0")"
 cd ..
 mkdir -p out
 clang++ -Wall -std=c++20 Validator/validator.cpp  -IValidator -I.  -o out/validator.out

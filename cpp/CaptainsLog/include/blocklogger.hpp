@@ -30,20 +30,8 @@
 #include "utilities.hpp"
 #include "outputsocket.hpp"
 
-// #define CAP_LOG_STRING_TEMPLATE_CHANNEL
-#define CAP_LOG_STRING_TEMPLATE_CHANNEL
 
-#ifdef CAP_LOG_STRING_TEMPLATE_CHANNEL
 #define CAP_LOG_DEFAULT_CHANNEL 0
-// #define CAP_LOG_CHANNEL_ARG_TYPE std::string_view
-// #define CAP_LOG_CHANNEL_ENABLED(channel) CAP::ChannelEnabledMode::FULLY_ENABLED
-// #define CAP_LOG_CHANNEL_ENABLE_MODE(svChannel) Channel<as_sequence<svChannel>::type>::enableMode()
-// #define CAP_LOG_CHANNEL_ID(svChannel) CAP::Channel<CAP::as_sequence<svChannel>::type>::id()
-#else
-#define CAP_LOG_DEFAULT_CHANNEL CAP::CHANNEL::DEFAULT
-#define CAP_LOG_CHANNEL_ARG_TYPE CAP::CHANNEL
-#define CAP_LOG_CHANNEL_ENABLE_MODE(channel) CAP::getChannelFlagMap()[(size_t)channel]
-#endif
 
 namespace CAP {
 
@@ -161,12 +149,9 @@ struct TLSScope {
         }
 
         if (!blockLog) {
-            // anonymousBlockLog = std::make_unique<BlockLogger>(nullptr, 0,
-            //                                                   fileId, functionId);
             anonymousBlockLog = std::make_unique<BlockLogger>(nullptr, CAP_LOG_DEFAULT_CHANNEL, true,
                                                               fileId, functionId);
             blockLog = anonymousBlockLog.get();
-            // TODO: set a flag in the anonymous block so we can specify unknown depth.
         }
     }
 

@@ -1,14 +1,15 @@
 #!/bin/bash
-# cd `dirname "$0"`
+
+# Navigate to the script's directory
+# https://stackoverflow.com/questions/3349105/how-can-i-set-the-current-working-directory-to-the-directory-of-the-script-in-ba
+cd "$(dirname "$0")"
 cd ..
 mkdir -p out
 
+clang++ -Wall -std=c++17 CaptainsLog/test/test.cpp -ICaptainsLog -I. -DENABLE_CAP_LOGGER -DCHANNELS_PATH=samples/channeldefs-example.hpp -o out/CaptainsLogTest.out
 clang++ -Wall -std=c++17 CaptainsLog/test/channeltest.cpp -ICaptainsLog -I. -DENABLE_CAP_LOGGER -DCHANNELS_PATH=samples/channeldefs-example.hpp -o out/CapLogChannelTest.out
 
+out/CaptainsLogTest.out
 out/CapLogChannelTest.out
 
-
-# clang++ -Wall -std=c++17 CaptainsLog/test/test.cpp -ICaptainsLog -I. -DENABLE_CAP_LOGGER -DCHANNELS_PATH=samples/channeldefs-example.hpp -o out/CaptainsLogTest.out
-
-# out/CaptainsLogTest.out
 
