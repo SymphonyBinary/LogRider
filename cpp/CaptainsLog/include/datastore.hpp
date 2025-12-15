@@ -426,24 +426,6 @@ BlockLoggerDataStore::BlockLoggerDataStore() {
     printLogLineCharacterLimit(ss, logData.processTimestampInstanceKey);
     PRINT_TO_LOG(ss.str().c_str());
 
-    // Print the enabled status of all the channels.
-    int channelDepth = 0;
-    int channelId = 0;
-    ss.str("");
-
-#define CAPTAINS_LOG_CHANNEL(name, verboseLevel, channelEnabledMode)                               \
-    printChannel(ss, logData.processTimestampInstanceKey, logData.relativeThreadIdx, channelDepth, \
-                 channelId, #name, CAP::getChannelFlagMap()[channelId], verboseLevel);             \
-    ++channelId;                                                                                   \
-    PRINT_TO_LOG(ss.str().c_str());                                                                \
-    ss.str("");
-#define CAPTAINS_LOG_CHANNEL_BEGIN_CHILDREN(...) ++channelDepth;
-#define CAPTAINS_LOG_CHANNEL_END_CHILDREN(...) --channelDepth;
-
-#include CAPTAINS_LOG_STRINGIFY(CHANNELS_PATH)
-#undef CAPTAINS_LOG_CHANNEL
-#undef CAPTAINS_LOG_CHANNEL_BEGIN_CHILDREN
-#undef CAPTAINS_LOG_CHANNEL_END_CHILDREN
 
     removeBlockLoggerInstance();
 }

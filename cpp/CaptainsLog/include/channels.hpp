@@ -17,7 +17,7 @@ static_assert(false, "CHANNELS_PATH not defined");
 //      "struct Channel<::CAP::as_sequence<SV_ ## channelname>::type> {"
 // multiple macros aren't strictly needed but they add convenience elsewhere too.
 
-#define CAP_LOG_SV_CHANNEL(channelname) SV_ ## channelname
+#define CAP_LOG_CHANNEL_STRING(channelname) CAP::CHANNEL::channelname
 
 // Public macros
 #define DEFINE_CAP_LOG_CHANNEL(channelname, verboseLevel, enabledMode) \
@@ -31,53 +31,6 @@ namespace CAP { \
 DEFINE_CAP_LOG_CHANNEL_CHILD_IMPL(channelname, verboseLevel, enabledMode, parentChannel) \
 }
 
-
-///////
-// template <typename... Types> 
-// struct ChannelData {
-//   std::tuple<Types...> items;
-// }; 
-
-// template <typename... Args>
-// auto channelDef(Args... args) {
-//     return std::tuple<Types...> items; 
-//     //ChannelData<Args...>{std::make_tuple(args...)};
-//     // constexpr std::size_t count = sizeof...(Args); // Count of types in the type pack
-//     // constexpr std::size_t count2 = sizeof...(args); // Count of arguments in the function parameter pack
-//     // ...
-// }
-
-
-// x-macro unpacking pattern:
-/*
-
-
-builder pattern with array literal as input data:
-
-
-
-
-CAPTAINS_LOG_CHANNEL(TOP_CHANNEL_NAME, 9, FULLY_ENABLED)
-  CAPTAINS_LOG_CHANNEL_BEGIN_CHILDREN()
-  CAPTAINS_LOG_CHANNEL(CHILD_CHANNEL_NAME, 5, ENABLED_NO_OUTPUT)
-  CAPTAINS_LOG_CHANNEL(CHILD_CHANNEL_NAME_TWO, 2, FULLY_DISABLED)
-    CAPTAINS_LOG_CHANNEL_BEGIN_CHILDREN()
-    CAPTAINS_LOG_CHANNEL(GRANDCHILD_CHANNEL_NAME, 5, ENABLED_NO_OUTPUT)
-    CAPTAINS_LOG_CHANNEL(GRANDCHILD_CHANNEL_NAME_TWO, 2, FULLY_DISABLED)
-
-
-
-
-DEFINE_CAP_LOG_CHANNEL(TOP_CHANNEL_NAME, 9, CAP::ChannelEnabledMode::FULLY_ENABLED)
-  DEFINE_CAP_LOG_CHANNEL_CHILDREN()
-  DEFINE_CAP_LOG_CHANNEL(CHILD_CHANNEL_NAME, 5, CAP::ChannelEnabledMode::ENABLED_NO_OUTPUT)
-  DEFINE_CAP_LOG_CHANNEL(CHILD_CHANNEL_NAME_TWO, 2, CAP::ChannelEnabledMode::FULLY_DISABLED)
-    DEFINE_CAP_LOG_CHANNEL_END_CHILDREN(CHILD_CHANNEL_NAME_TWO)
-    DEFINE_CAP_LOG_CHANNEL(GRANDCHILD_CHANNEL_NAME, 5, CAP::ChannelEnabledMode::ENABLED_NO_OUTPUT)
-    DEFINE_CAP_LOG_CHANNEL(GRANDCHILD_CHANNEL_NAME_TWO, 2, CAP::ChannelEnabledMode::FULLY_DISABLED)
-*/
-
-
 #define DEFINE_CAP_LOG_CHANNEL_IMPL(channelname, verboseLevel, enabledMode) \
 CAP_LOG_CHANNEL_DEFINE_STRING_VIEW_IMPL(channelname) \
 DEFINE_CAP_LOG_CHANNEL_FROM_CONSTEXPR_STRINGVIEW_IMPL(channelname, verboseLevel, enabledMode)
@@ -87,12 +40,14 @@ CAP_LOG_CHANNEL_DEFINE_STRING_VIEW_IMPL(channelname) \
 DEFINE_CAP_LOG_CHANNEL_CHILD_FROM_CONSTEXPR_STRINGVIEW_IMPL(channelname, verboseLevel, enabledMode, parentChannel)
 
 #define CAP_LOG_CHANNEL_DEFINE_STRING_VIEW_IMPL(channelname) \
-  constexpr const std::string_view CAP_LOG_SV_CHANNEL(channelname) {#channelname};
+namespace CHANNEL { \
+  constexpr const std::string_view channelname {#channelname}; \
+}
 
 // TODO print once what the mode is in english (eg. enabled || enabled and printing)
 #define DEFINE_CAP_LOG_CHANNEL_FROM_CONSTEXPR_STRINGVIEW_IMPL(channelname, verboseLevel, enabledMode) \
 template <> \
-struct Channel<::CAP::as_sequence<CAP_LOG_SV_CHANNEL(channelname)>::type> { \
+struct Channel<CAP::as_sequence<CAP_LOG_CHANNEL_STRING(channelname)>::type> { \
     static size_t id() { \
       static size_t uniqueID = ChannelID::getNextChannelUniqueID(); \
       return uniqueID; \
@@ -108,7 +63,7 @@ struct Channel<::CAP::as_sequence<CAP_LOG_SV_CHANNEL(channelname)>::type> { \
 // TODO print once what the mode is in english (eg. enabled || enabled and printing)
 #define DEFINE_CAP_LOG_CHANNEL_CHILD_FROM_CONSTEXPR_STRINGVIEW_IMPL(channelname, verboseLevel, enabledMode, parentChannel) \
 template <> \
-struct Channel<::CAP::as_sequence<CAP_LOG_SV_CHANNEL(channelname)>::type> { \
+struct Channel<CAP::as_sequence<CAP_LOG_CHANNEL_STRING(channelname)>::type> { \
     static size_t id() { \
       static size_t uniqueID = ChannelID::getNextChannelUniqueID(); \
       return uniqueID; \
@@ -122,7 +77,7 @@ struct Channel<::CAP::as_sequence<CAP_LOG_SV_CHANNEL(channelname)>::type> { \
 };
 
 #define CAP_CHANNEL(channel) \
-CAP::Channel<CAP::as_sequence<CAP::SV_ ## channel>::type>
+CAP::Channel<CAP::as_sequence<CAP_LOG_CHANNEL_STRING(channel)>::type>
 
 #define CAP_CHANNEL_OUTPUT_MODE(channel) \
 CAP_CHANNEL(channel)::enableMode()
@@ -213,112 +168,11 @@ struct Channel {
 // se we use the inner "impl" versions.
 DEFINE_CAP_LOG_CHANNEL_IMPL(CHANNEL_ROOT_ALL, 0, ChannelEnabledMode::FULLY_ENABLED);
 DEFINE_CAP_LOG_CHANNEL_CHILD_IMPL(DEFAULT, 0, ChannelEnabledMode::FULLY_ENABLED, CHANNEL_ROOT_ALL);
-
-// #define CAPTAINS_LOG_CHANNEL(name, verboseLevel, enabledMode) \
-//     constexpr std::string_view SV_ ## name {#name}; \
-// template <> \
-// struct Channel<as_sequence<SV_ ## name>::type> { \
-//     constexpr static uint32_t enableMode() { \
-//       return enabledMode; \
-//     } \
-//     constexpr static int verbosityLevel() { \
-//       return verboseLevel; \
-//     } \
-// };
-
-// #define CAPTAINS_LOG_CHANNEL(name, verboseLevel, enabledMode) \
-//     DEFINE_CAP_LOG_CHANNEL(name, verboseLevel, enabledMode)
-
-// #define CAPTAINS_LOG_CHANNEL_BEGIN_CHILDREN(...)
-// #define CAPTAINS_LOG_CHANNEL_END_CHILDREN(...)
-// #include CAPTAINS_LOG_STRINGIFY(CHANNELS_PATH)
-// #undef CAPTAINS_LOG_CHANNEL
-// #undef CAPTAINS_LOG_CHANNEL_BEGIN_CHILDREN
-// #undef CAPTAINS_LOG_CHANNEL_END_CHILDREN
-
-/////
-/////
-
-
-
-enum class CHANNEL {
-#define CAPTAINS_LOG_CHANNEL(name, ...) name,
-#define CAPTAINS_LOG_CHANNEL_BEGIN_CHILDREN(...)
-#define CAPTAINS_LOG_CHANNEL_END_CHILDREN(...)
-#include CAPTAINS_LOG_STRINGIFY(CHANNELS_PATH)
-#undef CAPTAINS_LOG_CHANNEL
-#undef CAPTAINS_LOG_CHANNEL_BEGIN_CHILDREN
-#undef CAPTAINS_LOG_CHANNEL_END_CHILDREN
-    COUNT,
-};
-
-inline std::string_view channelToString(CHANNEL channel) {
-    static std::array<std::string, (size_t)CHANNEL::COUNT> strings = {
-#define CAPTAINS_LOG_CHANNEL(name, ...) #name,
-#define CAPTAINS_LOG_CHANNEL_BEGIN_CHILDREN(...)
-#define CAPTAINS_LOG_CHANNEL_END_CHILDREN(...)
-#include CAPTAINS_LOG_STRINGIFY(CHANNELS_PATH)
-#undef CAPTAINS_LOG_CHANNEL
-#undef CAPTAINS_LOG_CHANNEL_BEGIN_CHILDREN
-#undef CAPTAINS_LOG_CHANNEL_END_CHILDREN
-    };
-    return strings[(size_t)channel];
-}
-
-// enum ChannelEnabledFlags : uint32_t {
-//     CAN_WRITE_TO_STATE = 1 << 1,
-//     CAN_WRITE_TO_OUTPUT = 1 << 2,
-//     ALL_FLAGS = std::numeric_limits<uint32_t>::max(),
-// };
-
-// enum ChannelEnabledMode : uint32_t {
-//     FULLY_DISABLED = 0,
-//     FULLY_ENABLED = ALL_FLAGS,
-//     ENABLED_NO_OUTPUT = ALL_FLAGS ^ CAN_WRITE_TO_OUTPUT,
-// };
-
-constexpr std::array<uint32_t, (size_t)CHANNEL::COUNT> getChannelFlagMap() {
-    std::array<uint32_t, (size_t)CHANNEL::COUNT> flags{};
-    std::array<uint32_t, (size_t)CHANNEL::COUNT> parentFlags = {ALL_FLAGS};
-    int index = 0;
-    int parentFlagsIndex = 0;
-    uint32_t currentEnabledMode = ALL_FLAGS;
-
-#define CAPTAINS_LOG_CHANNEL(name, verboseLevel, enabledMode)         \
-    currentEnabledMode = enabledMode & parentFlags[parentFlagsIndex]; \
-    flags[index++] = currentEnabledMode;
-
-#define CAPTAINS_LOG_CHANNEL_BEGIN_CHILDREN(...) \
-    parentFlags[++parentFlagsIndex] = currentEnabledMode;
-
-#define CAPTAINS_LOG_CHANNEL_END_CHILDREN(...) --parentFlagsIndex;
-
-#include CAPTAINS_LOG_STRINGIFY(CHANNELS_PATH)
-
-#undef CAPTAINS_LOG_CHANNEL
-#undef CAPTAINS_LOG_CHANNEL_BEGIN_CHILDREN
-#undef CAPTAINS_LOG_CHANNEL_END_CHILDREN
-
-    return flags;
-}
+DEFINE_CAP_LOG_CHANNEL_CHILD_IMPL(LEGACY, 0, ChannelEnabledMode::FULLY_ENABLED, CHANNEL_ROOT_ALL);
 
 inline void printChannel(std::stringstream& ss, unsigned int processId, unsigned int threadId,
                          unsigned int depth, unsigned int channelId, std::string_view channelName,
                          uint32_t enabledMode, int verbosityLevel) {
-
-    // #define CAPTAINS_LOG_CHANNEL(name, ...) \
-    // { \
-    //     constexpr static std::string_view SVString{#name}; \
-    //     bool enabled = Channel<as_sequence<SVString>::type>::isEnabled(); \
-    //     printf("Channel %s is %s\n", SVString.data(), enabled ? "enabled" : "disabled"); \
-    // }
-    // #define CAPTAINS_LOG_CHANNEL_BEGIN_CHILDREN(...)
-    // #define CAPTAINS_LOG_CHANNEL_END_CHILDREN(...)
-    // #include CAPTAINS_LOG_STRINGIFY(CHANNELS_PATH)
-    // #undef CAPTAINS_LOG_CHANNEL
-    // #undef CAPTAINS_LOG_CHANNEL_BEGIN_CHILDREN
-    // #undef CAPTAINS_LOG_CHANNEL_END_CHILDREN
-
 
     ss << CAP_MAIN_PREFIX_DELIMITER << INSERT_THREAD_ID << " : "
        << CAP_PROCESS_ID_DELIMITER << processId << " " << CAP_THREAD_ID_DELIMITER

@@ -34,17 +34,17 @@ public:
   ExampleStateWithThisPtr() = default;
 
   ~ExampleStateWithThisPtr() {
-    CAP_LOG_BLOCK_NO_THIS(SET_THIS_EXAMPLE);
+    CAP_LOG_BLOCK_NO_THIS(CAP::CHANNEL::SET_THIS_EXAMPLE);
     CAP_LOG_RELEASE_ALL_STATE();
   }
 
   void makeEntity(int id, std::string name) {
-    CAP_LOG_BLOCK(SET_THIS_EXAMPLE);
+    CAP_LOG_BLOCK(CAP::CHANNEL::SET_THIS_EXAMPLE);
     CAP_LOG_UPDATE_STATE(CAP::string(id), [&](CAP::DataStoreStateArray<1>& state){state[0] = name;});
   }
 
   void connectEntities(int idA, int idB) {
-    CAP_LOG_BLOCK(SET_THIS_EXAMPLE, "Connecting %d and %d", idA, idB);
+    CAP_LOG_BLOCK(CAP::CHANNEL::SET_THIS_EXAMPLE, "Connecting %d and %d", idA, idB);
     CAP_LOG_PRINT_STATE(CAP::string(idA));
     CAP_LOG_PRINT_STATE(CAP::string(idB));
   }
@@ -54,7 +54,7 @@ public:
 
 /// ---- demonstrates how set state can target other addresses too
 void addStateToExampleState(const ExampleStateWithThisPtr& example) {
-  CAP_LOG_BLOCK_NO_THIS(SET_ADDRESS_EXAMPLE);
+  CAP_LOG_BLOCK_NO_THIS(CAP::CHANNEL::SET_ADDRESS_EXAMPLE);
   CAP_LOG_UPDATE_STATE_ON(
     CAP::storeKeyList(&example), 
     CAP::variableNames("SomeStateInsertedOutside"), 
@@ -91,27 +91,27 @@ void addStateToExampleState(const ExampleStateWithThisPtr& example) {
 
 /// ---- demonstrates how set state can be used on objects with a string name.
 void addStateToStoreName(std::string storeName, std::string name) {
-  CAP_LOG_BLOCK_NO_THIS(SET_STORE_NAME_EXAMPLE);
+  CAP_LOG_BLOCK_NO_THIS(CAP::CHANNEL::SET_STORE_NAME_EXAMPLE);
   CAP_LOG_UPDATE_STATE_ON(CAP::storeKeyList(storeName), CAP::variableNames(name), [&](CAP::DataStoreStateArray<1>& state){state[0] = "default value";})
 }
 
 void changeStateToStoreName(std::string storeName, std::string name) {
-  CAP_LOG_BLOCK_NO_THIS(SET_STORE_NAME_EXAMPLE);
+  CAP_LOG_BLOCK_NO_THIS(CAP::CHANNEL::SET_STORE_NAME_EXAMPLE);
   CAP_LOG_UPDATE_STATE_ON(CAP::storeKeyList(storeName), CAP::variableNames(name), [&](CAP::DataStoreStateArray<1>& state){state[0] = "changed value";})
 }
 
 void printStore(std::string storeName, std::string name) {
-  CAP_LOG_BLOCK_NO_THIS(SET_STORE_NAME_EXAMPLE);
+  CAP_LOG_BLOCK_NO_THIS(CAP::CHANNEL::SET_STORE_NAME_EXAMPLE);
   CAP_LOG_PRINT_STATE_ON(storeName, name);
 }
 
 void printAllStore(std::string storeName) {
-  CAP_LOG_BLOCK_NO_THIS(SET_STORE_NAME_EXAMPLE);
+  CAP_LOG_BLOCK_NO_THIS(CAP::CHANNEL::SET_STORE_NAME_EXAMPLE);
   CAP_LOG_PRINT_ALL_STATE_ON(storeName);
 }
 
 void releaseAllStateOnStore(std::string storeName) {
-  CAP_LOG_BLOCK_NO_THIS(SET_STORE_NAME_EXAMPLE);
+  CAP_LOG_BLOCK_NO_THIS(CAP::CHANNEL::SET_STORE_NAME_EXAMPLE);
   CAP_LOG_RELEASE_ALL_STATE_ON(storeName);
 }
 /// ----
@@ -119,17 +119,17 @@ void releaseAllStateOnStore(std::string storeName) {
 class TestRender {
 public:
   TestRender(std::string name) {
-    CAP_LOG_BLOCK(RENDER);
+    CAP_LOG_BLOCK(CAP::CHANNEL::RENDER);
     CAP_LOG_UPDATE_STATE(CAP::variableNames("Current Name"), [&](CAP::DataStoreStateArray<1>& state){state[0] = name;})
   }
 
   ~TestRender() {
-    CAP_LOG_BLOCK(RENDER);
+    CAP_LOG_BLOCK(CAP::CHANNEL::RENDER);
     CAP_LOG_RELEASE_ALL_STATE();
   }
 
   void testBlockOutput() {
-    CAP_LOG_BLOCK(RENDER);
+    CAP_LOG_BLOCK(CAP::CHANNEL::RENDER);
     CAP_LOG_UPDATE_STATE(CAP::variableNames("Current Name"), [&](CAP::DataStoreStateArray<1>& state){
         state[0] = state[0].value_or("NO PREV STATE | ") + " APPENDED SOME STUFF";})
   }
@@ -140,7 +140,7 @@ public:
   std::vector<TestRender> tests;
 
   TestNetwork() {
-    CAP_LOG_BLOCK(NETWORK, "Testing format = %s", "hello");
+    CAP_LOG_BLOCK(CAP::CHANNEL::NETWORK, "Testing format = %s", "hello");
     for(int i = 0; i < 5; ++i ){
       tests.emplace_back("In Two " + std::to_string(i));
       tests.back().testBlockOutput();
@@ -152,18 +152,18 @@ public:
 class NestTest1 {
 public:
   ~NestTest1(){
-    CAP_LOG_BLOCK(AUDIO_SUB_CHANNEL_Z);
+    CAP_LOG_BLOCK(CAP::CHANNEL::AUDIO_SUB_CHANNEL_Z);
     CAP_LOG_RELEASE_STATE(static_cast<const std::ostringstream&>(std::ostringstream{} << "asdf " << 1).str().c_str());
     CAP_LOG_RELEASE_ALL_STATE();
   }
 
   void doIt() {
-    CAP_LOG_BLOCK(AUDIO_SUB_CHANNEL_OTHER);
+    CAP_LOG_BLOCK(CAP::CHANNEL::AUDIO_SUB_CHANNEL_OTHER);
     CAP_LOG_UPDATE_STATE(CAP::variableNames(CAP::string("asdf ", 1)), [&](CAP::DataStoreStateArray<1>& state){state[0] = "asdfasdf";})
   }
 
   void doSomething(){
-    CAP_LOG_BLOCK(AUDIO_SUB_CHANNEL_Z);
+    CAP_LOG_BLOCK(CAP::CHANNEL::AUDIO_SUB_CHANNEL_Z);
     doIt();
   }
 };
@@ -171,45 +171,45 @@ public:
 class TestNestedDisabledOutput {
 public:
   TestNestedDisabledOutput(){
-    CAP_LOG_BLOCK(ENABLED_CHANNEL);
+    CAP_LOG_BLOCK(CAP::CHANNEL::ENABLED_CHANNEL);
     disabledChannel();
   }
 
 private:
   void disabledChannel() {
-    CAP_LOG_BLOCK(DISABLED_CHANNEL);
+    CAP_LOG_BLOCK(CAP::CHANNEL::DISABLED_CHANNEL);
     noOutputChannel();
   }
 
   void noOutputChannel() {
-    CAP_LOG_BLOCK(NO_OUTPUT_CHANNEL);
+    CAP_LOG_BLOCK(CAP::CHANNEL::NO_OUTPUT_CHANNEL);
     enabledChannel();
   }
 
   void enabledChannel() {
-    CAP_LOG_BLOCK(ENABLED_CHANNEL);
+    CAP_LOG_BLOCK(CAP::CHANNEL::ENABLED_CHANNEL);
   }
 };
 
 struct SuperLongNestedClassName : public std::string {
   SuperLongNestedClassName() {
-    CAP_LOG_BLOCK(DEFAULT);
+    CAP_LOG_BLOCK(CAP::CHANNEL::DEFAULT);
     [](){
-      CAP_LOG_BLOCK_NO_THIS(NESTED_CHANNEL);
+      CAP_LOG_BLOCK_NO_THIS(CAP::CHANNEL::NESTED_CHANNEL);
       [](){
-        CAP_LOG_BLOCK_NO_THIS(NESTED_CHANNEL);
+        CAP_LOG_BLOCK_NO_THIS(CAP::CHANNEL::NESTED_CHANNEL);
         [](){
-          CAP_LOG_BLOCK_NO_THIS(NESTED_CHANNEL);
+          CAP_LOG_BLOCK_NO_THIS(CAP::CHANNEL::NESTED_CHANNEL);
           [](){
-            CAP_LOG_BLOCK_NO_THIS(NESTED_CHANNEL);
+            CAP_LOG_BLOCK_NO_THIS(CAP::CHANNEL::NESTED_CHANNEL);
             [](){
-              CAP_LOG_BLOCK_NO_THIS(NESTED_CHANNEL);
+              CAP_LOG_BLOCK_NO_THIS(CAP::CHANNEL::NESTED_CHANNEL);
               [](){
-                CAP_LOG_BLOCK_NO_THIS(NESTED_CHANNEL);
+                CAP_LOG_BLOCK_NO_THIS(CAP::CHANNEL::NESTED_CHANNEL);
                 [](){
-                  CAP_LOG_BLOCK_NO_THIS(NESTED_CHANNEL);
+                  CAP_LOG_BLOCK_NO_THIS(CAP::CHANNEL::NESTED_CHANNEL);
                   [](){
-                    CAP_LOG_BLOCK_NO_THIS(NESTED_CHANNEL);
+                    CAP_LOG_BLOCK_NO_THIS(CAP::CHANNEL::NESTED_CHANNEL);
                   }();
                 }();
               }();
@@ -222,7 +222,7 @@ struct SuperLongNestedClassName : public std::string {
 };
 
 int main() {
-  CAP_LOG_BLOCK_NO_THIS(DEFAULT, "main");
+  CAP_LOG_BLOCK_NO_THIS(CAP::CHANNEL::DEFAULT, "main");
 
   SuperLongNestedClassName name;
 
@@ -237,7 +237,7 @@ int main() {
   CAP_LOG_PRINT_ALL_STATE_ON("SOME BIG STORE");
 
   {
-    CAP_LOG_BLOCK_NO_THIS(SET_THIS_EXAMPLE);
+    CAP_LOG_BLOCK_NO_THIS(CAP::CHANNEL::SET_THIS_EXAMPLE);
     CAP_LOG("This demonstrates writing to the 'this' pointer, and writing to explicit addresses");
     something::ExampleStateWithThisPtr exampleState;
     exampleState.makeEntity(57, "Square thing");
@@ -256,7 +256,7 @@ int main() {
   CAP_LOG("UPDATE_STORE_NAME_EXAMPLE is disabled for output but still works for setting state!");
 
   {
-    CAP_LOG_BLOCK_NO_THIS(SET_STORE_NAME_EXAMPLE);
+    CAP_LOG_BLOCK_NO_THIS(CAP::CHANNEL::SET_STORE_NAME_EXAMPLE);
     CAP_LOG("This demonstrates writing writing to named stores");
 
     something::addStateToStoreName("global state", "foo");
@@ -278,7 +278,7 @@ int main() {
 
   CAP_LOG("Executing lambda if LAMBDA_EXAMPLE is enabled");
   {
-    CAP_LOG_BLOCK_NO_THIS(LAMBDA_EXAMPLE);
+    CAP_LOG_BLOCK_NO_THIS(CAP::CHANNEL::LAMBDA_EXAMPLE);
     CAP_LOG_EXECUTE_LAMBDA([&](){
       std::cout << "Lambda prints this on std out" << std::endl;
     })
@@ -291,7 +291,7 @@ int main() {
   nestTest1.doSomething();
 
   {
-    CAP_LOG_BLOCK_NO_THIS(MISC);
+    CAP_LOG_BLOCK_NO_THIS(CAP::CHANNEL::MISC);
     something::TestRender t("first");
     t.testBlockOutput();
     CAP_LOG("this is a log");
@@ -314,7 +314,7 @@ int main() {
   giantString += "string";
 
   {
-    CAP_LOG_BLOCK_NO_THIS(RENDER_SUB_CHANNEL_A_VERBOSE);
+    CAP_LOG_BLOCK_NO_THIS(CAP::CHANNEL::RENDER_SUB_CHANNEL_A_VERBOSE);
     CAP_LOG("%s", giantString.c_str());
   }
 

@@ -13,7 +13,11 @@ DEFINE_CAP_LOG_CHANNEL(CHANNEL_ONE, 2, CAP::ChannelEnabledMode::FULLY_ENABLED)
 
 int main() {
   
-  CAP_LOG_BLOCK_NO_THIS(DEFAULT, "main");
+  CAP_LOG_BLOCK_NO_THIS(CAP::CHANNEL::DEFAULT, "main");
+
+  {
+    CAP_LOG_SCOPE_NO_THIS(CHANNEL_ONE, "main");
+  }
   
   printf("Channel CHANNEL_ONE is %zu\n", (size_t) CAP_CHANNEL_OUTPUT_MODE(CHANNEL_ONE));
   printf("Channel CHANNEL_TWO is %zu\n", (size_t) CAP_CHANNEL_OUTPUT_MODE(CHANNEL_TWO));
