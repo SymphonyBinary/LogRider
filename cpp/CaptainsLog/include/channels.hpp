@@ -114,30 +114,6 @@ struct as_sequence<sv, std::index_sequence<II...>> {
 template <char... chars>
 using tstring = std::integer_sequence<char, chars...>;
 
-// template <typename>
-// struct Channel {
-//   constexpr static bool isEnabled() {
-//     return false;
-//   }
-// }
-
-// constexpr std::string_view SVDefault{"DEFAULT"};
-// constexpr std::string_view SVValidation{"VALIDATION"};
-
-// template<>
-// struct Channel<as_sequence<SVDefault>::type> {
-//   constexpr static bool isEnabled() {
-//     return true;
-//   }
-// };
-
-// template<>
-// struct Channel<as_sequence<SVValidation>::type> {
-//   constexpr static bool isEnabled() {
-//     return true;;
-//   }
-// };
-
 enum ChannelEnabledFlags : uint32_t {
   CAN_WRITE_TO_STATE = 1 << 1,
   CAN_WRITE_TO_OUTPUT = 1 << 2,
