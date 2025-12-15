@@ -298,6 +298,9 @@ void runAsSocketServer(Processor&& processor) {
     } 
   }));
 
+  // sockets can end up reused so we need to use a different id to ensure that the ids are unique.
+  std::atomic<int> nextUniqueClientId = 0;
+
   // Accept a connection
   while (true) {
     std::cout << "Checking for a new connection"  << std::endl;
@@ -311,11 +314,15 @@ void runAsSocketServer(Processor&& processor) {
     }
 
     threads.push_back(std::make_unique<std::thread>([&, socketID = new_socket]() {
-      std::string rawSocketFile = std::string(kRawSocketInputDir) + "/" + kSocketRawOutputFile + std::to_string(socketID) + ".txt";
+      int uniqueClientId = nextUniqueClientId++;
+
+      std::string rawSocketFile = std::string(kRawSocketInputDir) + "/" + kSocketRawOutputFile + std::to_string(uniqueClientId) + ".txt";
       std::ofstream rawoutput;
       rawoutput.open(rawSocketFile);
 
-      std::cout << "New connection, accepted connection on socket: " << socketID << std::endl;
+      std::cout << "New connection accepted.  Unique Client ID: [" << uniqueClientId << "] | socket ID: [" 
+      << socketID << "]. " << std::endl;
+
       // extra bytes to add a newline to a read string for the purposes to dumping the line
       // to raw socket input file.
       char buffer[1024] = {0};
@@ -357,7 +364,8 @@ void runAsSocketServer(Processor&& processor) {
         clientLines.push_back(std::move(lastLine));
       }
 
-      std::cout << std::endl << "EOF.  Closing connection with id: " << socketID << std::endl;
+      std::cout << std::endl << "EOF.  Closing connection for Unique Client ID: [" << uniqueClientId << "] | socket ID: [" 
+      << socketID << "]. " << std::endl;
 
       rawoutput.flush();
       rawoutput.close();
