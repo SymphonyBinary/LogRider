@@ -1,4 +1,4 @@
 cd `dirname "$0"`
 cd ..
-# g++ Processor/src/processClog.cpp CaptainsLog/src/caplogger.cpp CaptainsLog/src/capdata.cpp -Wall -Wextra -std=c++17 -lstdc++ -I. -ICaptainsLog -DENABLE_CAP_LOGGER -DCHANNELS_PATH=samples/channeldefs-processor.hpp  -O3 -o Processor/out/processClog.out
-g++ Processor/src/processClog.cpp CaptainsLog/src/caplogger.cpp CaptainsLog/src/capdata.cpp -Wall -Wextra -std=c++17 -lstdc++ -I. -ICaptainsLog -DENABLE_CAP_LOGGER -DCHANNELS_PATH=samples/channeldefs-processor.hpp -O3 -o Processor/out/processClog.out
+# g++ Processor/src/processClog.cpp CaptainsLog/src/caplogger.cpp CaptainsLog/src/capdata.cpp -Wall -Wextra -std=c++17 -lstdc++ -I. -ICaptainsLog -DENABLE_CAP_LOGGER -O3 -o Processor/out/processClog.out
+g++ Processor/src/processClog.cpp CaptainsLog/src/caplogger.cpp CaptainsLog/src/capdata.cpp -Wall -Wextra -std=c++17 -lstdc++ -I. -ICaptainsLog -DENABLE_CAP_LOGGER -O3 -o Processor/out/processClog.out

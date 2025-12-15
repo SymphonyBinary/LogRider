@@ -1,10 +1,5 @@
 #pragma once
 
-// #define CHANNELS_PATH channeldefs.hpp
-#ifndef CHANNELS_PATH
-static_assert(false, "CHANNELS_PATH not defined");
-#endif
-
 #include <iomanip>
 
 #include "constants.hpp"
