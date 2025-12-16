@@ -3,6 +3,7 @@
 #include "outputfile.hpp"
 #include "outputsocket.hpp"
 #include "outputstdout.hpp"
+#include "utilities.hpp"
 
 #define PRINT_TO_LOG(outputString) CAP::writeToOutput(CAP::DefaultOutputMode, outputString)
 #define PRINT_TO_BINARY_FILE(filename, pointerToBuffer, numberOfBytes) \
@@ -97,5 +98,12 @@ constexpr const OutputMode DefaultOutputMode = OutputMode::Socket;
 #else
 constexpr const OutputMode DefaultOutputMode = OutputMode::StandardOut;
 #endif
+
+inline void printLogLineCharacterLimit(std::stringstream& ss, unsigned int processId) {
+    ss << CAP_MAIN_PREFIX_DELIMITER << INSERT_THREAD_ID << " : "
+       << CAP_PROCESS_ID_DELIMITER << processId << " " << CAP_MAX_CHAR_SIZE_DELIMITER
+       << CAP::OutputModeToLogLineCharLimit[static_cast<int>(CAP::DefaultOutputMode)]
+       << CAP::OutputModeToNewLineChar[static_cast<int>(CAP::DefaultOutputMode)];
+}
 
 }  // namespace CAP

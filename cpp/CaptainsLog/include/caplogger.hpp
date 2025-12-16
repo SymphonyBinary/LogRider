@@ -249,6 +249,7 @@ want to branch if __VA_ARGS__ is empty and call setPrimaryLog without passing it
     }
 
 #include "blocklogger.hpp"
+#include "channels.hpp"
 
 #endif
 

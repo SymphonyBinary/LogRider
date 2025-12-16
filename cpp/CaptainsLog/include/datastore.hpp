@@ -1,6 +1,5 @@
 #pragma once
 
-#include "channels.hpp"
 #include "output.hpp"
 #include "utilities.hpp"
 
@@ -93,12 +92,25 @@ inline std::string to_string(const DataStoreKey& key) {
 
 // TODO make test that shows it works with fork and .so
 
+
+
 struct LoggerData {
+  LoggerData(size_t processTimestampInstanceKey) : 
+    relativeThreadIdx(getNextThreadId()),
+    processTimestampInstanceKey(processTimestampInstanceKey) {
+      PRINT_TO_LOG("New Thread. New ThreadID: " + std::to_string(relativeThreadIdx) +
+                         CAP::OutputModeToNewLineChar[static_cast<int>(CAP::DefaultOutputMode)]);
+  }
+
+  static int getNextThreadId() {
+    static std::atomic<int> id{0};
+    return id++;
+  }
+
   int logDepth = -1;
   int perThreadUniqueFunctionIdx = -1;
   unsigned int relativeThreadIdx = 0;
   size_t processTimestampInstanceKey = 0;
-  bool isNew = true;
 };
 
 class DataStore {
@@ -262,14 +274,23 @@ private:
 
 struct BlockLoggerDataStore {
   static BlockLoggerDataStore& getInstance();
+  static size_t getCurrentProcessTimestampInstanceKey();
   
   static int getNextThreadId() {
     static std::atomic<int> id{0};
     return id++;
   }
 
-  static LoggerData& getThreadLocalLoggerData() {
-    thread_local LoggerData loggerData;
+  static LoggerData& getThreadLocalLoggerData(size_t processTimestampInstanceKey, bool resetIfProcessDiffers = false) {
+    thread_local LoggerData loggerData{processTimestampInstanceKey};
+
+    if (resetIfProcessDiffers && (loggerData.processTimestampInstanceKey != processTimestampInstanceKey)) {
+      loggerData = LoggerData{processTimestampInstanceKey};
+      PRINT_TO_LOG("New Process: [" + std::to_string(loggerData.processTimestampInstanceKey) +
+                        "] | Thread remap: [" + std::to_string(loggerData.relativeThreadIdx) + "]" +
+                        CAP::OutputModeToNewLineChar[static_cast<int>(CAP::DefaultOutputMode)]);
+    }
+
     return loggerData;
   }
 
@@ -287,32 +308,7 @@ struct BlockLoggerDataStore {
   void onChildFork();
 
   LoggerData newBlockLoggerInstance() {
-        auto& data = getThreadLocalLoggerData();
-
-        if (data.isNew) {
-            data.isNew = false;
-            data.processTimestampInstanceKey = mProcessTimestampInstanceKey;
-            data.relativeThreadIdx = getNextThreadId();
-            PRINT_TO_LOG("New Thread. New ThreadID: " + std::to_string(data.relativeThreadIdx) +
-                         CAP::OutputModeToNewLineChar[static_cast<int>(CAP::DefaultOutputMode)]);
-        } else if (data.processTimestampInstanceKey != mProcessTimestampInstanceKey) {
-            // logger data already exists, but was associated with a different process Id.
-            // this only happens immediately after forking.  We will treat these blocks as though
-            // they're on new threads.  If there's an existing block scope still existing on this
-            // thread post-fork, (eg. if fork() is called inside a block scope), that scope's
-            // destructor will still properly update with the new process id, but still use the
-            // thread id from before the fork.
-            // to the processor, it will look as though is sees a block closing at a depth
-            // larger than it expects for the new process, which it allows.
-
-            data = LoggerData{};
-            data.isNew = false;
-            data.processTimestampInstanceKey = mProcessTimestampInstanceKey;
-            data.relativeThreadIdx = getNextThreadId();
-            PRINT_TO_LOG("New Process: [" + std::to_string(data.processTimestampInstanceKey) +
-                         "] | Thread remap: [" + std::to_string(data.relativeThreadIdx) + "]" +
-                         CAP::OutputModeToNewLineChar[static_cast<int>(CAP::DefaultOutputMode)]);
-        }
+        auto& data = getThreadLocalLoggerData(mProcessTimestampInstanceKey, true);
 
         ++data.logDepth;
         ++data.perThreadUniqueFunctionIdx;
@@ -321,7 +317,7 @@ struct BlockLoggerDataStore {
     }
 
     void removeBlockLoggerInstance() {
-        auto& data = getThreadLocalLoggerData();
+        auto& data = getThreadLocalLoggerData(mProcessTimestampInstanceKey, false);
         data.processTimestampInstanceKey = mProcessTimestampInstanceKey;
         --data.logDepth;
     }
@@ -358,6 +354,10 @@ struct BlockLoggerDataStore {
     int releaseAllStates(DataStoreKey storeKey) {
         const std::lock_guard<std::mutex> guard(mMut);
         return mCustomLogStateStores.releaseAllStates(storeKey);
+    }
+
+    size_t getProcessTimestampInstanceKey() const {
+        return mProcessTimestampInstanceKey;
     }
 
     BlockLoggerDataStore(const BlockLoggerDataStore&) = delete;
@@ -406,6 +406,10 @@ size_t generatePidTimestampKey() {
     // std::to_string(reinterpret_cast<uintptr_t>((void*)&instance)) +
     // CAP::OutputModeToNewLineChar[static_cast<int>(CAP::DefaultOutputMode)]);
     return instance;
+}
+
+/*static*/ size_t BlockLoggerDataStore::getCurrentProcessTimestampInstanceKey() {
+    return getInstance().getProcessTimestampInstanceKey();
 }
 
 BlockLoggerDataStore::BlockLoggerDataStore() {

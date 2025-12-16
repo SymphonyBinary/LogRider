@@ -1,10 +1,10 @@
 #pragma once
 
-#include <iomanip>
-
+#include "basictypes.hpp"
 #include "constants.hpp"
 #include "output.hpp"
 #include "utilities.hpp"
+#include "datastore.hpp"
 
 // convenience macros to split up building this:
 //      "constexpr const std::string_view SV_ ## channelname {#channelname};"
@@ -86,6 +86,14 @@ struct ChannelID {
     }
 };
 
+// struct ChannelPrinter {
+//   ChannelPrinter() {
+//     size_t processTimestampInstanceKey = BlockLoggerDataStore::getCurrentProcessTimestampInstanceKey();
+//     std::stringstream ss;
+//     ss << CAP_MAIN_PREFIX_DELIMITER << INSERT_THREAD_ID << " : "
+//     PRINT_TO_LOG("CAPLOG: Initialized ChannelPrinter\n");
+//   }
+// }
 
 ///// string stuff
 /////
@@ -108,18 +116,6 @@ struct as_sequence<sv, std::index_sequence<II...>> {
 // from https://stackoverflow.com/questions/1826464/c-style-strings-as-template-arguments
 template <char... chars>
 using tstring = std::integer_sequence<char, chars...>;
-
-enum ChannelEnabledFlags : uint32_t {
-  CAN_WRITE_TO_STATE = 1 << 1,
-  CAN_WRITE_TO_OUTPUT = 1 << 2,
-  ALL_FLAGS = std::numeric_limits<uint32_t>::max(),
-};
-
-enum ChannelEnabledMode : uint32_t {
-  FULLY_DISABLED = 0,
-  FULLY_ENABLED = ALL_FLAGS,
-  ENABLED_NO_OUTPUT = ALL_FLAGS ^ CAN_WRITE_TO_OUTPUT,
-};
 
 template <typename>
 struct Channel {
@@ -167,13 +163,6 @@ inline void printChannel(std::stringstream& ss, unsigned int processId, unsigned
     }
 
     ss << channelName << CAP::OutputModeToNewLineChar[static_cast<int>(CAP::DefaultOutputMode)];
-}
-
-inline void printLogLineCharacterLimit(std::stringstream& ss, unsigned int processId) {
-    ss << CAP_MAIN_PREFIX_DELIMITER << INSERT_THREAD_ID << " : "
-       << CAP_PROCESS_ID_DELIMITER << processId << " " << CAP_MAX_CHAR_SIZE_DELIMITER
-       << CAP::OutputModeToLogLineCharLimit[static_cast<int>(CAP::DefaultOutputMode)]
-       << CAP::OutputModeToNewLineChar[static_cast<int>(CAP::DefaultOutputMode)];
 }
 
 }  // namespace CAP

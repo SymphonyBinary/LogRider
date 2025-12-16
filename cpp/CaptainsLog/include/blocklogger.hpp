@@ -25,6 +25,7 @@
 #include <iomanip>
 #include <vector>
 
+#include "basictypes.hpp"
 #include "constants.hpp"
 #include "datastore.hpp"
 #include "utilities.hpp"
