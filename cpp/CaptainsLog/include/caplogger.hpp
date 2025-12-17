@@ -1,43 +1,6 @@
 #pragma once
 
-#ifdef DISABLE_CAP_LOGGER
-
-#define CAP_LOG_BLOCK(...)
-#define CAP_LOG_BLOCK_NO_THIS(...)
-
-#define CAP_LOG(...)
-#define CAP_LOG_ERROR(...)
-
-#define CAP_LOG_ANONYMOUS(...)
-#define CAP_LOG_ERROR_ANONYMOUS(...)
-
-#define CAP_LOG_UPDATE_STATE_ON(...)
-#define CAP_LOG_PRINT_STATE_ON(...)
-#define CAP_LOG_PRINT_ALL_STATE_ON(...)
-#define CAP_LOG_RELEASE_STATE_ON(...)
-#define CAP_LOG_RELEASE_ALL_STATE_ON(...)
-
-#define CAP_LOG_UPDATE_STATE(...)
-#define CAP_LOG_PRINT_STATE(...)
-#define CAP_LOG_PRINT_ALL_STATE(...)
-#define CAP_LOG_RELEASE_STATE(...)
-#define CAP_LOG_RELEASE_ALL_STATE(...)
-
-#define CAP_LOG_EXECUTE_LAMBDA(...)
-
-#define CAP_LOG_DECLARE_ANY_VAR(...)
-
-#define CAP_LOG_ON_FORK(...)
-
-#define CAP_SCAN_BLOCK_NO_THIS(...)
-#define CAP_SCAN_BLOCK(...)
-#define CAP_SCAN(...)
-
-#define CAP_DUMP_TO_FILE(...)
-
-
-#else
-
+#ifdef ENABLE_CAP_LOGGER
 
 #define CAP_ESCAPE_COMMA ,
 
@@ -249,7 +212,46 @@ want to branch if __VA_ARGS__ is empty and call setPrimaryLog without passing it
 #include "blocklogger.hpp"
 #include "channels.hpp"
 
+#else
+
+#define CAP_LOG_BLOCK(...)
+#define CAP_LOG_BLOCK_NO_THIS(...)
+
+#define CAP_LOG(...)
+#define CAP_LOG_ERROR(...)
+
+#define CAP_LOG_ANONYMOUS(...)
+#define CAP_LOG_ERROR_ANONYMOUS(...)
+
+#define CAP_LOG_UPDATE_STATE_ON(...)
+#define CAP_LOG_PRINT_STATE_ON(...)
+#define CAP_LOG_PRINT_ALL_STATE_ON(...)
+#define CAP_LOG_RELEASE_STATE_ON(...)
+#define CAP_LOG_RELEASE_ALL_STATE_ON(...)
+
+#define CAP_LOG_UPDATE_STATE(...)
+#define CAP_LOG_PRINT_STATE(...)
+#define CAP_LOG_PRINT_ALL_STATE(...)
+#define CAP_LOG_RELEASE_STATE(...)
+#define CAP_LOG_RELEASE_ALL_STATE(...)
+
+#define CAP_LOG_EXECUTE_LAMBDA(...)
+
+#define CAP_LOG_DECLARE_ANY_VAR(...)
+
+#define CAP_LOG_ON_FORK(...)
+
+#define CAP_SCAN_BLOCK_NO_THIS(...)
+#define CAP_SCAN_BLOCK(...)
+#define CAP_SCAN(...)
+
+#define CAP_DUMP_TO_FILE(...)
+
+#define DEFINE_CAP_LOG_CHANNEL(...)
+#define DEFINE_CAP_LOG_CHANNEL_CHILD(...)
+
 #endif
+
 
 
 
