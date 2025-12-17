@@ -222,6 +222,8 @@ struct SuperLongNestedClassName : public std::string {
 };
 
 int main() {
+  CAP_LOG_ANONYMOUS(CAP::CHANNEL::DEFAULT, "anon");
+
   CAP_LOG_BLOCK_NO_THIS(CAP::CHANNEL::DEFAULT, "main");
 
   SuperLongNestedClassName name;
