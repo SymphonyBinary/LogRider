@@ -378,7 +378,7 @@ struct BlockLoggerDataStore {
     DataStore mCustomLogStateStores;
 };
 
-size_t getPid() {
+inline size_t getPid() {
 #if defined LINUX || defined __LINUX__ || defined ANDROID || defined __ANDROID__ || \
         defined APPLE || defined __APPLE__
     return ::getpid();
@@ -386,13 +386,13 @@ size_t getPid() {
     return 0;
 }
 
-size_t getTimeSinceEpochMs() {
+inline size_t getTimeSinceEpochMs() {
     return static_cast<size_t>(std::chrono::duration_cast<std::chrono::milliseconds>(
                                        std::chrono::system_clock::now().time_since_epoch())
                                        .count());
 }
 
-size_t generatePidTimestampKey() {
+inline size_t generatePidTimestampKey() {
     return getPid() ^ getTimeSinceEpochMs();
 }
 

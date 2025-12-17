@@ -44,7 +44,7 @@ struct PrintPrefix {
     unsigned int channelId;
 };
 
-std::ostream& operator<<(std::ostream& os, const PrintPrefix& printPrefix) {
+inline std::ostream& operator<<(std::ostream& os, const PrintPrefix& printPrefix) {
     os << CAP_MAIN_PREFIX_DELIMITER << INSERT_THREAD_ID << " : "
        << CAP_PROCESS_ID_DELIMITER << printPrefix.processId << " " << CAP_THREAD_ID_DELIMITER
        << printPrefix.threadId << " " << CAP_CHANNEL_ID_DELIMITER << std::setw(3)
@@ -56,14 +56,14 @@ struct TabDelims {
     unsigned int depth;
 };
 
-std::ostream& operator<<(std::ostream& os, const TabDelims& tabDelims) {
+inline std::ostream& operator<<(std::ostream& os, const TabDelims& tabDelims) {
     for (unsigned int i = 0; i < tabDelims.depth; ++i) {
         os << CAP_TAB_DELIMITER;
     }
     return os;
 }
 
-void writeOutput(const std::string& messageBuffer, unsigned int processId, unsigned int threadId,
+inline void writeOutput(const std::string& messageBuffer, unsigned int processId, unsigned int threadId,
                  unsigned int channelId, unsigned int depth) {
     // Note: newline characters are inconsistently required in different loggers, so we don't count
     // as part of the line length and instead just added a bit of padding to the max chars for the
