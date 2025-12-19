@@ -272,9 +272,40 @@ private:
       mDataStoreStrings;
 };
 
+inline size_t getPid() {
+#if defined LINUX || defined __LINUX__ || defined ANDROID || defined __ANDROID__ || \
+        defined APPLE || defined __APPLE__
+    return ::getpid();
+#endif
+    return 0;
+}
+
+inline size_t getTimeSinceEpochMs() {
+    return static_cast<size_t>(std::chrono::duration_cast<std::chrono::milliseconds>(
+                                       std::chrono::system_clock::now().time_since_epoch())
+                                       .count());
+}
+
+inline size_t generatePidTimestampKey() {
+    return getPid() ^ getTimeSinceEpochMs();
+}
+
 struct BlockLoggerDataStore {
-  static BlockLoggerDataStore& getInstance();
-  static size_t getCurrentProcessTimestampInstanceKey();
+  // Gnarly problem with dynamic libs: singletons can be instantiated multiple times
+// in the same app through dynamic libs.  We need to treat each instance of the singleton
+// as completely unique new processes, even if it's the same
+// to do this, we can use a combination of address+timestamp+pid
+static BlockLoggerDataStore& getInstance() {
+    static BlockLoggerDataStore instance;
+    // PRINT_TO_LOG("Singleton instance: " +
+    // std::to_string(reinterpret_cast<uintptr_t>((void*)&instance)) +
+    // CAP::OutputModeToNewLineChar[static_cast<int>(CAP::DefaultOutputMode)]);
+    return instance;
+  }
+
+  static size_t getCurrentProcessTimestampInstanceKey() {
+    return getInstance().getProcessTimestampInstanceKey();
+  }
   
   static int getNextThreadId() {
     static std::atomic<int> id{0};
@@ -305,7 +336,11 @@ struct BlockLoggerDataStore {
   // are executing code which are decorated with CAPS_LOGS, it's undefined
   // behavior at that point and you may or may not end up with unexpected caplog
   // scope blocks created and destroyed for the parent or child process.
-  void onChildFork();
+  void onChildFork() {
+    mProcessTimestampInstanceKey = generateProcessTimestampInstanceKey();
+    PRINT_TO_LOG(std::string("Child Forked.  Generating new Process timestamp key") +
+                 CAP::OutputModeToNewLineChar[static_cast<int>(CAP::DefaultOutputMode)]);
+}
 
   LoggerData newBlockLoggerInstance() {
         auto& data = getThreadLocalLoggerData(mProcessTimestampInstanceKey, true);
@@ -364,9 +399,31 @@ struct BlockLoggerDataStore {
     void operator=(const BlockLoggerDataStore&) = delete;
 
   private:
-    BlockLoggerDataStore();
+    BlockLoggerDataStore() {
+      mProcessTimestampInstanceKey = generateProcessTimestampInstanceKey();
+      mCustomLogStateStores = {};
 
-    size_t generateProcessTimestampInstanceKey();
+      // This should be the first thing caplog prints, at least on the first thread caplog
+      // is run on.  Other threads may still interleave while this is printing, which is
+      // fine.
+      PRINT_TO_LOG(std::string("CAP_LOG : CAPTAIN'S LOG - VERSION 1.3 : Address: ") +
+                  std::to_string(reinterpret_cast<uintptr_t>((void*)this)) +
+                  CAP::OutputModeToNewLineChar[static_cast<int>(CAP::DefaultOutputMode)]);
+
+      auto logData = newBlockLoggerInstance();
+
+      // Print the max chars per line
+      std::stringstream ss;
+      printLogLineCharacterLimit(ss, logData.processTimestampInstanceKey);
+      PRINT_TO_LOG(ss.str().c_str());
+
+
+      removeBlockLoggerInstance();
+    }
+
+    size_t generateProcessTimestampInstanceKey() {
+      return generatePidTimestampKey() ^ (uintptr_t)(void*)this;
+    }
 
     // this value is only ever written to when the singleton is created (thread safe)
     // and immediately after a fork (thread safe, because you should only have 1 thread
@@ -377,71 +434,5 @@ struct BlockLoggerDataStore {
     std::mutex mMut;
     DataStore mCustomLogStateStores;
 };
-
-inline size_t getPid() {
-#if defined LINUX || defined __LINUX__ || defined ANDROID || defined __ANDROID__ || \
-        defined APPLE || defined __APPLE__
-    return ::getpid();
-#endif
-    return 0;
-}
-
-inline size_t getTimeSinceEpochMs() {
-    return static_cast<size_t>(std::chrono::duration_cast<std::chrono::milliseconds>(
-                                       std::chrono::system_clock::now().time_since_epoch())
-                                       .count());
-}
-
-inline size_t generatePidTimestampKey() {
-    return getPid() ^ getTimeSinceEpochMs();
-}
-
-// Gnarly problem with dynamic libs: singletons can be instantiated multiple times
-// in the same app through dynamic libs.  We need to treat each instance of the singleton
-// as completely unique new processes, even if it's the same
-// to do this, we can use a combination of address+timestamp+pid
-/*static*/ BlockLoggerDataStore& BlockLoggerDataStore::getInstance() {
-    static BlockLoggerDataStore instance;
-    // PRINT_TO_LOG("Singleton instance: " +
-    // std::to_string(reinterpret_cast<uintptr_t>((void*)&instance)) +
-    // CAP::OutputModeToNewLineChar[static_cast<int>(CAP::DefaultOutputMode)]);
-    return instance;
-}
-
-/*static*/ size_t BlockLoggerDataStore::getCurrentProcessTimestampInstanceKey() {
-    return getInstance().getProcessTimestampInstanceKey();
-}
-
-BlockLoggerDataStore::BlockLoggerDataStore() {
-    mProcessTimestampInstanceKey = generateProcessTimestampInstanceKey();
-    mCustomLogStateStores = {};
-
-    // This should be the first thing caplog prints, at least on the first thread caplog
-    // is run on.  Other threads may still interleave while this is printing, which is
-    // fine.
-    PRINT_TO_LOG(std::string("CAP_LOG : CAPTAIN'S LOG - VERSION 1.3 : Address: ") +
-                 std::to_string(reinterpret_cast<uintptr_t>((void*)this)) +
-                 CAP::OutputModeToNewLineChar[static_cast<int>(CAP::DefaultOutputMode)]);
-
-    auto logData = newBlockLoggerInstance();
-
-    // Print the max chars per line
-    std::stringstream ss;
-    printLogLineCharacterLimit(ss, logData.processTimestampInstanceKey);
-    PRINT_TO_LOG(ss.str().c_str());
-
-
-    removeBlockLoggerInstance();
-}
-
-void BlockLoggerDataStore::onChildFork() {
-    mProcessTimestampInstanceKey = generateProcessTimestampInstanceKey();
-    PRINT_TO_LOG(std::string("Child Forked.  Generating new Process timestamp key") +
-                 CAP::OutputModeToNewLineChar[static_cast<int>(CAP::DefaultOutputMode)]);
-}
-
-size_t BlockLoggerDataStore::generateProcessTimestampInstanceKey() {
-    return generatePidTimestampKey() ^ (uintptr_t)(void*)this;
-}
 
 }  // namespace CAP

@@ -140,9 +140,9 @@ struct Channel {
 
 // declare the default channel.  We're already in the CAP namespace,
 // se we use the inner "impl" versions.
-DEFINE_CAP_LOG_CHANNEL_IMPL(CHANNEL_ROOT_ALL, 0, ChannelEnabledMode::FULLY_ENABLED);
-DEFINE_CAP_LOG_CHANNEL_CHILD_IMPL(DEFAULT, 0, ChannelEnabledMode::FULLY_ENABLED, CHANNEL_ROOT_ALL);
-DEFINE_CAP_LOG_CHANNEL_CHILD_IMPL(LEGACY, 0, ChannelEnabledMode::FULLY_ENABLED, CHANNEL_ROOT_ALL);
+DEFINE_CAP_LOG_CHANNEL_IMPL(CHANNEL_ROOT_ALL, 0, ChannelEnabledMode::FULLY_ENABLED)
+DEFINE_CAP_LOG_CHANNEL_CHILD_IMPL(DEFAULT, 0, ChannelEnabledMode::FULLY_ENABLED, CHANNEL_ROOT_ALL)
+DEFINE_CAP_LOG_CHANNEL_CHILD_IMPL(LEGACY, 0, ChannelEnabledMode::FULLY_ENABLED, CHANNEL_ROOT_ALL)
 
 inline void printChannel(std::stringstream& ss, unsigned int processId, unsigned int threadId,
                          unsigned int depth, unsigned int channelId, std::string_view channelName,
