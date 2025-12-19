@@ -1,6 +1,8 @@
 #pragma once
 
-#ifdef ENABLE_CAP_LOGGER
+#include "configdefines.hpp"
+
+#ifdef ENABLE_CAP_LOGGER_IMPL
 
 #define CAP_LOGGER_ONLY
 

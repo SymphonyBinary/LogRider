@@ -5,6 +5,7 @@
 #include "output.hpp"
 #include "utilities.hpp"
 #include "datastore.hpp"
+#include "configdefines.hpp"
 
 // convenience macros to split up building this:
 //      "constexpr const std::string_view SV_ ## channelname {#channelname};"
@@ -48,7 +49,7 @@ struct Channel<CAP::as_sequence<CAP_LOG_CHANNEL_STRING(channelname)>::type> { \
       return uniqueID; \
     } \
     constexpr static uint32_t enableMode() { \
-      return enabledMode; \
+      return ForceEnableAllChannels ? ChannelEnabledMode::FULLY_ENABLED : enabledMode; \
     } \
     constexpr static int verbosityLevel() { \
       return verboseLevel; \
@@ -78,6 +79,12 @@ CAP::Channel<CAP::as_sequence<CAP_LOG_CHANNEL_STRING(channel)>::type>
 CAP_CHANNEL(channel)::enableMode()
 
 namespace CAP {
+
+#ifdef CAP_LOGGER_FORCE_ALL_CHANNELS_ENABLED_IMPL
+constexpr const bool ForceEnableAllChannels = true;
+#else
+constexpr const bool ForceEnableAllChannels = false;
+#endif
 
 struct ChannelID {
     static size_t getNextChannelUniqueID() {
