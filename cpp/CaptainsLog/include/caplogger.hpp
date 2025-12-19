@@ -2,6 +2,8 @@
 
 #ifdef ENABLE_CAP_LOGGER
 
+#define CAP_LOGGER_ONLY
+
 #define CAP_ESCAPE_COMMA ,
 
 #if defined(__clang__)
@@ -213,6 +215,8 @@ want to branch if __VA_ARGS__ is empty and call setPrimaryLog without passing it
 #include "channels.hpp"
 
 #else
+
+#define CAP_LOGGER_ONLY [[maybe_unused]]
 
 #define CAP_LOG_BLOCK(...)
 #define CAP_LOG_BLOCK_NO_THIS(...)
