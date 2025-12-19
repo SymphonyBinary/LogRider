@@ -102,11 +102,11 @@ inline void writeOutput(const std::string& messageBuffer, unsigned int processId
         assert(concatContinueLength < log_line_character_limit);
         substrMax = log_line_character_limit - concatContinueLength;
         while (index < completeOutputString.size()) {
-            std::string currentLine =
+            std::string appendedLine =
                     concatContinueString + completeOutputString.substr(index, substrMax) +
                     CAP::OutputModeToNewLineChar[static_cast<int>(CAP::DefaultOutputMode)];
             index += substrMax;
-            PRINT_TO_LOG(currentLine.c_str());
+            PRINT_TO_LOG(appendedLine.c_str());
         }
 
         std::stringstream concatEndStream;
