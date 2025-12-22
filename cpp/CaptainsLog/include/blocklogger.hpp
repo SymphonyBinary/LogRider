@@ -162,6 +162,8 @@ struct TLSScope {
 
 class BlockLogger {
   public:
+    BlockLogger() = default;
+
     // NOTE: need to always have a default channel
     BlockLogger(const void* thisPointer, size_t channelId, uint32_t enabledMode, std::string_view fileId,
                 std::string_view processId) 

@@ -76,6 +76,8 @@ inline void writeToOutput(OutputMode mode, const std::string& output) {
         break;
         OUTPUT_MODES
 #undef OUTPUT_MODE
+    default:
+        break;
     }
 }
 

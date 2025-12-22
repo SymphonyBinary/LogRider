@@ -72,6 +72,8 @@ inline const std::string& to_string(ValueChangeStatus changes) {
     case ValueChangeStatus::DELETED:
       static std::string deleted = "DELETED";
       return deleted;
+    default:
+      break;
   }
   static std::string defaultRet;
   return defaultRet;

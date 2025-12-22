@@ -2,7 +2,31 @@
 
 #include "configdefines.hpp"
 
+/*
+Recommended approach to disabling caplog is to only unset ENABLE_CAP_LOGGER_IMPL
+when building performance-optimized release builds.
+
+For debug builds, the recommended approach is instead to define a top level 
+channel that all your channels are children of.  Set that channel to 
+enabled/disabled.  This will then ensure that the channels remain compilable,
+but prevent any channel from executing any logic other than the creation of an
+blocklogger on the stack.
+
+NOTE: The BlockLogger object will avoid allocating from the heap during its constructor
+only if the std::string implementation uses Small String Optimization.  If the compiler
+doesn't use small string optimization, the options are to either implement SSO and
+replace BlockLogger's std::string with that sso enabled string, or allocate the space
+required to fit a blocklogger outside the scope brackets, and then if the constexpr
+passes which enables the channel, do a placement-new of the blocklogger into that 
+memory.
+
+Most major compilers' implement std::string with SSO nowadays
+*/
+
 #ifdef ENABLE_CAP_LOGGER_IMPL
+
+#include "blocklogger.hpp"
+#include "channels.hpp"
 
 #define CAP_LOGGER_ONLY
 
@@ -23,13 +47,15 @@ snprintf(blockScopeLogCustomBuffer, CAP_LOG_BUFFER_SIZE, FIRST(__VA_ARGS__) " " 
 \ is because you will get warnings if you try to pass a zero sized string to sprintf. Ideally, you
 want to branch if __VA_ARGS__ is empty and call setPrimaryLog without passing it a buffer at all
 */
-#define CAP_LOG_INTERNAL(pointer, channel, ...) \
+#define CAP_LOG_INTERNAL(pointer, channel, ...)                                        \
   PRAGMA_IGNORE_SHADOW_BEGIN \
-  [[maybe_unused]] constexpr bool channelCompileNotDisabled = CAP_CHANNEL_OUTPUT_MODE(channel); \
-  [[maybe_unused]] constexpr bool channelCompileEnabledOutput = CAP_CHANNEL_OUTPUT_MODE(channel) & CAP::CAN_WRITE_TO_OUTPUT; \
-  [[maybe_unused]] constexpr bool channelCompileEnabledState = CAP_CHANNEL_OUTPUT_MODE(channel) & CAP::CAN_WRITE_TO_STATE; \
-  [[maybe_unused]] size_t channelId = CAP_CHANNEL(channel)::id(); \
-  CAP::BlockLogger blockScopeLog{pointer, channelId, CAP_CHANNEL_OUTPUT_MODE(channel), __FILENAME__, __PRETTY_FUNCTION__}; \
+  [[maybe_unused]] constexpr bool channelCompileNotDisabled = CAP_CHANNEL(channel)::enableMode(); \
+  [[maybe_unused]] constexpr bool channelCompileEnabledOutput = CAP_CHANNEL(channel)::enableMode() & CAP::CAN_WRITE_TO_OUTPUT; \
+  [[maybe_unused]] constexpr bool channelCompileEnabledState = CAP_CHANNEL(channel)::enableMode() & CAP::CAN_WRITE_TO_STATE; \
+  [[maybe_unused]] const size_t channelId = CAP_CHANNEL(channel)::id(); \
+  CAP::BlockLogger blockScopeLog = channelCompileNotDisabled ? \
+    CAP::BlockLogger{} : \
+    CAP::BlockLogger{pointer, channelId, CAP_CHANNEL_OUTPUT_MODE(channel), __FILENAME__, __PRETTY_FUNCTION__}; \
   CAP::BlockLogger* blockScope = &blockScopeLog; \
   PRAGMA_IGNORE_SHADOW_END                                                                  \
     if constexpr (channelCompileEnabledOutput) {                                              \
@@ -43,36 +69,19 @@ want to branch if __VA_ARGS__ is empty and call setPrimaryLog without passing it
         blockScope->setPrimaryLog(__LINE__, "", "");                                          \
     }
 
-#define CAP_LOG_SCOPE(...) CAP_LOG_INTERNAL(this, __VA_ARGS__)
-#define CAP_LOG_SCOPE_NO_THIS(...) CAP_LOG_INTERNAL(nullptr, __VA_ARGS__)
+#define CAP_LOG_INTERNAL_CHANNEL_EXPAND_NS(pointer, channel, ...) \
+    CAP_LOG_INTERNAL(pointer, CAP::CHANNEL:: channel, __VA_ARGS__)
 
-// Legacy works with CAP::CHANNEL:: namespace, and expects the string view to be defined there.
-#define CAP_LOG_INTERNAL_LEGACY(pointer, channel, ...)                                        \
-  PRAGMA_IGNORE_SHADOW_BEGIN \
-  [[maybe_unused]] constexpr bool channelCompileNotDisabled = CAP::Channel<CAP::as_sequence<channel>::type>::enableMode(); \
-  [[maybe_unused]] constexpr bool channelCompileEnabledOutput = CAP::Channel<CAP::as_sequence<channel>::type>::enableMode() & CAP::CAN_WRITE_TO_OUTPUT; \
-  [[maybe_unused]] constexpr bool channelCompileEnabledState = CAP::Channel<CAP::as_sequence<channel>::type>::enableMode() & CAP::CAN_WRITE_TO_STATE; \
-  [[maybe_unused]] size_t channelId = CAP::Channel<CAP::as_sequence<channel>::type>::id(); \
-  CAP::BlockLogger blockScopeLog{pointer, channelId, CAP::Channel<CAP::as_sequence<channel>::type>::enableMode(), __FILENAME__, __PRETTY_FUNCTION__}; \
-  CAP::BlockLogger* blockScope = &blockScopeLog; \
-  PRAGMA_IGNORE_SHADOW_END                                                                  \
-    if constexpr (channelCompileEnabledOutput) {                                              \
-        std::stringstream CAPLOG_ss;                                                          \
-        CAPLOG_ss << " [" << __LINE__                                                         \
-                  << "]::[" << __FILENAME__                                                   \
-                  << "]::[" << __PRETTY_FUNCTION__ << "]";                                    \
-        blockScope->setPrimaryLog(__LINE__, CAPLOG_ss.str(), "");                             \
-        CAP_LOG(__VA_ARGS__);                                                                 \
-    } else if constexpr (channelCompileEnabledState) {                                        \
-        blockScope->setPrimaryLog(__LINE__, "", "");                                          \
-    }
+#define CAP_LOG_SCOPE(...) CAP_LOG_INTERNAL_CHANNEL_EXPAND_NS(this, __VA_ARGS__)
+#define CAP_LOG_SCOPE_NO_THIS(...) CAP_LOG_INTERNAL_CHANNEL_EXPAND_NS(nullptr, __VA_ARGS__)
 
 /// you may optionally provide an argument in the form of "(format, ...)"
+// Deprecated
 // legacy macros that use CAP::CHANNEL as namespaces
-#define CAP_LOG_BLOCK(...) CAP_LOG_INTERNAL_LEGACY(this, __VA_ARGS__)
-#define CAP_LOG_BLOCK_NO_THIS(...) CAP_LOG_INTERNAL_LEGACY(nullptr, __VA_ARGS__)
-#define CAP_LOG_CHANNEL_BLOCK(...) CAP_LOG_INTERNAL_LEGACY(this, __VA_ARGS__)
-#define CAP_LOG_CHANNEL_BLOCK_NO_THIS(...) CAP_LOG_INTERNAL_LEGACY(nullptr, __VA_ARGS__)
+#define CAP_LOG_BLOCK(...) CAP_LOG_INTERNAL(this, __VA_ARGS__)
+#define CAP_LOG_BLOCK_NO_THIS(...) CAP_LOG_INTERNAL(nullptr, __VA_ARGS__)
+#define CAP_LOG_CHANNEL_BLOCK(...) CAP_LOG_INTERNAL(this, __VA_ARGS__)
+#define CAP_LOG_CHANNEL_BLOCK_NO_THIS(...) CAP_LOG_INTERNAL(nullptr, __VA_ARGS__)
 
 
 
@@ -212,9 +221,6 @@ want to branch if __VA_ARGS__ is empty and call setPrimaryLog without passing it
     if constexpr (channelCompileEnabledOutput) {                                    \
         blockScope->dumpToFile(__LINE__, filename, pointerToBuffer, numberOfBytes); \
     }
-
-#include "blocklogger.hpp"
-#include "channels.hpp"
 
 #else
 
