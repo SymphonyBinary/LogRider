@@ -7,6 +7,14 @@
 #include "datastore.hpp"
 #include "configdefines.hpp"
 
+/////
+// testing dnd delete
+#define DEFINE_CHECK_WTF(...) \
+namespace CAP::CHANNEL { \
+  constexpr const uint32_t wtf = channelOutputModeAnd<__VA_ARGS__> (); \
+}
+/////
+
 // convenience macros to split up building this:
 //      "constexpr const std::string_view SV_ ## channelname {#channelname};"
 // and 
@@ -30,6 +38,8 @@ DEFINE_CAP_LOG_CHANNEL_CHILD_IMPL(channelname, verboseLevel, CAP::ChannelEnabled
 
 ////////////////
 // Implementation Details
+#define CHANNEL_OUTPUT_MODE_AND(...) channelOutputModeAnd<__VA_ARGS__>
+
 #define DEFINE_CAP_LOG_CHANNEL_IMPL(channelname, verboseLevel, enabledMode, overrideMode) \
 namespace CAP::CHANNEL { \
 constexpr const std::string_view channelname {#channelname}; \
@@ -39,9 +49,16 @@ DEFINE_CAP_LOG_CHANNEL_CHILD_FROM_CONSTEXPR_STRINGVIEW_IMPL(channelname, verbose
 #define DEFINE_CAP_LOG_CHANNEL_CHILD_IMPL(channelname, verboseLevel, enabledMode, ...) \
 namespace CAP::CHANNEL { \
 constexpr const std::string_view channelname {#channelname}; \
-DEFINE_CAP_LOG_CHANNEL_CHILD_FROM_CONSTEXPR_STRINGVIEW_IMPL(channelname, verboseLevel, enabledMode, channelOutputModeAnd<CHANNEL_ROOT_ALL_LOGS>()) \
+constexpr const uint32_t channelname ## inherit = channelOutputModeAnd<CHANNEL_ROOT_ALL_LOGS> (); \
+DEFINE_CAP_LOG_CHANNEL_CHILD_FROM_CONSTEXPR_STRINGVIEW_IMPL(channelname, verboseLevel, enabledMode, channelname ## inherit) \
 }
 //// why is "channelOutputModeAnd<__VA_ARGS__>" not working?
+// channelOutputModeAnd<CHANNEL_ROOT_ALL_LOGS> works
+// works
+// constexpr const uint32_t channelname ## inherit = CHANNEL_OUTPUT_MODE_AND(CHANNEL_ROOT_ALL_LOGS)(); \
+// works
+// constexpr const uint32_t channelname ## inherit = channelOutputModeAnd<CHANNEL_ROOT_ALL_LOGS, CHANNEL_ROOT_ALL_LOGS> (); \
+
 
 // TODO print once what the mode is in english (eg. enabled || enabled and printing)
 #define DEFINE_CAP_LOG_CHANNEL_CHILD_FROM_CONSTEXPR_STRINGVIEW_IMPL(channelname, verboseLevel, enabledMode, inheritedOutputMode) \
@@ -127,7 +144,7 @@ struct Channel {
 
 // template<typename... Args>
 template<const std::string_view& ...sv>
-constexpr auto channelOutputModeAnd() {
+constexpr uint32_t channelOutputModeAnd() {
   return (CAP::CHANNEL::Channel<typename CAP::CHANNEL::as_sequence<sv>::type>::enableMode() & ...);
 }
 
@@ -165,11 +182,17 @@ inline void printChannel(std::stringstream& ss, unsigned int processId, unsigned
 // so we use the inner "impl" versions.  Root is default enabled.
 DEFINE_CAP_LOG_CHANNEL_IMPL(CHANNEL_ROOT_ALL_LOGS,  0, ChannelEnabledMode::FULLY_ENABLED, CAP_LOGGER_ROOT_CHANNEL_MODE)
 DEFINE_CAP_LOG_CHANNEL_CHILD_IMPL(DEFAULT, 0, ChannelEnabledMode::FULLY_ENABLED, CHANNEL_ROOT_ALL_LOGS)
-DEFINE_CAP_LOG_CHANNEL_CHILD_IMPL(LEGACY, 0, ChannelEnabledMode::FULLY_ENABLED, CHANNEL_ROOT_ALL_LOGS)
+DEFINE_CAP_LOG_CHANNEL_CHILD_IMPL(LEGACY, 0, ChannelEnabledMode::FULLY_ENABLED, CHANNEL_ROOT_ALL_LOGS, DEFAULT)
 
 // Error logs are considered to be a different "top level"
 DEFINE_CAP_LOG_CHANNEL_IMPL(CHANNEL_ROOT_ALL_ERRORS,  0, ChannelEnabledMode::FULLY_ENABLED, CAP_LOGGER_ROOT_CHANNEL_MODE)
 
+
+//////////
 namespace CAP::CHANNEL {
-  bool test = channelOutputModeAnd<CHANNEL_ROOT_ALL_LOGS, CHANNEL_ROOT_ALL_LOGS>();
+  constexpr const uint32_t test = channelOutputModeAnd<CHANNEL_ROOT_ALL_LOGS, CHANNEL_ROOT_ALL_LOGS>();
 }
+
+DEFINE_CHECK_WTF(CHANNEL_ROOT_ALL_LOGS, DEFAULT)
+
+// DEFINE_CAP_LOG_CHANNEL(ASDF, 0, FULLY_ENABLED)
