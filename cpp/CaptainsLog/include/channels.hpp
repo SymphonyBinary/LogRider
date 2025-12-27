@@ -16,38 +16,42 @@
 #define CAP_LOG_CHANNEL_STRING(channelname) CAP::CHANNEL::channelname
 
 // Public macros
-#define DEFINE_CAP_LOG_CHANNEL(channelname, verboseLevel, enabledMode) \
-namespace CAP { \
-DEFINE_CAP_LOG_CHANNEL_CHILD_IMPL(channelname, verboseLevel, CAP::ChannelEnabledMode:: enabledMode, CAP_CHANNEL_OUTPUT_MODE(CAP_LOG_CHANNEL_STRING(CHANNEL_ROOT_ALL))) \
-}
+// (... params are a list of parent channels that are AND'd together then OR'd with this channel)
+// Example, if parent is disabled but this channel is enabled, final result will also be disabled.
+#define DEFINE_CAP_LOG_CHANNEL(channelname, verboseLevel, enabledMode, ...) \
+DEFINE_CAP_LOG_CHANNEL_CHILD_IMPL(channelname, verboseLevel, CAP::ChannelEnabledMode:: enabledMode, CHANNEL_ROOT_ALL_LOGS, __VA_ARGS__)
 
-// Public macros
-#define DEFINE_CAP_LOG_CHANNEL_CHILD(channelname, verboseLevel, enabledMode, parentChannel) \
-namespace CAP { \
-DEFINE_CAP_LOG_CHANNEL_CHILD_IMPL(channelname, verboseLevel, CAP::ChannelEnabledMode:: enabledMode, CAP_CHANNEL_OUTPUT_MODE(CAP_LOG_CHANNEL_STRING(parentChannel))) \
-}
+// // Public macros
+// #define DEFINE_CAP_LOG_CHANNEL_CHILD(channelname, verboseLevel, enabledMode, parentChannel) \
+// namespace CAP { \
+// DEFINE_CAP_LOG_CHANNEL_CHILD_IMPL(channelname, verboseLevel, CAP::ChannelEnabledMode:: enabledMode, CAP_CHANNEL_OUTPUT_MODE(CAP_LOG_CHANNEL_STRING(parentChannel))) \
+// }
+
 
 ////////////////
 // Implementation Details
-#define DEFINE_CAP_LOG_CHANNEL_CHILD_IMPL(channelname, verboseLevel, enabledMode, parentOutputMode) \
-DEFINE_CAP_LOG_CHANNEL_DEFINE_STRING_VIEW_IMPL(channelname) \
-DEFINE_CAP_LOG_CHANNEL_CHILD_FROM_CONSTEXPR_STRINGVIEW_IMPL(channelname, verboseLevel, enabledMode, parentOutputMode)
-
-#define DEFINE_CAP_LOG_CHANNEL_DEFINE_STRING_VIEW_IMPL(channelname) \
-namespace CHANNEL { \
+#define DEFINE_CAP_LOG_CHANNEL_IMPL(channelname, verboseLevel, enabledMode, overrideMode) \
+namespace CAP::CHANNEL { \
 constexpr const std::string_view channelname {#channelname}; \
+DEFINE_CAP_LOG_CHANNEL_CHILD_FROM_CONSTEXPR_STRINGVIEW_IMPL(channelname, verboseLevel, enabledMode, overrideMode) \
+}
+
+#define DEFINE_CAP_LOG_CHANNEL_CHILD_IMPL(channelname, verboseLevel, enabledMode, ...) \
+namespace CAP::CHANNEL { \
+constexpr const std::string_view channelname {#channelname}; \
+DEFINE_CAP_LOG_CHANNEL_CHILD_FROM_CONSTEXPR_STRINGVIEW_IMPL(channelname, verboseLevel, enabledMode, channelOutputModeAnd<CHANNEL_ROOT_ALL_LOGS>()) \
 }
 
 // TODO print once what the mode is in english (eg. enabled || enabled and printing)
-#define DEFINE_CAP_LOG_CHANNEL_CHILD_FROM_CONSTEXPR_STRINGVIEW_IMPL(channelname, verboseLevel, enabledMode, parentOutputMode) \
+#define DEFINE_CAP_LOG_CHANNEL_CHILD_FROM_CONSTEXPR_STRINGVIEW_IMPL(channelname, verboseLevel, enabledMode, inheritedOutputMode) \
 template <> \
-struct Channel<CAP::as_sequence<CAP_LOG_CHANNEL_STRING(channelname)>::type> { \
+struct Channel<CAP::CHANNEL::as_sequence<channelname>::type> { \
     static size_t id() { \
       static size_t uniqueID = ChannelID::getNextChannelUniqueID(); \
       return uniqueID; \
     } \
     constexpr static uint32_t enableMode() { \
-      return ForceEnableAllChannels ? ChannelEnabledMode::FULLY_ENABLED : parentOutputMode & enabledMode; \
+      return ForceEnableAllChannels ? ChannelEnabledMode::FULLY_ENABLED : inheritedOutputMode & enabledMode; \
     } \
     constexpr static int verbosityLevel() { \
       return verboseLevel; \
@@ -55,12 +59,12 @@ struct Channel<CAP::as_sequence<CAP_LOG_CHANNEL_STRING(channelname)>::type> { \
 };
 
 #define CAP_CHANNEL(channel) \
-CAP::Channel<CAP::as_sequence<channel>::type>
+CAP::CHANNEL::Channel<CAP::CHANNEL::as_sequence<channel>::type>
 
 #define CAP_CHANNEL_OUTPUT_MODE(channel) \
 CAP_CHANNEL(channel)::enableMode()
 
-namespace CAP {
+namespace CAP::CHANNEL {
 
 #ifdef CAP_LOGGER_FORCE_ALL_CHANNELS_ENABLED_IMPL
 constexpr const bool ForceEnableAllChannels = true;
@@ -120,6 +124,12 @@ struct Channel {
   }
 };
 
+// template<typename... Args>
+template<const std::string_view& ...sv>
+constexpr auto channelOutputModeAnd() {
+  return (CAP::CHANNEL::Channel<typename CAP::CHANNEL::as_sequence<sv>::type>::enableMode() & ...);
+}
+
 inline void printChannel(std::stringstream& ss, unsigned int processId, unsigned int threadId,
                          unsigned int depth, unsigned int channelId, std::string_view channelName,
                          uint32_t enabledMode, int verbosityLevel) {
@@ -148,10 +158,17 @@ inline void printChannel(std::stringstream& ss, unsigned int processId, unsigned
     ss << channelName << CAP::OutputModeToNewLineChar[static_cast<int>(CAP::DefaultOutputMode)];
 }
 
-// declare the default channels.  We're already in the CAP namespace,
-// se we use the inner "impl" versions.  Root is default enabled.
-DEFINE_CAP_LOG_CHANNEL_CHILD_IMPL(CHANNEL_ROOT_ALL,  0, ChannelEnabledMode::FULLY_ENABLED, CAP_LOGGER_ROOT_CHANNEL_MODE)
-DEFINE_CAP_LOG_CHANNEL_CHILD_IMPL(DEFAULT, 0, ChannelEnabledMode::FULLY_ENABLED, CAP_CHANNEL_OUTPUT_MODE(CAP_LOG_CHANNEL_STRING(CHANNEL_ROOT_ALL)))
-DEFINE_CAP_LOG_CHANNEL_CHILD_IMPL(LEGACY, 0, ChannelEnabledMode::FULLY_ENABLED, CAP_CHANNEL_OUTPUT_MODE(CAP_LOG_CHANNEL_STRING(CHANNEL_ROOT_ALL)))
+}  // namespace CAP::CHANNEL
 
-}  // namespace CAP
+// declare the default channels.  We're already in the CAP namespace,
+// so we use the inner "impl" versions.  Root is default enabled.
+DEFINE_CAP_LOG_CHANNEL_IMPL(CHANNEL_ROOT_ALL_LOGS,  0, ChannelEnabledMode::FULLY_ENABLED, CAP_LOGGER_ROOT_CHANNEL_MODE)
+DEFINE_CAP_LOG_CHANNEL_CHILD_IMPL(DEFAULT, 0, ChannelEnabledMode::FULLY_ENABLED, CHANNEL_ROOT_ALL_LOGS)
+DEFINE_CAP_LOG_CHANNEL_CHILD_IMPL(LEGACY, 0, ChannelEnabledMode::FULLY_ENABLED, CHANNEL_ROOT_ALL_LOGS)
+
+// Error logs are considered to be a different "top level"
+DEFINE_CAP_LOG_CHANNEL_IMPL(CHANNEL_ROOT_ALL_ERRORS,  0, ChannelEnabledMode::FULLY_ENABLED, CAP_LOGGER_ROOT_CHANNEL_MODE)
+
+namespace CAP::CHANNEL {
+  bool test = channelOutputModeAnd<CHANNEL_ROOT_ALL_LOGS, DEFAULT>();
+}

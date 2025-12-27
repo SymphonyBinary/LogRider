@@ -120,7 +120,7 @@ want to branch if __VA_ARGS__ is empty and call setPrimaryLog without passing it
 // CAP_ANONY(channel, CAP_IMPL_MACRO, ...)
 // but that can resolve into bad stuff pretty easily.
 #define CAP_LOG_ANONYMOUS(channel, ...)                                                           \
-    if constexpr (CAP::Channel<CAP::as_sequence<channel>::type>::enableMode() & CAP::CAN_WRITE_TO_OUTPUT) {         \
+    if constexpr (CAP::CHANNEL::Channel<CAP::CHANNEL::as_sequence<channel>::type>::enableMode() & CAP::CAN_WRITE_TO_OUTPUT) {         \
         CAP::TLSScope tlsScope(__FILENAME__, __PRETTY_FUNCTION__);                                \
         if (tlsScope.anonymousBlockLog != nullptr) {                                              \
             std::stringstream CAPLOG_ss;                                                          \
@@ -136,7 +136,7 @@ want to branch if __VA_ARGS__ is empty and call setPrimaryLog without passing it
     }
 
 #define CAP_LOG_ERROR_ANONYMOUS(channel, ...)                                                     \
-    if constexpr (CAP::Channel<CAP::as_sequence<channel>::type>::enableMode() & CAP::CAN_WRITE_TO_OUTPUT) {         \
+    if constexpr (CAP::CHANNEL::Channel<CAP::CHANNEL::as_sequence<channel>::type>::enableMode() & CAP::CAN_WRITE_TO_OUTPUT) {         \
         CAP::TLSScope tlsScope(__FILENAME__, __PRETTY_FUNCTION__);                                \
         if (tlsScope.anonymousBlockLog != nullptr) {                                              \
             std::stringstream CAPLOG_ss;                                                          \
@@ -208,10 +208,10 @@ want to branch if __VA_ARGS__ is empty and call setPrimaryLog without passing it
 
 #define CAP_LOG_DECLARE_ANY_VAR(channel, varName, varTypeIfEnabled, varInitIfEnabled,       \
                                 varTypeIfDisabled, varInitIfDisabled)                       \
-    using varName##_type = std::conditional<CAP::Channel<CAP::as_sequence<channel>::type>::enableMode() != 0, \
+    using varName##_type = std::conditional<CAP::CHANNEL::Channel<CAP::CHANNEL::as_sequence<channel>::type>::enableMode() != 0, \
                                             varTypeIfEnabled, varTypeIfDisabled>::type;     \
     std::any varName =                                                                      \
-            CAP::Channel<CAP::as_sequence<channel>::type>::enableMode() != 0 ? varInitIfEnabled : varInitIfDisabled;
+            CAP::CHANNEL::Channel<CAP::CHANNEL::as_sequence<channel>::type>::enableMode() != 0 ? varInitIfEnabled : varInitIfDisabled;
 
 #define CAP_SCAN_BLOCK_NO_THIS(...) CAP_LOG_BLOCK_NO_THIS(__VA_ARGS__)
 #define CAP_SCAN_BLOCK(...) CAP_LOG_BLOCK(__VA_ARGS__)
