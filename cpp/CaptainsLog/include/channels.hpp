@@ -9,9 +9,9 @@
 
 /////
 // testing dnd delete
-#define DEFINE_CHECK_WTF(...) \
+#define DEFINE_CHECK_WTF(channelname, ...) \
 namespace CAP::CHANNEL { \
-  constexpr const uint32_t wtf = channelOutputModeAnd<__VA_ARGS__> (); \
+  constexpr const uint32_t channelname##wtf = channelOutputModeAnd<__VA_ARGS__> (); \
 }
 /////
 
@@ -193,6 +193,9 @@ namespace CAP::CHANNEL {
   constexpr const uint32_t test = channelOutputModeAnd<CHANNEL_ROOT_ALL_LOGS, CHANNEL_ROOT_ALL_LOGS>();
 }
 
-DEFINE_CHECK_WTF(CHANNEL_ROOT_ALL_LOGS, DEFAULT)
+DEFINE_CAP_LOG_CHANNEL(RENDERAAA, 0, FULLY_ENABLED)
+
+DEFINE_CHECK_WTF(asdf, CHANNEL_ROOT_ALL_LOGS, DEFAULT, LEGACY, RENDERAAA)
+
 
 // DEFINE_CAP_LOG_CHANNEL(ASDF, 0, FULLY_ENABLED)
