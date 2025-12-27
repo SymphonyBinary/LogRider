@@ -13,6 +13,9 @@
 namespace CAP::CHANNEL { \
   constexpr const uint32_t channelname##wtf = channelOutputModeAnd<__VA_ARGS__> (); \
 }
+
+#define VA_ARGS(...) , ##__VA_ARGS__
+// testing and delete
 /////
 
 // convenience macros to split up building this:
@@ -27,7 +30,7 @@ namespace CAP::CHANNEL { \
 // (... params are a list of parent channels that are AND'd together then OR'd with this channel)
 // Example, if parent is disabled but this channel is enabled, final result will also be disabled.
 #define DEFINE_CAP_LOG_CHANNEL(channelname, verboseLevel, enabledMode, ...) \
-DEFINE_CAP_LOG_CHANNEL_CHILD_IMPL(channelname, verboseLevel, CAP::ChannelEnabledMode:: enabledMode, CHANNEL_ROOT_ALL_LOGS, __VA_ARGS__)
+DEFINE_CAP_LOG_CHANNEL_CHILD_IMPL(channelname, verboseLevel, CAP::ChannelEnabledMode:: enabledMode, CHANNEL_ROOT_ALL_LOGS VA_ARGS(__VA_ARGS__))
 
 // // Public macros
 // #define DEFINE_CAP_LOG_CHANNEL_CHILD(channelname, verboseLevel, enabledMode, parentChannel) \
@@ -49,7 +52,7 @@ DEFINE_CAP_LOG_CHANNEL_CHILD_FROM_CONSTEXPR_STRINGVIEW_IMPL(channelname, verbose
 #define DEFINE_CAP_LOG_CHANNEL_CHILD_IMPL(channelname, verboseLevel, enabledMode, ...) \
 namespace CAP::CHANNEL { \
 constexpr const std::string_view channelname {#channelname}; \
-constexpr const uint32_t channelname ## inherit = channelOutputModeAnd<CHANNEL_ROOT_ALL_LOGS> (); \
+constexpr const uint32_t channelname ## inherit = channelOutputModeAnd<__VA_ARGS__> (); \
 DEFINE_CAP_LOG_CHANNEL_CHILD_FROM_CONSTEXPR_STRINGVIEW_IMPL(channelname, verboseLevel, enabledMode, channelname ## inherit) \
 }
 //// why is "channelOutputModeAnd<__VA_ARGS__>" not working?
@@ -195,11 +198,11 @@ namespace CAP::CHANNEL {
 
 DEFINE_CAP_LOG_CHANNEL(RENDERAAA, 0, FULLY_ENABLED)
 
-#define DEFINE_CAP_LOG_CHANNEL_TEST(channelname, verboseLevel, enabledMode, ...) \
-DEFINE_CHECK_WTF(channelname, CHANNEL_ROOT_ALL_LOGS, __VA_ARGS__)
+// #define DEFINE_CAP_LOG_CHANNEL_TEST(channelname, verboseLevel, enabledMode, ...) \
+// DEFINE_CHECK_WTF(channelname, CHANNEL_ROOT_ALL_LOGS, __VA_ARGS__)
 
 
-DEFINE_CAP_LOG_CHANNEL_TEST(asdf, 0, FULLY_ENABLED, CHANNEL_ROOT_ALL_LOGS, DEFAULT, LEGACY, RENDERAAA)
+// DEFINE_CAP_LOG_CHANNEL_TEST(asdf, 0, FULLY_ENABLED, CHANNEL_ROOT_ALL_LOGS, DEFAULT, LEGACY, RENDERAAA)
 
 
 // DEFINE_CAP_LOG_CHANNEL(ASDF, 0, FULLY_ENABLED)
