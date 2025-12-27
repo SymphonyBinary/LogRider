@@ -53,9 +53,9 @@ want to branch if __VA_ARGS__ is empty and call setPrimaryLog without passing it
   [[maybe_unused]] constexpr bool channelCompileEnabledOutput = CAP_CHANNEL(channel)::enableMode() & CAP::CAN_WRITE_TO_OUTPUT; \
   [[maybe_unused]] constexpr bool channelCompileEnabledState = CAP_CHANNEL(channel)::enableMode() & CAP::CAN_WRITE_TO_STATE; \
   [[maybe_unused]] const size_t channelId = CAP_CHANNEL(channel)::id(); \
-  CAP::BlockLogger blockScopeLog = channelCompileNotDisabled ? \
-    CAP::BlockLogger{} : \
-    CAP::BlockLogger{pointer, channelId, CAP_CHANNEL_OUTPUT_MODE(channel), __FILENAME__, __PRETTY_FUNCTION__}; \
+  CAP::BlockLogger blockScopeLog = channelCompileNotDisabled \
+    ? CAP::BlockLogger{pointer, channelId, CAP_CHANNEL_OUTPUT_MODE(channel), __FILENAME__, __PRETTY_FUNCTION__} \
+    : CAP::BlockLogger{}; \
   CAP::BlockLogger* blockScope = &blockScopeLog; \
   PRAGMA_IGNORE_SHADOW_END                                                                  \
     if constexpr (channelCompileEnabledOutput) {                                              \
@@ -222,7 +222,7 @@ want to branch if __VA_ARGS__ is empty and call setPrimaryLog without passing it
         blockScope->dumpToFile(__LINE__, filename, pointerToBuffer, numberOfBytes); \
     }
 
-#else
+#else // ENABLE_CAP_LOGGER_IMPL
 
 #define CAP_LOGGER_ONLY [[maybe_unused]]
 
@@ -262,7 +262,7 @@ want to branch if __VA_ARGS__ is empty and call setPrimaryLog without passing it
 #define DEFINE_CAP_LOG_CHANNEL(...)
 #define DEFINE_CAP_LOG_CHANNEL_CHILD(...)
 
-#endif
+#endif // ENABLE_CAP_LOGGER_IMPL
 
 
 
