@@ -14,6 +14,7 @@ namespace CAP::CHANNEL { \
   constexpr const uint32_t channelname##wtf = channelOutputModeAnd<__VA_ARGS__> (); \
 }
 
+// THIS works.  but non standard
 #define VA_ARGS(...) , ##__VA_ARGS__
 // testing and delete
 /////
