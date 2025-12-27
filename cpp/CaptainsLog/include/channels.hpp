@@ -41,6 +41,7 @@ namespace CAP::CHANNEL { \
 constexpr const std::string_view channelname {#channelname}; \
 DEFINE_CAP_LOG_CHANNEL_CHILD_FROM_CONSTEXPR_STRINGVIEW_IMPL(channelname, verboseLevel, enabledMode, channelOutputModeAnd<CHANNEL_ROOT_ALL_LOGS>()) \
 }
+//// why is "channelOutputModeAnd<__VA_ARGS__>" not working?
 
 // TODO print once what the mode is in english (eg. enabled || enabled and printing)
 #define DEFINE_CAP_LOG_CHANNEL_CHILD_FROM_CONSTEXPR_STRINGVIEW_IMPL(channelname, verboseLevel, enabledMode, inheritedOutputMode) \
@@ -170,5 +171,5 @@ DEFINE_CAP_LOG_CHANNEL_CHILD_IMPL(LEGACY, 0, ChannelEnabledMode::FULLY_ENABLED, 
 DEFINE_CAP_LOG_CHANNEL_IMPL(CHANNEL_ROOT_ALL_ERRORS,  0, ChannelEnabledMode::FULLY_ENABLED, CAP_LOGGER_ROOT_CHANNEL_MODE)
 
 namespace CAP::CHANNEL {
-  bool test = channelOutputModeAnd<CHANNEL_ROOT_ALL_LOGS, DEFAULT>();
+  bool test = channelOutputModeAnd<CHANNEL_ROOT_ALL_LOGS, CHANNEL_ROOT_ALL_LOGS>();
 }
