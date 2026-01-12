@@ -19,7 +19,7 @@
 #define CAP_LOG_CHANNEL_STRING(channelname) CAP::CHANNEL::channelname
 
 // Public macros
-// (... params are a list of parent channels that are AND'd together then OR'd with this channel)
+// (... params are a list of parent channels that are AND'd together then AND'd with this channel)
 // Example, if parent is disabled but this channel is enabled, final result will also be disabled.
 #define DEFINE_CAP_LOG_CHANNEL(channelname, verboseLevel, enabledMode, ...) \
 DEFINE_CAP_LOG_CHANNEL_CHILD_IMPL(channelname, verboseLevel, CAP::ChannelEnabledMode:: enabledMode, CHANNEL_ROOT_ALL_LOGS CAP_VA_ARGS(__VA_ARGS__))
