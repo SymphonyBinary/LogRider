@@ -71,10 +71,10 @@ inline void writeOutput(const std::string& messageBuffer, unsigned int processId
     std::stringstream completeOutputStream;
     completeOutputStream << PrintPrefix{processId, threadId, channelId} << TabDelims{depth}
                          << messageBuffer;
-    auto outputStringSize = completeOutputStream.tellp();
+    size_t outputStringSize = (size_t) completeOutputStream.tellp();
 
-    auto log_line_character_limit =
-            CAP::OutputModeToLogLineCharLimit[static_cast<int>(CAP::DefaultOutputMode)];
+    size_t log_line_character_limit =
+                 (size_t) CAP::OutputModeToLogLineCharLimit[static_cast<int>(CAP::DefaultOutputMode)];
     if (outputStringSize < log_line_character_limit) {
         completeOutputStream
                 << CAP::OutputModeToNewLineChar[static_cast<int>(CAP::DefaultOutputMode)];
