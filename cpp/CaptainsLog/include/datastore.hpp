@@ -205,7 +205,7 @@ public:
   }
 
   int releaseAllStates(DataStoreKey storeKey) {
-    int stateDeletedCountRet = 0;
+    size_t stateDeletedCountRet = 0;
     std::visit(overloaded{
       [&](const std::string& key) {
         if (const auto& objectFind = mDataStoreStrings.find(key); 
@@ -232,7 +232,7 @@ public:
     }, 
     storeKey);
 
-    return stateDeletedCountRet;
+    return (int)stateDeletedCountRet;
   }
 
 private:
