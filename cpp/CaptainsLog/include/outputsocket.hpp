@@ -58,7 +58,7 @@ class SocketLogger {
         // writeToPlatformOut("SOCKET OUT: " + std::string((char*)buffer));
 
         while (bytesSent < numBytes) {
-            size_t retVal = send(socketFD, bufferPtr + bytesSent, numBytes - bytesSent, 0);
+            ssize_t retVal = send(socketFD, bufferPtr + bytesSent, numBytes - bytesSent, 0);
             if (retVal == -1) {
                 static bool once = true;
                 if (once) {
@@ -70,7 +70,7 @@ class SocketLogger {
                 return false;
             }
 
-            bytesSent += retVal;
+            bytesSent += (size_t)retVal;
         }
         return true;
     }
