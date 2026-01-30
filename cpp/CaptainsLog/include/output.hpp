@@ -101,7 +101,7 @@ constexpr const OutputMode DefaultOutputMode = OutputMode::Socket;
 constexpr const OutputMode DefaultOutputMode = OutputMode::StandardOut;
 #endif
 
-inline void printLogLineCharacterLimit(std::stringstream& ss, unsigned int processId) {
+inline void printLogLineCharacterLimit(std::stringstream& ss, size_t processId) {
     ss << CAP_MAIN_PREFIX_DELIMITER << INSERT_THREAD_ID << " : "
        << CAP_PROCESS_ID_DELIMITER << processId << " " << CAP_MAX_CHAR_SIZE_DELIMITER
        << CAP::OutputModeToLogLineCharLimit[static_cast<int>(CAP::DefaultOutputMode)]
