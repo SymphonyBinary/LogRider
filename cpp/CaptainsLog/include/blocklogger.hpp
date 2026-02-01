@@ -174,7 +174,7 @@ class BlockLogger {
             mDepth(0),
             mThreadId(0),
             mProcessId(0),
-            mChannel(channelId),
+            mChannel((unsigned int)channelId),
             mThisPointer(thisPointer) {
         if (mEnabledMode & CAN_WRITE_TO_OUTPUT) {
             tlsScopeStack_ = &CAP::TLSScopeStack::getThreadLocalInstance();
@@ -186,7 +186,7 @@ class BlockLogger {
             mDepth = logData.logDepth;
             mId = logData.perThreadUniqueFunctionIdx;
             mThreadId = logData.relativeThreadIdx;
-            mProcessId = logData.processTimestampInstanceKey;
+            mProcessId = (unsigned int)logData.processTimestampInstanceKey;
         }
     }
                 
@@ -299,7 +299,7 @@ class BlockLogger {
         auto changes = loggerDataStore.updateStates(keys, varNames, std::move(states));
 
         if (mEnabledMode & CAN_WRITE_TO_OUTPUT) {
-            for (size_t i = 0; i < DATA_COUNT; ++i) {
+            for (int i = 0; i < DATA_COUNT; ++i) {
                 std::string comLine = "UPDATE STATE(" + to_string(changes[i]) + ") ";
                 printStateImpl(line, comLine, to_string(keys[i]), varNames[i], statesPrintCopy[i]);
             }
@@ -385,7 +385,7 @@ class BlockLogger {
     unsigned int mDepth;
     unsigned int mThreadId;
     unsigned int mProcessId;
-    size_t mChannel;
+    unsigned int mChannel;
     const void* mThisPointer;
 }; 
 

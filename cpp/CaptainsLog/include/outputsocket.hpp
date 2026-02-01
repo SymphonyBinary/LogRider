@@ -115,14 +115,14 @@ class SocketLogger {
             Header header{};
             header.payload[2] = 1;
             std::string bodyFilenamePart = std::string(filename) + std::string("||");
-            header.payload[3] = bodyFilenamePart.size() + numberOfBytes;
+            header.payload[3] = (uint32_t)(bodyFilenamePart.size() + numberOfBytes);
 
             bool success = false;
             {
                 const std::lock_guard<std::mutex> guard(logger.mMut);
                 if (sendBufferOverSocket(logger.mSocketFD, header.payload, sizeof(Header))) {
                     if (sendBufferOverSocket(logger.mSocketFD, bodyFilenamePart.data(),
-                                             bodyFilenamePart.size())) {
+                                             (uint32_t)bodyFilenamePart.size())) {
                         if (sendBufferOverSocket(logger.mSocketFD, data, numberOfBytes)) {
                             success = true;
                         }

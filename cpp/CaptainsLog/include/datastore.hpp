@@ -122,7 +122,7 @@ public:
       const DataStoreKeysArrayN<DATA_COUNT>& storeKeys, 
       const DataStoreMemberVariableNamesArrayN<DATA_COUNT>& stateNames) {
     auto ret = DataStoreStateArray<DATA_COUNT>();
-    for (size_t i = 0; i < DATA_COUNT; ++i){
+    for (int i = 0; i < DATA_COUNT; ++i){
       std::visit(overloaded{
         [&](const std::string& storeKey) {
           ret[i] = mDataStoreStrings[storeKey][stateNames[i]];
@@ -159,7 +159,7 @@ public:
     static_assert(std::is_same<keysN, DataStoreKeysArrayN<DATA_COUNT>>::value, 
                   "storeKeys must be of type DataStoreKeysArrayN<DATA_COUNT>");
     NumChangedElementsN<DATA_COUNT> retStatus;        
-    for (size_t i = 0; i < DATA_COUNT; ++i) {
+    for (int i = 0; i < DATA_COUNT; ++i) {
       DataStoreState* currentState = nullptr;
       std::visit(overloaded{
         [&](const std::string& storeKey) {
