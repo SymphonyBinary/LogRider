@@ -123,7 +123,7 @@ public:
       const DataStoreKeysArrayN<DATA_COUNT>& storeKeys, 
       const DataStoreMemberVariableNamesArrayN<DATA_COUNT>& stateNames) {
     auto ret = DataStoreStateArray<DATA_COUNT>();
-    for (int i = 0; i < DATA_COUNT; ++i){
+    for (int i = 0; i < (int)DATA_COUNT; ++i){
       std::visit(overloaded{
         [&](const std::string& storeKey) {
           ret[i] = mDataStoreStrings[storeKey][stateNames[i]];

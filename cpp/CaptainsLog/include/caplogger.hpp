@@ -54,14 +54,14 @@ want to branch if __VA_ARGS__ is empty and call setPrimaryLog without passing it
   [[maybe_unused]] constexpr bool channelCompileEnabledState = CAP_CHANNEL(channel)::enableMode() & CAP::CAN_WRITE_TO_STATE; \
   [[maybe_unused]] const size_t channelId = CAP_CHANNEL(channel)::id(); \
   CAP::BlockLogger blockScopeLog = channelCompileNotDisabled \
-    ? CAP::BlockLogger{pointer, channelId, CAP_CHANNEL_OUTPUT_MODE(channel), __FILENAME__, __PRETTY_FUNCTION__} \
+    ? CAP::BlockLogger{pointer, channelId, CAP_CHANNEL_OUTPUT_MODE(channel), __CAP_FILENAME__, __PRETTY_FUNCTION__} \
     : CAP::BlockLogger{}; \
   CAP::BlockLogger* blockScope = &blockScopeLog; \
   PRAGMA_IGNORE_SHADOW_END                                                                  \
     if constexpr (channelCompileEnabledOutput) {                                              \
         std::stringstream CAPLOG_ss;                                                          \
         CAPLOG_ss << " [" << __LINE__                                                         \
-                  << "]::[" << __FILENAME__                                                   \
+                  << "]::[" << __CAP_FILENAME__                                                   \
                   << "]::[" << __PRETTY_FUNCTION__ << "]";                                    \
         blockScope->setPrimaryLog(__LINE__, CAPLOG_ss.str(), "");                             \
         CAP_LOG(__VA_ARGS__);                                                                 \
@@ -121,11 +121,11 @@ want to branch if __VA_ARGS__ is empty and call setPrimaryLog without passing it
 // but that can resolve into bad stuff pretty easily.
 #define CAP_LOG_ANONYMOUS(channel, ...)                                                           \
     if constexpr (CAP::CHANNEL::Channel<CAP::CHANNEL::as_sequence<channel>::type>::enableMode() & CAP::CAN_WRITE_TO_OUTPUT) {         \
-        CAP::TLSScope tlsScope(__FILENAME__, __PRETTY_FUNCTION__);                                \
+        CAP::TLSScope tlsScope(__CAP_FILENAME__, __PRETTY_FUNCTION__);                                \
         if (tlsScope.anonymousBlockLog != nullptr) {                                              \
             std::stringstream CAPLOG_ss;                                                          \
             CAPLOG_ss << " [" << __LINE__      \
-                      << "]::[" << __FILENAME__ \
+                      << "]::[" << __CAP_FILENAME__ \
                       << "]::[" << __PRETTY_FUNCTION__ << "]";                         \
             tlsScope.anonymousBlockLog->setPrimaryLog(__LINE__, CAPLOG_ss.str(), "");             \
         }                                                                                         \
@@ -137,11 +137,11 @@ want to branch if __VA_ARGS__ is empty and call setPrimaryLog without passing it
 
 #define CAP_LOG_ERROR_ANONYMOUS(channel, ...)                                                     \
     if constexpr (CAP::CHANNEL::Channel<CAP::CHANNEL::as_sequence<channel>::type>::enableMode() & CAP::CAN_WRITE_TO_OUTPUT) {         \
-        CAP::TLSScope tlsScope(__FILENAME__, __PRETTY_FUNCTION__);                                \
+        CAP::TLSScope tlsScope(__CAP_FILENAME__, __PRETTY_FUNCTION__);                                \
         if (tlsScope.anonymousBlockLog != nullptr) {                                              \
             std::stringstream CAPLOG_ss;                                                          \
             CAPLOG_ss << " [" << __LINE__      \
-                      << "]::[" << __FILENAME__ \
+                      << "]::[" << __CAP_FILENAME__ \
                       << "]::[" << __PRETTY_FUNCTION__ << "]";                         \
             tlsScope.anonymousBlockLog->setPrimaryLog(__LINE__, CAPLOG_ss.str(), "");             \
         }                                                                                         \

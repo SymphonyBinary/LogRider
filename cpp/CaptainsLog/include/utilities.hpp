@@ -77,7 +77,7 @@ std::string string(Args... args) {
 /// that still understand something about specific arguments.
 ///////
 // https://stackoverflow.com/questions/8487986/file-macro-shows-full-path
-#define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
+#define __CAP_FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
 
 ///////
 // https://stackoverflow.com/questions/5588855/standard-alternative-to-gccs-va-args-trick/11172679#11172679
