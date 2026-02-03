@@ -59,18 +59,19 @@ template<size_t DATA_COUNT>
 using DataStoreValuesArrayUpdater = std::function<void(DataStoreStateArray<DATA_COUNT>&)>;
 
 inline const std::string& to_string(ValueChangeStatus changes) {
+  static std::string unchanged = "UNCHANGED";
+  static std::string created = "CREATED";
+  static std::string updated = "UPDATED";
+  static std::string deleted = "DELETED";
+
   switch (changes) {
-    case ValueChangeStatus::UNCHANGED: 
-      static std::string unchanged = "UNCHANGED";
+    case ValueChangeStatus::UNCHANGED:     
       return unchanged;
     case ValueChangeStatus::CREATED:
-      static std::string created = "CREATED";
       return created;
     case ValueChangeStatus::UPDATED:
-      static std::string updated = "UPDATED";
       return updated;
     case ValueChangeStatus::DELETED:
-      static std::string deleted = "DELETED";
       return deleted;
     default:
       break;
