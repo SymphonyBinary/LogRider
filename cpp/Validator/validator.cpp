@@ -330,7 +330,7 @@ void runAsSocketServer(Processor&& processor) {
 
       StreamParser parser;
 
-      while ((readChars = read(socketID, buffer, 1024)) != 0) { // 0 is eof; closed connection
+      while ((readChars = read(socketID, buffer, 1024)) > 0) { // 0 is eof; closed connection
         rawoutput.write(buffer, readChars); 
         std::vector<std::string> stringsOut{};
         std::vector<std::pair<std::string, std::vector<unsigned char>>> bytesOut{};
