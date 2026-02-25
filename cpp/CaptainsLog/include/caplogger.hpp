@@ -263,8 +263,3 @@ want to branch if __VA_ARGS__ is empty and call setPrimaryLog without passing it
 #define DEFINE_CAP_LOG_CHANNEL_CHILD(...)
 
 #endif // ENABLE_CAP_LOGGER_IMPL
-
-
-
-
-

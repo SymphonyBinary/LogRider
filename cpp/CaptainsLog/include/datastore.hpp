@@ -65,7 +65,7 @@ inline const std::string& to_string(ValueChangeStatus changes) {
   static std::string deleted = "DELETED";
 
   switch (changes) {
-    case ValueChangeStatus::UNCHANGED:     
+    case ValueChangeStatus::UNCHANGED: 
       return unchanged;
     case ValueChangeStatus::CREATED:
       return created;
@@ -98,9 +98,9 @@ inline std::string to_string(const DataStoreKey& key) {
 
 
 struct LoggerData {
-  LoggerData(size_t processTimestampInstanceKey) : 
+  LoggerData(size_t procTimestampInstanceKey) : 
     relativeThreadIdx(getNextThreadId()),
-    processTimestampInstanceKey(processTimestampInstanceKey) {
+    processTimestampInstanceKey(procTimestampInstanceKey) {
       PRINT_TO_LOG("New Thread. New ThreadID: " + std::to_string(relativeThreadIdx) +
                          CAP::OutputModeToNewLineChar[static_cast<int>(CAP::DefaultOutputMode)]);
   }
