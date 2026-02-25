@@ -4,6 +4,8 @@
 
 #ifdef ANDROID
 #include <android/log.h>
+#elif defined(__APPLE__)
+#include <os/log.h>
 #endif
 
 namespace CAP {
@@ -21,6 +23,8 @@ inline void writeToStandardOut(const std::string& output) {
 inline void writeToPlatformOut(const std::string& output) {
 #ifdef ANDROID
     writeToLogcat(output);
+#elif defined(__APPLE__)
+    os_log_info(OS_LOG_DEFAULT, "[CAPLOG] %{public}s", output.c_str());
 #else
     writeToStandardOut(output);
 #endif
