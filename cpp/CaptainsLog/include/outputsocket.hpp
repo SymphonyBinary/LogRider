@@ -12,6 +12,8 @@
 
 #include <arpa/inet.h>
 // #include <netinet/in.h> // for internet sockets... can't get it to work
+#include <fcntl.h>
+#include <sys/select.h>
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <unistd.h>
@@ -169,16 +171,98 @@ class SocketLogger {
             writeToPlatformOut("CAPLOG: network address was successfully converted \n");
         }
 
+        // Set socket to non-blocking mode to avoid hanging on iOS
+        int flags = fcntl(mSocketFD, F_GETFL, 0);
+        if (flags == -1) {
+            writeToPlatformOut("CAPLOG: Failed to get socket flags. Errno: [" + 
+                std::to_string(errno) + "] | Errno Message: [" + 
+                strerror(errno) + "]\n");
+            closeSocket();
+            return;
+        } 
+        if (fcntl(mSocketFD, F_SETFL, flags | O_NONBLOCK) == -1) {
+            writeToPlatformOut("CAPLOG: Failed to set socket flags. Errno: [" + 
+                std::to_string(errno) + "] | Errno Message: [" + 
+                strerror(errno) + "]\n");
+            closeSocket();
+            return;
+        }
+
         int connectStatus = connect(mSocketFD, (struct sockaddr*)&serv_addr, sizeof(serv_addr));
+        writeToPlatformOut("CAPLOG: Attempted to connect to socket listener. Connect returned: [" +
+                           std::to_string(connectStatus) + "] \n");
 
         if (connectStatus == -1) {
-            writeToPlatformOut("CAPLOG: Failed to connect to socket listener | Errno: [" +
-                               std::to_string(errno) + "] | Errno Message: [" + strerror(errno) +
-                               "] \n");
-            return;
+            if (errno == EINPROGRESS) {
+                fd_set writefds;
+                FD_ZERO(&writefds);
+                FD_SET(mSocketFD, &writefds);
+
+                struct timeval timeout;
+                timeout.tv_sec = 0;
+                timeout.tv_usec = 1000; // 1 millisecond timeout
+
+                writeToPlatformOut("CAPLOG: Connection in progress, waiting 100 ms timeout...\n");
+
+                // select will return > 0 if the socket is writable (connected) before the timeout, 
+                // 0 if it times out, and -1 if there's an error.
+                // mSocketFD + 1 is the nfds paramete which specifies the range of file descriptors
+                // to be tested.  The select() function tests file descriptors in the range of 0 to nfds-1
+                int selectResult = select(mSocketFD + 1, NULL, &writefds, NULL, &timeout);
+
+                if (selectResult == 0) {
+                    writeToPlatformOut("CAPLOG: Connection timed out.\n");
+                    closeSocket();
+                    return;
+                } else if (selectResult == -1) {
+                    writeToPlatformOut("CAPLOG: Select() failed. Errno: [" +
+                        std::to_string(errno) + "] | Error String: [" + strerror(errno) + "]\n");
+                    closeSocket();
+                    return;
+                } else if (!FD_ISSET(mSocketFD, &writefds)) {
+                    writeToPlatformOut("CAPLOG: select() failed.  Socket not writeable \n");
+                    closeSocket();
+                    return;
+                }
+                 
+                writeToPlatformOut("CAPLOG: Socket is writable, connection should be established.\n");
+                    
+                // Check if the connection succeeded by checking the socket error.
+                int socket_error = 0;
+                socklen_t len = sizeof(socket_error);
+                if (getsockopt(mSocketFD, SOL_SOCKET, SO_ERROR, &socket_error, &len) == -1) {
+                    writeToPlatformOut("CAPLOG: getsockopt() failed. Errno: [" +
+                        std::to_string(errno) + "] | Error String: [" + strerror(errno) + "]\n");
+                    closeSocket();
+                    return;
+                }
+                if (socket_error != 0) {
+                    writeToPlatformOut("CAPLOG: Socket connection failed after select. error: [" +
+                        std::to_string(socket_error) + "] | Error String: [" + strerror(socket_error) + "]\n");
+                    closeSocket();
+                    return;
+                }
+                writeToPlatformOut("CAPLOG: Socket connection established after select.  | Socket: [" +
+                    std::to_string(mSocketFD) + "] \n");
+            } else {
+                writeToPlatformOut("CAPLOG: Failed to connect to socket listener | Errno: [" +
+                                std::to_string(errno) + "] | Errno Message: [" + strerror(errno) +
+                                "] \n");
+                // Close the socket on connect failure to prevent SIGPIPE.  Without this,
+                // the socket FD remains open but unconnected.  Subsequent send() calls
+                // would trigger SIGPIPE.
+                closeSocket();
+                return;
+            }
         } else {
-            writeToPlatformOut("CAPLOG: connected to socket listener. Socket | [" +
-                               std::to_string(mSocketFD) + "] \n");
+            writeToPlatformOut("CAPLOG: Connected to socket listener.  | Socket: [" + 
+                std::to_string(mSocketFD) + "] \n");
+        }
+
+        // Restore blocking mode for subsequent operations
+        if (fcntl(mSocketFD, F_SETFL, flags) == -1) {
+            writeToPlatformOut("CAPLOG: Failed to restore socket flags. Errno: [" + 
+                std::to_string(errno) + "] | Errno Message: [" + strerror(errno) + "]\n");
         }
 
         {
