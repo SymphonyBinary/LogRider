@@ -27,21 +27,57 @@
 
 #include "outputstdout.hpp"
 
+#if defined(APPLE) || defined(__APPLE__)
+#include <CoreFoundation/CoreFoundation.h>
+#define HAS_APPLE_COREFOUNDATION 1
+#else
+#define HAS_APPLE_COREFOUNDATION 0
+#endif
+
 namespace CAP {
 
 constexpr const size_t defaultPort = 8427;
-constexpr const char* defaultHost = "127.0.0.1";
 
 #ifndef CAPLOG_SOCKET_PORT
 #define CAPLOG_SOCKET_PORT defaultPort
 #endif
 
-#ifndef CAPLOG_SOCKET_HOST
-#define CAPLOG_SOCKET_HOST defaultHost
+inline std::string getHostIP() {
+#ifdef CAPLOG_SOCKET_HOST_IP
+    return CAPLOG_SOCKET_HOST_IP;
 #endif
+
+    std::string hostIp = "127.0.0.1"; // default to localhost
+
+#if HAS_APPLE_COREFOUNDATION
+    // Get the main bundle
+    CFBundleRef mainBundle = CFBundleGetMainBundle();
+
+    // Read a string value
+    CFStringRef value = (CFStringRef)CFBundleGetValueForInfoDictionaryKey(
+        mainBundle, CFSTR("CaplogHostIP"));
+
+    if (value != nullptr) {
+        // Convert CFStringRef to std::string
+        CFIndex length = CFStringGetLength(value);
+        CFIndex maxSize = CFStringGetMaximumSizeForEncoding(length, kCFStringEncodingUTF8);
+        char* buffer = new char[maxSize];
+        if (CFStringGetCString(value, buffer, maxSize, kCFStringEncodingUTF8)) {
+            hostIp = std::string(buffer);
+        }
+        delete[] buffer;
+    }
+#endif
+    return hostIp;
+}
 
 class SocketLogger {
   public:
+    static std::string hostIpAddress() {
+        static std::string hostIp = getHostIP();
+        return hostIp;
+    }
+
     struct Header {
         // [0] and [1] hold an 8 byte wide delimiter
         uint32_t payload[4] = {0x12345678, 0x87654321, 0, 0};
@@ -146,6 +182,7 @@ class SocketLogger {
         closeSocket();
 
         writeToPlatformOut("CAPLOG: Trying to connect to socket listener \n");
+        writeToPlatformOut("CAPLOG: Host IP: " + hostIpAddress() + " \n");
         mSocketFD = socket(AF_INET, SOCK_STREAM, 0);
 
         if (mSocketFD == -1) {
@@ -162,7 +199,7 @@ class SocketLogger {
         serv_addr.sin_family = AF_INET;
         serv_addr.sin_port = htons(CAPLOG_SOCKET_PORT);
 
-        int inetRet = inet_pton(AF_INET, CAPLOG_SOCKET_HOST, &serv_addr.sin_addr);
+        int inetRet = inet_pton(AF_INET, hostIpAddress().c_str(), &serv_addr.sin_addr);
 
         if (inetRet != 1) {
             writeToPlatformOut("CAPLOG: error converting network address \n");
