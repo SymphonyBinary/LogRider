@@ -26,19 +26,20 @@
 #include <vector>
 
 #include "outputstdout.hpp"
+#include "utilities.hpp"
 
 namespace CAP {
 
-constexpr const size_t defaultPort = 8427;
-constexpr const char* defaultHost = "127.0.0.1";
-
 #ifndef CAPLOG_SOCKET_PORT
-#define CAPLOG_SOCKET_PORT defaultPort
+#define CAPLOG_SOCKET_PORT 8427
 #endif
 
-#ifndef CAPLOG_SOCKET_HOST
-#define CAPLOG_SOCKET_HOST defaultHost
+#ifndef CAPLOG_SOCKET_HOST_IP
+#define CAPLOG_SOCKET_HOST_IP 127.0.0.1
 #endif
+
+constexpr const char* caplogHostAddress = CAPTAINS_LOG_STRINGIFY(CAPLOG_SOCKET_HOST_IP);
+constexpr const size_t caplogHostPort = CAPLOG_SOCKET_PORT;
 
 class SocketLogger {
   public:
@@ -147,7 +148,7 @@ class SocketLogger {
 
         writeToPlatformOut("CAPLOG: Trying to connect to socket listener \n");
 
-        writeToPlatformOut("CAPLOG: Host IP: " + std::string(CAPLOG_SOCKET_HOST) + ":" + std::to_string(CAPLOG_SOCKET_PORT) + " \n");
+        writeToPlatformOut("CAPLOG: Host IP: " + std::string(caplogHostAddress) + ":" + std::to_string(caplogHostPort) + " \n");
 
         mSocketFD = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -163,9 +164,9 @@ class SocketLogger {
 
         sockaddr_in serv_addr;
         serv_addr.sin_family = AF_INET;
-        serv_addr.sin_port = htons(CAPLOG_SOCKET_PORT);
+        serv_addr.sin_port = htons(caplogHostPort);
 
-        int inetRet = inet_pton(AF_INET, CAPLOG_SOCKET_HOST, &serv_addr.sin_addr);
+        int inetRet = inet_pton(AF_INET, caplogHostAddress, &serv_addr.sin_addr);
 
         if (inetRet != 1) {
             writeToPlatformOut("CAPLOG: error converting network address \n");
