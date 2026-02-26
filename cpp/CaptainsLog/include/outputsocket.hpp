@@ -146,6 +146,9 @@ class SocketLogger {
         closeSocket();
 
         writeToPlatformOut("CAPLOG: Trying to connect to socket listener \n");
+
+        writeToPlatformOut("CAPLOG: Host IP: " + std::string(CAPLOG_SOCKET_HOST) + ":" + std::to_string(CAPLOG_SOCKET_PORT) + " \n");
+
         mSocketFD = socket(AF_INET, SOCK_STREAM, 0);
 
         if (mSocketFD == -1) {

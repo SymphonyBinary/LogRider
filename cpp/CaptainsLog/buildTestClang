@@ -6,7 +6,7 @@ cd "$(dirname "$0")"
 cd ..
 mkdir -p out
 
-clang++ -Wall -Werror -Wshorten-64-to-32 -std=c++17 CaptainsLog/test/test.cpp -ICaptainsLog -I. -DENABLE_CAP_LOGGER -o out/CaptainsLogTest.out
+clang++ -Wall -Werror -Wshorten-64-to-32 -std=c++17 CaptainsLog/test/test.cpp -ICaptainsLog -I. -DENABLE_CAP_LOGGER -DCAPLOG_SOCKET_HOST=\"127.0.0.1\" -o out/CaptainsLogTest.out
 clang++ -Wall -std=c++17 CaptainsLog/test/channeltest.cpp -ICaptainsLog -I. -DENABLE_CAP_LOGGER -o out/CapLogChannelTest.out
 
 out/CaptainsLogTest.out
