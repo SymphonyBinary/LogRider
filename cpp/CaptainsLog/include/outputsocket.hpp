@@ -80,7 +80,7 @@ class SocketLogger {
 
     static void writeToSocket(const std::string& output) {
         SocketLogger& logger = getSocketLogger();
-        if (logger.mSocketFD != 0) {
+        if (logger.mSocketFD != -1) {
             // TODO formalize this
             // header[0] == type, header[1] == length in bytes.
             // type = 0 == text, type = 1 == binary stream.
@@ -111,7 +111,7 @@ class SocketLogger {
     static void writeBinaryStreamToSocket(std::string_view filename, const void* data,
                                           size_t numberOfBytes) {
         SocketLogger& logger = getSocketLogger();
-        if (logger.mSocketFD != 0) {
+        if (logger.mSocketFD != -1) {
             // TODO formalize this
             // header[0] == type, header[1] == length in bytes.
             // type = 0 == text, type = 1 == binary stream.
@@ -170,6 +170,7 @@ class SocketLogger {
 
         if (inetRet != 1) {
             writeToPlatformOut("CAPLOG: error converting network address \n");
+            closeSocket();
             return;
         } else {
             writeToPlatformOut("CAPLOG: network address was successfully converted \n");
@@ -240,12 +241,14 @@ class SocketLogger {
                     closeSocket();
                     return;
                 }
+                
                 if (socket_error != 0) {
                     writeToPlatformOut("CAPLOG: Socket connection failed after select. error: [" +
                         std::to_string(socket_error) + "] | Error String: [" + strerror(socket_error) + "]\n");
                     closeSocket();
                     return;
                 }
+
                 writeToPlatformOut("CAPLOG: Socket connection established after select.  | Socket: [" +
                     std::to_string(mSocketFD) + "] \n");
             } else {
