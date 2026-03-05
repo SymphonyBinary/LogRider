@@ -13,7 +13,7 @@
 #include <arpa/inet.h>
 // #include <netinet/in.h> // for internet sockets... can't get it to work
 #include <fcntl.h>
-#include <sys/select.h>
+#include <poll.h>
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <unistd.h>
@@ -199,33 +199,27 @@ class SocketLogger {
 
         if (connectStatus == -1) {
             if (errno == EINPROGRESS) {
-                fd_set writefds;
-                FD_ZERO(&writefds);
-                FD_SET(mSocketFD, &writefds);
-
-                struct timeval timeout;
-                timeout.tv_sec = 0;
-                timeout.tv_usec = 1000; // 1 millisecond timeout
+                struct pollfd pfd;
+                pfd.fd = mSocketFD;
+                pfd.events = POLLOUT;
 
                 writeToPlatformOut("CAPLOG: Connection in progress, waiting 100 ms timeout...\n");
 
-                // select will return > 0 if the socket is writable (connected) before the timeout, 
-                // 0 if it times out, and -1 if there's an error.
-                // mSocketFD + 1 is the nfds paramete which specifies the range of file descriptors
-                // to be tested.  The select() function tests file descriptors in the range of 0 to nfds-1
-                int selectResult = select(mSocketFD + 1, NULL, &writefds, NULL, &timeout);
+                // poll returns > 0 if the socket is writable before the timeout.
+                // returns 0 if it times out, and -1 if there's an error.
+                int pollResult = poll(&pfd, 1, 100); // timeout OF 100 ms
 
-                if (selectResult == 0) {
+                if (pollResult == 0) {
                     writeToPlatformOut("CAPLOG: Connection timed out.\n");
                     closeSocket();
                     return;
-                } else if (selectResult == -1) {
-                    writeToPlatformOut("CAPLOG: Select() failed. Errno: [" +
+                } else if (pollResult == -1) {
+                    writeToPlatformOut("CAPLOG: Poll() failed. Errno: [" +
                         std::to_string(errno) + "] | Error String: [" + strerror(errno) + "]\n");
                     closeSocket();
                     return;
-                } else if (!FD_ISSET(mSocketFD, &writefds)) {
-                    writeToPlatformOut("CAPLOG: select() failed.  Socket not writeable \n");
+                } else if ((pfd.revents & POLLOUT) == 0) {
+                    writeToPlatformOut("CAPLOG: Poll() failed. Socket not writable after poll.\n");
                     closeSocket();
                     return;
                 }
@@ -241,7 +235,7 @@ class SocketLogger {
                     closeSocket();
                     return;
                 }
-                
+
                 if (socket_error != 0) {
                     writeToPlatformOut("CAPLOG: Socket connection failed after select. error: [" +
                         std::to_string(socket_error) + "] | Error String: [" + strerror(socket_error) + "]\n");
